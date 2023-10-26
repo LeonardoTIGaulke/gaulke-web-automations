@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Importação GNRE{% endblock %}
+{% block content %}
+<!-- enableBlur -->
+<div class="container-fluid disableBlur " id="form-file-payroll-relation"> 
+    
+    {% if code_process %}
+        <!-- ------------------ MODAL CONFIG PAYROLL RELATION ------------------ -->
+        <div class="disableBlur container justify-content-center align-content-center w-50 p-3 mt-3" id="container-preview-payroll">
+        
+            <div class="modal-header">
+                <h5 class="row w-100 d-flex" style="flex-direction: column; text-align: center;">Configuração de Importação - GNRE</h5>
+                <button type="button" class="btn-close" id="close_modal_config_payroll" onclick="close_modal_config_payroll_relation();"></button>
+            </div>
+            <form action="" class="form-fields-payroll-relation gap-3">
+                <div class="row mt-2 justify-content-center">
+                    <label for="cod_empresa">*Cod. Empresa</label>
+                    <input type="text" name="cod_empresa" id="cod_empresa" placeholder="código da empresa">
+                </div>
+                <div class="row mt-2 justify-content-center">
+                    <label for="filial">*Filial</label>
+                    <input type="text" name="filial" id="filial">
+                </div>
+                
+                <!-- SELECIONAR MODELO DE GNRE -> REFLETE NA ESCOLHA DO BANCO DE DADOS -->
+                <div class="container justify-content-start">
+                    <select class="form-select" id="select-model-gnre">
+                        <option value="modelo_1">Modelo 1</option>
+                        <option value="modelo_2">Modelo 2</option>
+                        <option value="modelo_3">Modelo 3</option>
+                    </select>
+                </div>
+                
+                <div class="row d-flex justify-content-center align-content-center">
+                    <input type="button" class="btn-submit-step-2" value="Enviar" onclick="postPrevewGNRERelation();">
+                </div>
+            </form>
+                
+        </div>
+    {% else %}
+        <div class="d-flex justify-content-center align-content-center" id="form-payroll" style="min-height: 40vh;">
+            <form class="row g-3" method="POST" action="{% url 'gnre_relation' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="file" class="form-label">Importação GNRE</label>
+                    <input class="form-control" type="file" id="file" name="file" required="required" accept=".xlsx">
+                </div>
+                <div class="mb-3">
+                    <label for="grupo_lancamento" class="form-label">Grupo Lanç.</label>
+                    <input class="form-control" type="text" id="grupo_lancamento" name="grupo_lancamento" required="required" placeholder="ex: 09-2023" value="{{grupo_lancamento}}">
+                </div>
+                
+                <input class="btn-send-file" type="submit" value="enviar" style="max-height: 45px; border: 1px solid;">
+
+            </form>
+        </div>
+    {% endif %}
+
+    
+    <div class="container-fluid mt-4 enableBlur" id="container-payroll-relation">
+        {% if code_process %}
+
+            <div class="row w-100 m-2" id="data-resume-payroll">
+                
+                <div class="container  my-5">
+                    <div class="container d-flex justify-content-around align-content-center container-steps-form">
+                        <span class="steps-automation">
+                            <p>importação</p>
+                            <span>selecione pelo menos 1 registro</span>
+                        </span>
+                        <span class="steps-automation">
+                            <p>configuração</p>
+                            <input class="btn-config-payroll-relation" type="submit" value="configurar" onclick="open_modal_config_payroll_relation();">
+                        </span>
+                        <span class="steps-automation">
+                            <p>gerar pacote</p>
+                            <input class="btn-export-data status-disabled" type="submit" value="exportar dados" onclick="exportDataGNRERelation();">
+                            <!-- <span class="btn-export-data">exportar dados</span> -->
+                        </span>
+                    </div>
+                    <span class="container d-flex justify-content-start align-content-center" style="flex-direction: column;">
+                        <article class="row w-100">
+                            <p>Seleção: <span id="total_selecao">0</span></p>
+                        </article>
+                        <article class="row w-100">
+                            <p>Débito: <span id="soma_debito">R$ 0,00</span></p>
+                        </article>
+                        <article class="row w-100">
+                            <p>Crédito: <span id="soma_credito">R$ 0,00</span></p>
+                        </article>
+                        <article class="row w-100">
+                            <p>Diferença: <span id="diff_soma">R$ 0,00</span></p>
+                        </article>
+                            
+                    </span>
+                </div>
+                
+                <!-- ------------------ TABLE PREVIW PAYROLL RELATION ------------------ -->
+                <div class="container-fluid mt-4 container-table-payroll-relation">
+                    <table class="table table-striped table-hover" id="form-payroll-relaction">
+                        <thead>
+                            <tr>
+                                <th class="align-text-center  col-fixed-table">#</th>
+                                <th class="align-text-center  col-table-fixed-2" id="select-all-rows">SELEÇÃO<input type="checkbox" class="btn-select-all-rows" onclick="SelectAllData(this);"></th>
+                                
+                                <th>TIPO_LANC</th>
+                                <th>CTE</th>
+                                <th>FILIAL</th>
+                                <th>DATA_EMISSÃO</th>
+                                <th>COD_ERP_CLIENTE</th>
+                                <th>TIPO_REGISTRO</th> <!-- LINHAS DUPLICADAS >>> C ou D -->
+                                <th>CONTA</th>
+                                <th>SUB_CONTA</th>
+                                <th>VALOR_ICMS</th>
+                                <th>ACAO_LANC</th>
+                                <th>PRIM_HIST_CONTA</th>
+                                <th>COD_HIST</th>
+                                <th>COMPLEM_HIST</th>
+                                <th>GRUPO_LANC</th>
+                                <th>CNPJ</th>
+                                <th>INSC_ESTADUAL</th>
+                                <th>TP_CNPJ</th>
+                                <th>CONTA_ORIGEM</th>
+                                <th>CNPJ_EMPRESA</th>
+                                <th>IE_EMPRESA</th>
+                                <th>UF_INÍCIO</th>
+                                <th>UF_FIM</th>
+
+                            </tr>
+                        </thead>
+                        <!-- <th class="align-text-center  col-table-fixed-3">ID</th> -->
+                        <!-- <td class="align-text-center col-table-fixed-3">{{i.ID}}</td> -->
+                        <tbody>
+                            {% for i in data_dict_folha %}
+                                <tr>
+                                    
+                                    <td class="align-text-center col-fixed-table"><span>{{i.index}}</span></td>
+                                    <td class="align-text-center  col-table-fixed-2"><input type="checkbox" name="data-row-{{i.index}}"  id="row-{{i.index}}" onclick="calculateValues(this)"></td>
+                                    
+                                    <td>{{i.TIPO_LANC}}</td>
+                                    <td>{{i.CTE}}</td>
+                                    <td>{{i.FILIAL}}</td>
+                                    <td>{{i.DATA_EMISSÃO}}</td>
+                                    <td>{{i.COD_ERP_CLIENTE}}</td>
+                                    <td class="tipo-lanc-row-{{i.index}}">{{i.TIPO_REGISTRO}}</td>
+                                    <td>{{i.CONTA}}</td>
+                                    <td>{{i.SUB_CONTA}}</td>
+                                    <td class="row-{{i.index}}-valor">{{i.VALOR_ICMS}}</td>
+                                    <td>{{i.ACAO_LANC}}</td>
+                                    <td>{{i.PRIM_HIST_CONTA}}</td>
+                                    <td>{{i.COD_HIST}}</td>
+                                    <td class="col-long-custom">{{i.COMPLEM_HIST}}</td>
+                                    <td>{{i.GRUPO_LANC}}</td>
+                                    <td>{{i.CNPJ}}</td>
+                                    <td>{{i.INSC_ESTADUAL}}</td>
+                                    <td>{{i.TP_CNPJ}}</td>
+                                    <td>{{i.CONTA_ORIGEM}}</td>
+                                    <td>{{i.CNPJ_EMPRESA}}</td>
+                                    <td>{{i.IE_EMPRESA}}</td>
+                                    <td>{{i.UF_INÍCIO}}</td>
+                                    <td>{{i.UF_FIM}}</td>
+                                                                        
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if code_process_error %}
+            <div class="modal modal-dialog-centered disableBlur" tabindex="-1" style="display: block;" id="modal-error-import-data-folha">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Erro de Importação - GNRE Excel</h5>
+                            <button type="button" class="btn-close" id="close_modal_error"
+                                onclick="close_modal_error();"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Falha ao importar arquivo GNRE.</p>
+                            <br>
+                            <p>1 - verifique se o aquivo selecionado tem a extensão ".xlsx".</p>
+                            <p>2 - certifique-se que o arquivo de importação é para importação de "GNRE".</p>
+                            <p>3 - caso o problema persista entre em contato com TI.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="close_modal_error();">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+</div>
+
+
+</div>
+<script src="{% static 'modals.js' %}"></script>
+
+<script src="{% static 'calculate_data.js' %}"></script>
+<script src="{% static 'export_data.js' %}"></script>
+
+<script src="{% static 'post_update_data_gnre.js' %}"></script>
+
+<script>
+    function postPrevewGNRERelation(){
+        let token = "{{csrf_token}}";
+        previewGNRERelation('{% url "preview_gnre_relation" %}', token);
+    }
+</script>
+{% endblock %}

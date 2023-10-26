@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Config. Contas GNRE{% endblock %}
+{% block content %}
+
+<div class="container d-flex justify-content-center align-items-center container-table-contas-gnre">
+    <div class="container container-btn-actions">
+        <input type="button" name="btn-save-data-table-gnre" id="btn-save-data-table-gnre" value="salvar"
+        onclick="postDataGNRE();">
+    </div>
+    <div class="message-response-post">
+        <p></p>
+    </div>
+    <table class="table-contas-gnre">
+        <thead>
+            <tr>
+                <th>UF</th>
+                <th>Conta Crédito</th>
+                <th>Conta Débito</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in contas %}
+                <tr>
+                    <td>{{data.uf}}</td>
+                    <td>
+                        <input type="text" name="conta-credito-{{data.uf}}" id="conta-credito-{{data.uf}}" value="{{data.conta}}">
+                    </td>
+                    <td>
+                        <input type="text" name="conta-debito{{data.uf}}" id="conta-debito-{{data.uf}}" value="{{data.conta_debito}}">
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="{% static 'post_update_data_gnre.js' %}"></script>
+<script>
+    function postDataGNRE(){
+        let token = "{{csrf_token}}";
+        postUpdateContasGNRE('{% url "config_contas_gnre" %}', token);
+    }
+</script>
+
+{% endblock %}

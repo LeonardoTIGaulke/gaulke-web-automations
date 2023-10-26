@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Modos de Uso{% endblock %}
+{% block content %}
+<!-- enableBlur -->
+<div class="container-fluid">
+    <div class="container ">
+        <h3 class="row w-100 text-center-customized" >Procedimento Operacional Padrão</h3>
+        <p class="row w-100 text-center-customized" style="font-style: italic;">Boas práticas de uso das ferramentas Gaulke Contábil.</p>
+    </div>
+
+    <div class="container my-5 details-use-mode">
+        <h5>Regras gerais uso:</h5>
+        
+
+        <p><b>1.</b> Somente funcionários (as) da empresa Gaulke Contábil devem utilizar a ferramenta de automação para auxiliar nas atividades da empresa;</p>
+        <p><b>2.</b> As credenciais disponibilizadas para uso da ferramenta são individuais, logo, não devem ser compartilhadas;</p>
+        <p><b>3.</b> Mantenha as credenciais de acesso a ferramenta em locais seguros que não ofereçam vulnerabilidades ao dados/informações sensíveis da empresa;</p>
+        <p><b>4.</b> Novos usuários receberão as credenciais pelo TI, via e-mail;</p>
+        <p><b>5.</b> Para trocar ou recuperar as credenciais solicite ao TI;</p>
+ 
+    </div>
+
+    <!-- --------------------- -->
+    <div class="container my-2 details-use-mode">
+        <h5>Início:</h5>
+    </div>
+    <div class="container my-3 block-cards-use-mode">
+        <p><a href="{% url 'use_login_logout' %}">Credenciais</a></p>
+        <p><a href="{% url 'use_login_logout' %}">Login e Logout</a></p>
+    </div>
+
+    <!-- --------------------- -->
+    <div class="container my-2 details-use-mode">
+        <h5>Importação de PDF:</h5>
+    </div>
+    <div class="container my-3 block-cards-use-mode">
+        <p><a href="{% url 'use_login_logout' %}">Folha de Pagemento<br>3700</a></p>
+        <p><a href="{% url 'use_login_logout' %}">Folha de Pagemento<br>3700</a></p>
+    </div>
+    
+    
+</div>
+
+{% endblock %}
