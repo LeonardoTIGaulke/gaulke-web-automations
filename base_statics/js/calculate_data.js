@@ -4,10 +4,9 @@ var TT_Payroll_selected = 0;
 var valueReume = null;
 var list_select = new Array();
 
-var soma_debito = 0;
-var soma_credito = 0;
-var dif_debito_credito = 0;
-var soma_aux = 0;
+var soma_debito = 0.00;
+var soma_credito = 0.00;
+var dif_debito_credito = 0.00;
 
 var elem_soma_debito = document.getElementById("soma_debito");
 var elem_soma_credito = document.getElementById("soma_credito");
@@ -54,7 +53,6 @@ function calculateValues(e){
     elem_soma_credito.textContent = soma_credito.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
     elem_diff_soma.textContent = dif_debito_credito.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
     elem_total_selecao.textContent = TT_Payroll_selected;
-    soma_aux = TT_Payroll_selected;
     status_btn_config();
 
 }
@@ -178,11 +176,13 @@ function SelectAllData(check_button){
                 valor_liq = parseFloat(valor_liq);
 
                 let tipo_lanc = document.querySelector(`.tipo-lanc-${input_id}`).textContent;
-                console.log(tipo_lanc);
-                console.log(valor_liq);
+                console.log(`
+                    --->> tipo_lanc: ${tipo_lanc}
+                    --->> valor_liq: ${valor_liq}
+                `);
 
                 if (check_button.checked == true){
-                    if (valor_liq == "0,00") {
+                    if (valor_liq == "0,00" || valor_liq == "0.00") {
                         console.log(" valor incorreto. ")
                     }
                     checkbox_current.checked = true;
@@ -233,6 +233,14 @@ function SelectAllData(check_button){
     elem_soma_credito.textContent = soma_credito.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
     elem_diff_soma.textContent = dif_debito_credito.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
     elem_total_selecao.textContent = TT_Payroll_selected;
+    console.log(`
+        >> soma_debito: ${soma_debito}
+        >> soma_credito: ${soma_credito}
+        >> dif_debito_credito: ${dif_debito_credito}
+        >> TT_Payroll_selected: ${TT_Payroll_selected}
+        >>>> TT_SUM_Payroll_selected: ${TT_SUM_Payroll_selected}
+    
+    `);
     status_btn_config();
 }
 

@@ -18,8 +18,6 @@ function create_name_file(name_process){
     return file_name;
 }
 
-
-
 function exportDataPayrollRelation(){
 
     var csv = '';
@@ -70,6 +68,24 @@ function exportDataPaymentAccountsRelation(){
     var link = document.createElement("a");
     link.setAttribute("href", url);
     link.setAttribute("download", "Pagamento Conta.txt");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+function exportDataRelationTitulosPagosSICOOB(){
+
+    var csv = '';
+    for(var i=0; i<data_to_csv.length; i++){
+        var values = Object.values(data_to_csv[i]);
+        csv += values.join(';') + '\n';
+    }
+
+    var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "Títulos Pagos SICOOB.txt");
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();

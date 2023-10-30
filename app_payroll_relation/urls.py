@@ -19,6 +19,11 @@ urlpatterns = [
     path("cobrancas-pagas-relation/", views.relation_cobrancas_pagas, name="relation_cobrancas_pagas"),
     path("preview-relation-cobrancas-pagas/", views.preview_relation_cobrancas_pagas, name="preview_relation_cobrancas_pagas"),
 
+    # ------------- TÍTULOS PAGOS SICOOB -------------
+    path("relation-titulos-pagos-sicoob/", views.relation_titulos_pagos_sicoob, name="relation_titulos_pagos_sicoob"),
+    path("preview-relation-titulos-pagos-sicoob/", views.preview_titulos_pagos_sicoob, name="preview_titulos_pagos_sicoob"),
+
+
     # TUTORIALS
     path("modos-de-uso/",  views.use_mode, name="use_mode"),
     path("use-login-e-logout/",  views.use_login_logout, name="use_login_logout"),

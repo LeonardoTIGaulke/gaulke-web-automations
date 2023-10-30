@@ -19,6 +19,7 @@ from .models import ModelContasGNRE_Estados_x_Contas
 from prepate_data.prepare_data_GNRE import read_file_xlsx
 from prepate_data.prepare_data_payroll import convert_PDF_to_DataFrame
 from prepate_data.prepare_data_cobran_pagas import create_base_contas_pagas
+from prepate_data.prepare_data_titulos_pagos_sicoob import convert_PDF_to_DataFrame_SICOOB
 
 
 
@@ -306,7 +307,7 @@ def preview_gnre_relation(request):
             
             df = pd.concat([df_debito, df_credito])
             df = df.drop_duplicates(subset=["CTE", "TIPO_REGISTRO"])
-
+            
             df.index = list(range(0, len(df.index)))
 
             for i in range(len(df.index)):
@@ -540,8 +541,63 @@ def preview_relation_cobrancas_pagas(request):
         return JsonResponse({"code": 500, "msg": "error"})
 
 
+# ---------------------- IMPORTAÇÃO TITULOS PAGOS SICOOB ----------------------
+@login_required(login_url="/automations/login/")
+def relation_titulos_pagos_sicoob(request):
+    if request.method == "GET":
+        return render(request, "app/relation_titulos_pagos_sicoob.html")
+    # ----
+    elif request.method == "POST":
+        file = request.FILES["file"]
+        base = convert_PDF_to_DataFrame_SICOOB(file=file)
+        # print(base)
+        context = {
+            "code_process": True,
+            "data_dict": base["data"]
+        }
+        return render(request, "app/relation_titulos_pagos_sicoob.html", context=context)
+
+def preview_titulos_pagos_sicoob(request):
+    try:
+        if request.method == "POST":
+            data_body = json.loads(request.body)
+            cod_empresa = data_body.get("cod_empresa")
+            filial = data_body.get("filial")
+            numero_conta_debito = data_body.get("numero_conta_debito")
+            numero_conta_credito = data_body.get("numero_conta_credito")
+            print(f"""
+                cod_empresa: {cod_empresa}
+                filial: {filial}
+                numero_conta_debito: {numero_conta_debito}
+                numero_conta_credito: {numero_conta_credito}
+            """)
+                
+            df = pd.DataFrame(columns=data_body["headers"], data=data_body["rows"])
+            for i in df.index:
+                df["FILIAL"][i] = filial
+                df["COD_EMPRESA"][i] = cod_empresa
+                # ----
+                if df["TIPO_REGISTRO"][i] == "D":
+                    df["CONTA"][i] = numero_conta_debito
+                elif df["TIPO_REGISTRO"][i] == "C":
+                    df["CONTA"][i] = numero_conta_credito
+            print(df)
+
+            
+            df = df.to_json(orient="records")
 
 
+
+            return JsonResponse({
+                "code": 200,
+                "msg": "POST success",
+                "data": df,
+            })
+        else:
+            return JsonResponse({"code": 401, "msg": "not-found"})
+    except Exception as e:
+        print(e)
+        return JsonResponse({"code": 500, "msg": "error"})
 
 
 
