@@ -71,7 +71,7 @@ def convert_PDF_to_DataFrame_SICOOB(file):
         obj_new_cols["ACAO_LANC"].append("0")
         obj_new_cols["PRIM_HIST_CONTA"].append("2")
         obj_new_cols["COD_HIST"].append("")
-        obj_new_cols["COMPLEM_HIST"].append(f'Desconto Dupl. {df["NOSSO_NUMERO"][i]} - {df["NOME"][i]}')
+        obj_new_cols["COMPLEM_HIST"].append(f'Desconto Dupl. {df["SEU_NUMERO"][i]} - {df["NOME"][i]} -  {df["DATA_VENCIMENTO"][i]}')
 
         cod_erp_client = f'G{df["NOSSO_NUMERO"][i]}{df["SEU_NUMERO"][i]}'.replace("-", "")
         obj_new_cols["COD_ERP_CLIENTE"].append(cod_erp_client)
@@ -93,29 +93,7 @@ def convert_PDF_to_DataFrame_SICOOB(file):
 
     df = pd.concat([df_debito, df_credito])
     
-    df = df[[
-        "TIPO_LANC",
-        "COD_EMPRESA",
-        "NOME",
-        "FILIAL",
-        "DATA_ENTRADA",
-        "COD_ERP_CLIENTE",
-        "TIPO_REGISTRO",
-        "CONTA",
-        "SUB_CONTA",
-        "VALOR",
-        "ACAO_LANC",
-        "PRIM_HIST_CONTA",
-        "COD_HIST",
-        "COMPLEM_HIST",
-        "GRUPO_LANC",
-        "CNPJ",
-        "INSC_ESTADUAL",
-        "TP_CNPJ",
-        "CONTA_ORIGEM",
-        "CNPJ_EMPRESA",
-        "IE_EMPRESA",
-        ]]
+    
     df.sort_values(by=["NOME", "COD_ERP_CLIENTE", "TIPO_REGISTRO"], inplace=True)
     df.index = list(range(0, len(df.index)))
     df_json = json.loads(df.to_json(orient="table"))

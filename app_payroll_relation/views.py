@@ -527,7 +527,7 @@ def preview_relation_cobrancas_pagas(request):
                 # "TIPO_PROCESSO",
             ]]
                        
-            # df.to_excel("data_test.xlsx")
+            
 
             df = df.to_json(orient="records")
 
@@ -581,7 +581,33 @@ def preview_titulos_pagos_sicoob(request):
                     df["CONTA"][i] = numero_conta_debito
                 elif df["TIPO_REGISTRO"][i] == "C":
                     df["CONTA"][i] = numero_conta_credito
+                df["DATA_ENTRADA"][i] = df["DATA_ENTRADA"][i].replace("/", "")
+                
             print(df)
+
+
+            df = df[[
+                "TIPO_LANC",
+                "COD_EMPRESA",
+                "FILIAL",
+                "DATA_ENTRADA",
+                "COD_ERP_CLIENTE",
+                "TIPO_REGISTRO",
+                "CONTA",
+                "SUB_CONTA",
+                "VALOR",
+                "ACAO_LANC",
+                "PRIM_HIST_CONTA",
+                "COD_HIST",
+                "COMPLEM_HIST",
+                "GRUPO_LANC",
+                "CNPJ",
+                "INSC_ESTADUAL",
+                "TP_CNPJ",
+                "CONTA_ORIGEM",
+                "CNPJ_EMPRESA",
+                "IE_EMPRESA",
+            ]]
 
             
             df = df.to_json(orient="records")
