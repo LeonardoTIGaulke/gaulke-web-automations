@@ -5,6 +5,18 @@ var status_btn_export_data = false;
 var data_to_csv = null;
 
 
+function displayModalConfigContas(){
+    const pageElements = document.querySelector(".container-base-elements");
+    const modalConfigContas = document.getElementById("container-modal-preview");
+    
+    pageElements.classList.toggle("enableBlur_PreviewRelation");
+    // ----
+    modalConfigContas.classList.toggle("display-modal-config-contas");
+    modalConfigContas.classList.toggle("disableBlur_PreviewRelation");
+
+}
+
+
 function close_modal_error(){
     document.getElementById("modal-error-import-data-folha").style.display = "none";
 }

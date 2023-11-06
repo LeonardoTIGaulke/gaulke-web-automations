@@ -23,6 +23,9 @@ urlpatterns = [
     path("relation-titulos-pagos-sicoob/", views.relation_titulos_pagos_sicoob, name="relation_titulos_pagos_sicoob"),
     path("preview-relation-titulos-pagos-sicoob/", views.preview_titulos_pagos_sicoob, name="preview_titulos_pagos_sicoob"),
 
+     # ------------- PREVIEWS GENERICS -------------
+    path("preview-generic/", views.preview_generic, name="preview_generic"),
+    path("create-base-preview-to-text/", views.create_base_preview_to_text, name="create_base_preview_to_text"),
 
     # TUTORIALS
     path("modos-de-uso/",  views.use_mode, name="use_mode"),

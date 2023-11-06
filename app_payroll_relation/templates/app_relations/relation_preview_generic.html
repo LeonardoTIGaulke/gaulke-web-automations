@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Preview de Importação{% endblock %}
+{% block content %}
+
+<div class="container-fluid  container-base-elements" id="form-file-payroll-relation"> 
+    
+    
+
+    <!--  ------------------------------------------------------ INPUT FILE -->
+    {% if visible_form_file %}
+        <div class="d-flex justify-content-center align-content-center" id="form-payroll" style="min-height: 40vh;">
+            <form class="row g-3" method="POST" action="{% url 'relation_titulos_pagos_sicoob' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="file" class="form-label">Importação Títulos Pagos Sicoob</label>
+                    <input class="form-control" type="file" id="file" name="file" required="required" accept=".pdf">
+                </div>
+                                
+                <input class="btn-send-file" type="submit" value="enviar" style="max-height: 45px; border: 1px solid;">
+            </form>
+        </div>
+    {% endif %}
+    <!--  ---------------------------------------------------------------- -->
+    {% if code_process %}
+    <div class="container justify-content-center align-content-center w-50 p-3 mt-3 " id="container-modal-preview">
+        
+        <div class="modal-header">
+            <h5 class="row w-100 d-flex" style="flex-direction: column; text-align: center;">Config. de Import. Títulos Pagos Sicoob</h5>
+            <button type="button" class="btn-close" id="close_modal_config_payroll" onclick="displayModalConfigContas();"></button>
+        </div>
+        <form action="" class="form-fields-payroll-relation gap-3">
+            <div class="row mt-2 justify-content-center">
+                <label for="cod_empresa">*Cod. Empresa</label>
+                <input type="text" name="cod_empresa" id="cod_empresa" placeholder="código da empresa">
+            </div>
+            <div class="row mt-2 justify-content-center">
+                <label for="filial">*Filial</label>
+                <input type="text" name="filial" id="filial">
+            </div>
+
+            <!-- ------------------ -->
+            <div class="row mt-2 justify-content-center">
+                <label for="numero_conta_debito">*Nº Conta Débido</label>
+                <input type="text" name="numero_conta_debito" id="numero_conta_debito">
+            </div>
+            <div class="row mt-2 justify-content-center">
+                <label for="numero_conta_credito">*Nº Conta Crédito</label>
+                <input type="text" name="numero_conta_credito" id="numero_conta_credito">
+            </div>
+
+            <!-- ------------------ -->    
+            <div class="row d-flex justify-content-center align-content-center">
+                <input type="button" class="btn-submit-step-2" value="Enviar" onclick="createPostPreviewRelation_TO_TXT();">
+            </div>
+           
+        </form>
+            
+    </div>
+        <div class="container">
+            <input type="button" value="Configurar Contas" onclick="displayModalConfigContas();">
+        </div>
+        <!-- ------------------ TABLE PREVIW PAYROLL RELATION ------------------ -->
+        <div class="container-fluid mt-4 container-table-payroll-relation">
+            <table class="table table-striped table-hover table-contas" id="table-accounts-relaction">
+                <thead>
+                    <tr>
+                        <th class="align-text-center  col-fixed-table">#</th>
+                        <th class="align-text-center  col-table-fixed-2" id="select-all-rows">SELEÇÃO<input type="checkbox" class="btn-select-all-rows" onclick="SelectAllData(this);"></th>
+                        
+                        <!-- ----------------- -->
+                        {% for col in cols_table %}
+                            <th>{{col}}</th>
+                        {% endfor %}
+                        <!-- ----------------- -->
+                    </tr>
+                </thead>
+                
+                <tbody>
+                    {% for i in data_dict %}
+                        <tr>
+                            <td class="align-text-center col-fixed-table"><span> {{i.index}} </span></td>
+                            <td class="align-text-center  col-table-fixed-2"><input type="checkbox" name="data-row-{{i.index}}"  id="row-{{i.index}}" onclick="calculateValues(this)"></td>
+                            
+                            <td> {{i.TIPO_LANC}} </td>
+                            <td> {{i.COD_EMPRESA}} </td>
+                            <td class="col-long-custom"> {{i.NOME}} </td>
+                            <td> {{i.FILIAL}} </td>
+                            <td> {{i.DATA_ENTRADA}} </td>
+                            <td> {{i.COD_ERP_CLIENTE}} </td>
+                            <td class="tipo-lanc-row-{{i.index}}"> {{i.TIPO_REGISTRO}} </td>
+                            <td> {{i.CONTA}} </td>
+                            <td> {{i.SUB_CONTA}} </td>
+                            <td class="row-{{i.index}}-valor"> {{i.VALOR}} </td>
+                            <td> {{i.ACAO_LANC}} </td>
+                            <td> {{i.PRIM_HIST_CONTA}} </td>
+                            <td> {{i.COD_HIST}} </td>
+                            <td class="col-long-custom"> {{i.COMPLEM_HIST}} </td>
+                            <td> {{i.GRUPO_LANC}} </td>
+                            <td> {{i.CNPJ}} </td>
+                            <td> {{i.INSC_ESTADUAL}} </td>
+                            <td> {{i.TP_CNPJ}} </td>
+                            <td> {{i.CONTA_ORIGEM}} </td>
+                            <td> {{i.CNPJ_EMPRESA}} </td>
+                            <td> {{i.IE_EMPRESA}} </td>
+                                                                
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    <div class="container-fluid mt-4 container-table-payroll-relation mt-3">
+        
+        <div class="container-processing-data ">
+            <article>
+                <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+            </article>
+        </div>
+        <!-- ---- -->
+        <div class="container-fluid block-content-preview">
+            <div class="container">
+                <button onclick="redo_parameters();">Refazer</button>
+                <input type="button" value="Download" onclick="Dowload_TXT();">
+            </div>
+    
+            <div class="container-fluid mt-4 container-table-preview">
+                <table class="table table-striped table-hover table-preview">
+                    <thead>
+                        <tr></tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ---------------------------------------------------------------- -->
+<script>
+    var data_to_csv = null;
+    function createPostPreviewRelation_TO_TXT(){
+        var table_relation = document.getElementById("table-accounts-relaction");
+        var headers_table = table_relation.querySelector("thead").querySelector("tr").querySelectorAll("th");
+        var rows_table = table_relation.querySelector("tbody").querySelectorAll("tr");
+        // ----
+        var cod_empresa = document.getElementById("cod_empresa").value;
+        var filial = document.getElementById("filial").value;
+        var numero_conta_debito = document.getElementById("numero_conta_debito").value;
+        var numero_conta_credito = document.getElementById("numero_conta_credito").value;
+        // ----
+        var table_headers_base = new Array();
+        var table_rows_base = new Array();
+        var list_temp = null;
+
+
+        headers_table.forEach((e)=>{
+            table_headers_base.push(e.textContent);
+        })
+
+        rows_table.forEach((e)=>{
+            list_temp = new Array();
+            e.querySelectorAll("td").forEach((content)=>{
+                list_temp.push(content.innerText);
+            });
+            table_rows_base.push(list_temp);
+        })
+        console.log("\n\n ------------------------------- ");
+        
+
+        let token =  "{{csrf_token}}";
+        let url = "{% url 'create_base_preview_to_text' %}";
+        let headers = {
+            "X-CSRFToken": token,
+        }
+        let body_post = {
+            "cod_empresa": cod_empresa,
+            "filial": filial,
+            "numero_conta_debito": numero_conta_debito,
+            "numero_conta_credito": numero_conta_credito,
+            "table_headers_base": table_headers_base,
+            "table_rows_base": table_rows_base,
+        }
+        
+        fetch(url, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(body_post),
+        }).then((data)=>{
+            return data.json();
+        }).then((data)=>{
+            console.log(data.data_json);
+
+            data_to_csv = data.data_json;
+
+            populateTablePreviewGeneric(data.table_col, data_to_csv);
+            displayModalConfigContas();
+
+        });   
+    }
+    // ----
+    function Dowload_TXT(){
+        var csv = '';
+        for(var i=0; i<data_to_csv.length; i++){
+            var values = Object.values(data_to_csv[i]);
+            csv += values.join(';') + '\n';
+        }
+
+        var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "Títulos Pagos SICOOB.txt");
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+<!-- ---------------------------------------------------------------- -->
+<script src="{% static 'createPreviewGeneric.js' %}"></script>
+<script src="{% static 'modals.js' %}"></script>
+
+{% endblock %}

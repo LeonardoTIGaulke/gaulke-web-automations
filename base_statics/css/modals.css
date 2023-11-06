@@ -1,0 +1,66 @@
+/*  CONTROL MODAL BLUR CONFIGURATIONS PAYROLL RELATIONS */
+.enableBlur_PreviewRelation >* {
+    filter: blur(10.2px);
+    overflow: hidden;
+    transition: .5s ease-in-out;
+  }
+.disableBlur_PreviewRelation {
+    filter: blur(0) !important;
+    transition: .5s ease-in-out;
+}
+/* ------------ MODAL CONFIG PAYROLL RELATION ------------ */
+
+#container-modal-preview {
+    display: none;
+    position: absolute;
+    top: 97px;
+    left: 50%;
+    transform: translate(-50%, 0px);
+    background: var(--color-principal-branco-puro);
+    box-shadow: var(--color-box-shadow);
+    border-radius: 5px;
+    z-index: 9999;
+}
+#container-payroll-relation {
+    /* padding: 10px; */
+    box-shadow: var(--color-box-shadow);
+}
+.btn-send-file,
+.btn-submit-step-2 {
+    border: 0;
+    width: 100%;
+    padding: 7px;
+    margin: 20px 3px;
+    border-radius: 5px;
+    font-weight: 600;
+    color: var(--color-principal-azul-escuro);
+    background-color: var(--color-principal-branco-puro);
+    transition: .5s ease-in-out;
+}
+.btn-send-file:hover,
+.btn-submit-step-2:hover {
+    color: var(--color-principal-branco-puro);
+    background-color: var(--color-principal-azul-claro);
+}
+.btn-submit-step-2 {
+    width: 50% !important;
+}
+
+
+.display-modal-config-contas {
+    display: block !important;
+    /* animation: animation_hide_modal_config_contas 0.5s ease-in-out infinite; */
+}
+
+@keyframes animation_hide_modal_config_contas {
+    0% {
+        opacity: 0.9;
+    }
+    50% {
+        opacity: 0.4;
+    }
+    100% {
+        opacity: 0;
+    }
+
+}

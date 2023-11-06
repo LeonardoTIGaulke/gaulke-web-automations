@@ -96,8 +96,34 @@ def convert_PDF_to_DataFrame_SICOOB(file):
     
     df.sort_values(by=["NOME", "COD_ERP_CLIENTE", "TIPO_REGISTRO"], inplace=True)
     df.index = list(range(0, len(df.index)))
+    df = df[[
+        "TIPO_LANC",
+        "COD_EMPRESA",
+        "NOME",
+        "FILIAL",
+        "DATA_ENTRADA",
+        "COD_ERP_CLIENTE",
+        "TIPO_REGISTRO",
+        "CONTA",
+        "SUB_CONTA",
+        "VALOR",
+        "ACAO_LANC",
+        "PRIM_HIST_CONTA",
+        "COD_HIST",
+        "COMPLEM_HIST",
+        "GRUPO_LANC",
+        "CNPJ",
+        "INSC_ESTADUAL",
+        "TP_CNPJ",
+        "CONTA_ORIGEM",
+        "CNPJ_EMPRESA",
+        "IE_EMPRESA",
+    ]]
+
+    cols_table = list(df.columns)
     df_json = json.loads(df.to_json(orient="table"))
-    return df_json
+    
+    return {"df_json": df_json, "cols_table": cols_table}
    
 
 if __name__ == "__main__":

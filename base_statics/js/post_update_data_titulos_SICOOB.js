@@ -1,51 +1,41 @@
-function postUpdateContasGNRE(url, csrf_token) {
-    const table_contas_GNRE = document.querySelector(".table-contas-gnre");
-    const rows = table_contas_GNRE.querySelector("tbody").querySelectorAll("tr");
-    const data_post = new Array();
+function postCreatePreview(url, csrf_token) {
+    const table_contas = document.querySelector(".table-contas");
+    
+    // const rows = table_contas_GNRE.querySelector("tbody").querySelectorAll("tr");
+    // const data_post = new Array();
 
-    let td_temp = null;
-    let row_uf = null;
-    let row_conta_credito = null;
-    let row_conta_debito = null;
+    // let td_temp = null;
+    // let row_uf = null;
+    // let row_conta_credito = null;
+    // let row_conta_debito = null;
     
-    rows.forEach((data)=>{
-        td_temp = data.querySelectorAll("td");
+    // rows.forEach((data)=>{
+    //     td_temp = data.querySelectorAll("td");
     
-        row_uf = td_temp[0].textContent;
-        row_conta_credito = td_temp[1].querySelector("input").value;
-        row_conta_debito = td_temp[2].querySelector("input").value;
-        data_post.push(
-            {
-                "uf": row_uf,
-                "conta_credito": row_conta_credito,
-                "conta_debito": row_conta_debito,
-            }
-        );
-    })
-    let headers = { "X-CSRFToken": csrf_token };
-    fetch(url, {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(data_post),
-    }).then((data)=>{
-        return data.json();
-    }).then((data)=>{
-        let element = document.querySelector(".message-response-post");
-        if (data["code"] == 200){
-            element.querySelector("p").textContent = "registro atualizado!";
-            element.classList.toggle("active");
-            setTimeout(()=>{
-                element.classList.toggle("active");
-            }, 2500);
-            
-        } else {
-            element.querySelector("p").textContent = "falha ao atualizar!";
-            element.classList.toggle("active");
-            setTimeout(()=>{
-                element.classList.toggle("active");
-            }, 2500);
-        }
-    });
+    //     row_uf = td_temp[0].textContent;
+    //     row_conta_credito = td_temp[1].querySelector("input").value;
+    //     row_conta_debito = td_temp[2].querySelector("input").value;
+    //     data_post.push(
+    //         {
+    //             "uf": row_uf,
+    //             "conta_credito": row_conta_credito,
+    //             "conta_debito": row_conta_debito,
+    //         }
+    //     );
+    // })
+    // let headers = { "X-CSRFToken": csrf_token };
+    // fetch(url, {
+    //     method: "POST",
+    //     headers: headers,
+    //     body: JSON.stringify(data_post),
+    // }).then((data)=>{
+    //     return data.json();
+    // }).then((data)=>{
+    //     console.log(data)
+    //     if (data["code"] == 200){
+    //         console.log(" ************** Process Finish ************** ");
+    //     }
+    // });
 
 }
 

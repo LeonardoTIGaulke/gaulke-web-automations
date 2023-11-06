@@ -31,6 +31,17 @@ nav {
     border-radius: 4px;
 }
 
+/*  CONTROL MODAL BLUR CONFIGURATIONS PAYROLL RELATIONS */
+.enableBlur >* {
+    filter: blur(10.2px);
+    overflow: hidden;
+    transition: .5s ease-in-out;
+  }
+.disableBlur {
+    filter: blur(0);
+    transition: .5s ease-in-out;
+}
+
 
 /* PAYROLL RELATION */
 #menu-user-navbar a {
@@ -112,43 +123,6 @@ nav {
 }
 
 
-/* ------------ MODAL CONFIG PAYROLL RELATION ------------ */
-
-#container-preview-payroll {
-    position: absolute;
-    top: 97px;
-    left: 50%;
-    transform: translate(-50%, 0px);
-    background: var(--color-principal-branco-puro);
-    box-shadow: var(--color-box-shadow);
-    border-radius: 5px;
-    z-index: 99;
-}
-#container-payroll-relation {
-    /* padding: 10px; */
-    box-shadow: var(--color-box-shadow);
-}
-.btn-send-file,
-.btn-submit-step-2 {
-    border: 0;
-    width: 100%;
-    padding: 7px;
-    margin: 20px 3px;
-    border-radius: 5px;
-    font-weight: 600;
-    color: var(--color-principal-azul-escuro);
-    background-color: var(--color-principal-branco-puro);
-    transition: .5s ease-in-out;
-}
-.btn-send-file:hover,
-.btn-submit-step-2:hover {
-    color: var(--color-principal-branco-puro);
-    background-color: var(--color-principal-azul-claro);
-}
-.btn-submit-step-2 {
-    width: 50% !important;
-}
-
 /* ----- TABLE PAYROLL ----- */
 .btn-config-payroll-relation,
 .btn-export-data {
@@ -169,7 +143,7 @@ nav {
 }
 .container-table-payroll-relation {
     overflow-x: scroll;
-    max-height: 48vh;
+    max-height: 33vh;
     width: 100% !important;
 }
 .container-table-payroll-relation::-webkit-scrollbar {
@@ -188,17 +162,6 @@ nav {
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
-}
-
-/*  CONTROL MODAL BLUR CONFIGURATIONS PAYROLL RELATIONS */
-.enableBlur >* {
-    filter: blur(10.2px);
-    overflow: hidden;
-    transition: .5s ease-in-out;
-  }
-.disableBlur {
-    filter: blur(0);
-    transition: .5s ease-in-out;
 }
 
 

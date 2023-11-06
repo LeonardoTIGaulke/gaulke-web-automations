@@ -55,6 +55,12 @@ def logoutUser(request):
     logout(request)
     return redirect("login_user")
 
+def error_404_view(request, exception):
+    # data = {"rota_app_padrao": "http://app.contabilgaulke.com.br/automations"}
+    # return JsonResponse(data=data)
+    return render(request, "app/error_404.html")
+
+
 @login_required(login_url="/automations/login/")
 def payroll_relation(request):
     if request.method == "GET":
@@ -528,7 +534,7 @@ def preview_relation_cobrancas_pagas(request):
             ]]
                        
             
-
+            df.to_excel("preview_sicoob.xlsx")
             df = df.to_json(orient="records")
 
 
@@ -544,18 +550,24 @@ def preview_relation_cobrancas_pagas(request):
 # ---------------------- IMPORTAÇÃO TITULOS PAGOS SICOOB ----------------------
 @login_required(login_url="/automations/login/")
 def relation_titulos_pagos_sicoob(request):
+    # --------- GET MANTIDA POREM ESTA DESCONTINUADO --> FOI ADPTADA PARA PREVIEW RELATION ---------
     if request.method == "GET":
         return render(request, "app/relation_titulos_pagos_sicoob.html")
     # ----
     elif request.method == "POST":
         file = request.FILES["file"]
-        base = convert_PDF_to_DataFrame_SICOOB(file=file)
+        data = convert_PDF_to_DataFrame_SICOOB(file=file)
+        base = data["df_json"]
+        cols_table = data["cols_table"]
         # print(base)
         context = {
             "code_process": True,
-            "data_dict": base["data"]
+            "visible_form_file": False,
+            "data_dict": base["data"],
+            "cols_table": cols_table,
         }
-        return render(request, "app/relation_titulos_pagos_sicoob.html", context=context)
+        # return render(request, "app/relation_titulos_pagos_sicoob.html", context=context)
+        return render(request, "app_relations/relation_preview_generic.html", context=context)
 
 def preview_titulos_pagos_sicoob(request):
     try:
@@ -609,7 +621,7 @@ def preview_titulos_pagos_sicoob(request):
                 "IE_EMPRESA",
             ]]
 
-            
+            df.to_csv("base_sicoob_test.csv")
             df = df.to_json(orient="records")
 
 
@@ -626,8 +638,93 @@ def preview_titulos_pagos_sicoob(request):
         return JsonResponse({"code": 500, "msg": "error"})
 
 
+# ---------------------- PREVIEW RELATION GENERICS ----------------------
+@login_required(login_url="/automations/login/")
+def preview_generic(request):
+    if request.method == "GET":
+        context = {
+            "visible_form_file": True,
+        }
+        return render(request, "app_relations/relation_preview_generic.html", context=context)
+    
+    elif request.method == "POST":
+        json_data = json.loads(request.body)
+        print("\n\n ------------------- ")
+        context={
+            "json_data": json_data,
+        }
+        df = pd.read_csv("./base_sicoob_test.csv", dtype=str)
+        headers_table = list(df.drop(labels="Unnamed: 0", axis=1).columns)
 
 
+        json_data = json.loads(df.to_json(orient="table"))
+
+        return JsonResponse({
+            "code": 200,
+            "headers_table": headers_table,
+            "json_data": json_data,
+            })
+# -------------- CREATE JSON TO TEXT
+@login_required(login_url="/automations/login/")
+def create_base_preview_to_text(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        cod_empresa = data.get("cod_empresa")
+        filial = data.get("filial")
+        numero_conta_debito = data.get("numero_conta_debito")
+        numero_conta_credito = data.get("numero_conta_credito")
+        print(f""""
+            cod_empresa: {cod_empresa}
+            filial: {filial}
+            numero_conta_debito: {numero_conta_debito}
+            numero_conta_credito: {numero_conta_credito}
+        """)
+            
+        df = pd.DataFrame(columns=data["table_headers_base"], data=data["table_rows_base"])
+        for i in df.index:
+            df["COD_EMPRESA"][i] = cod_empresa
+            df["FILIAL"][i] = filial
+            if df["TIPO_REGISTRO"][i] == "D":
+                df["CONTA"][i] = numero_conta_debito
+            elif df["TIPO_REGISTRO"][i] == "C":
+                df["CONTA"][i] = numero_conta_credito
+        
+        df = df[[
+            "TIPO_LANC",
+            "COD_EMPRESA",
+            # "NOME",
+            "FILIAL",
+            "DATA_ENTRADA",
+            "COD_ERP_CLIENTE",
+            "TIPO_REGISTRO",
+            "CONTA",
+            "SUB_CONTA",
+            "VALOR",
+            "ACAO_LANC",
+            "PRIM_HIST_CONTA",
+            "COD_HIST",
+            "COMPLEM_HIST",
+            "GRUPO_LANC",
+            "CNPJ",
+            "INSC_ESTADUAL",
+            "TP_CNPJ",
+            "CONTA_ORIGEM",
+            "CNPJ_EMPRESA",
+            "IE_EMPRESA",
+        ]]
+        table_cols = list(df.columns)
+        
+        print(df)
+        print(table_cols)
+
+        data_json = json.loads(df.to_json(orient="records"))
+        return JsonResponse({
+            "code": 200,
+            "data_json": data_json,
+            "table_col": table_cols,
+        })
+
+    
 # ------------------------- TUTORIALS -------------------------
 @login_required(login_url="/automations/login/")
 def use_mode(request):

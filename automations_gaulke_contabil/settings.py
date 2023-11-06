@@ -119,7 +119,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "base_statics/css"),
     os.path.join(BASE_DIR, "base_statics/img"),
-    os.path.join(BASE_DIR, "base_statics/gifs"),
     os.path.join(BASE_DIR, "base_statics/js"),
 ]
 

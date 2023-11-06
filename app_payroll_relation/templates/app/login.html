@@ -3,27 +3,35 @@
 {% block title %}Login{% endblock %}
 {% block content %}
 
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 40vh;">
-    <form action="{% url 'login_user' %}" method="POST" style="width: 48vh !important;">
-        {% csrf_token %}
+{% if user.is_authenticated %}
+    <div class="container d-flex justify-content-center align-items-center flex-column" style="min-height: 40vh;">
+        <p>Você já está autenticado como: <b>{{user.username}}</b>.</p>
+        <p>Deseja usar sair?
+            <a href="{% url 'logout' %}" style="border: 1px solid red; padding: 2px 3px; border-radius: 5px; color: red; text-decoration: none;">Sair</a>   
+        </p>
+    </div>
+{% else %}
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 40vh;">
+        <form action="{% url 'login_user' %}" method="POST" style="width: 48vh !important;">
+            {% csrf_token %}
 
-        <div class="mb-3">
-            <label for="username" class="form-label">Usuário</label>
-            <input type="text" class="form-control" name="username" id="username" aria-describedby="emailHelp" value="{{username}}">
-            <div class="my-3">
-                <label for="password" class="form-label">Senha</label>
-                <input type="password" class="form-control" name="password" id="password" value="{{password}}">
-            </div>
-            {% if error_credencials %}
-                <div id="emailHelp" class="form-text my-2" style="color: rgb(237, 11, 11); font-weight: 500;">
-                    Usuário ou senha inválido.
+            <div class="mb-3">
+                <label for="username" class="form-label">Usuário</label>
+                <input type="text" class="form-control" name="username" id="username" aria-describedby="emailHelp" value="{{username}}">
+                <div class="my-3">
+                    <label for="password" class="form-label">Senha</label>
+                    <input type="password" class="form-control" name="password" id="password" value="{{password}}">
                 </div>
-            {% endif %}
-            <button type="submit" class="btn btn-primary w-100 mt-2">Entrar</button>
-        </div>     
-      </form>
-</div>
+                {% if error_credencials %}
+                    <div id="emailHelp" class="form-text my-2" style="color: rgb(237, 11, 11); font-weight: 500;">
+                        Usuário ou senha inválido.
+                    </div>
+                {% endif %}
+                <button type="submit" class="btn btn-primary w-100 mt-2">Entrar</button>
+            </div>     
+        </form>
+    </div>
 
-<script src="{% static 'modals.js' %}"></script>
-
+    <script src="{% static 'modals.js' %}"></script>
+{% endif %}
 {% endblock %}
