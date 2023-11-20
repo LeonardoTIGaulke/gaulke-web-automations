@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'app_payroll_relation',
+    'prepare_data',
 ]
 
 MIDDLEWARE = [

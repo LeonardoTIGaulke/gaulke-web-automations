@@ -44,7 +44,7 @@ function disabledRowsTable(){
     });
 }
 
-function checktotalRowsExported(subdir, path){
+function checktotalRowsExported(host_port, subdir, path){
     let table = document.querySelector(".container-table-preview").querySelector("table");
     let table_body = table.querySelector("tbody").querySelectorAll("tr");
     let tt_rows_table = table_body.length;
@@ -60,7 +60,7 @@ function checktotalRowsExported(subdir, path){
                 `);
                 if (tt_rows_table == tt_rows_exported){
                     // window.location.href = "http://localhost:8000/automations/relacao-GNRE/";
-                    window.location.href = `http://192.168.0.1:8000/${subdir}/${path}/`;
+                    window.location.href = `${host_port}/${subdir}/${path}/`;
                 }
             }
         } catch (error) {};

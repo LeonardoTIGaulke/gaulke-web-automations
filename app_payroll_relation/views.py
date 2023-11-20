@@ -3,8 +3,8 @@ import requests
 import pandas as pd
 from datetime import datetime
 
-
-from config_project import BASE_URL_API_GAULKE
+from prepare_data.prepare_data import ConvertToDataFrame
+from config_project import BASE_URL_API_GAULKE, HOST_REDIRECT
 
 # from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
@@ -70,27 +70,17 @@ def post_file_fastAPI_comprovante_banco_do_brasil(request):
         file = request.FILES["file"]
         print(file)
 
-        # ex:'http://192.168.0.1:9000/convert-pdf-to-json-banco-do-brasil'
-        url = BASE_URL_API_GAULKE + 'convert-pdf-to-json-banco-do-brasil'
-
-        headers = {
-            'accept': 'application/json',
-            'accept': 'application/pdf',
-        }
-        files = {'file': ('Comprovante Banco do Brasil.pdf', file, 'application/pdf')}
-        response = requests.post(url, headers=headers, files=files)
-        
-        print(response)
-        print(response.content)
-        data = json.loads(response.content)
+        dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_do_brasil(file=file)
+        print(dataJson)
         context = {
             "code_process": True,
-            "data_table": data["dataJson"]["data_table"]["data"],
-            "list_page_erros": data["dataJson"]["list_page_erros"],
+            "data_table": dataJson["data_table"]["data"],
+            "list_page_erros": dataJson["list_page_erros"],
 
-            "tt_rows": data["dataJson"]["tt_rows"],
-            "tt_debit": data["dataJson"]["tt_debit"],
-            "tt_credit": data["dataJson"]["tt_credit"],
+            "tt_rows": dataJson["tt_rows"],
+            "tt_debit": dataJson["tt_debit"],
+            "tt_credit": dataJson["tt_credit"],
+            "host_port": HOST_REDIRECT,
 
         }
         
@@ -110,30 +100,17 @@ def post_file_fastAPI_folha_por_empregado(request):
         file = request.FILES["file"]
         print(file)
 
-        # ex:'http://192.168.0.1:9000/convert-pdf-to-json-relacao-folha-por-empregado'
-        url = BASE_URL_API_GAULKE + 'convert-pdf-to-json-relacao-folha-por-empregado'
-
-        headers = {
-            'accept': 'application/json',
-            'accept': 'application/pdf',
-            'grupo_lancamento': grupo_lancamento,
-        }
-        files = {'file': ('Folha de Pagamento - Empregado.pdf', file, 'application/pdf')}
-        response = requests.post(url, headers=headers, files=files)
-        
-        print(response)
-        print(response.content)
-        data = json.loads(response.content)
-
+        dataJson = ConvertToDataFrame.read_pdf_relacao_folha_por_empregado(file=file, grupo_lancamento=grupo_lancamento)
+        print(dataJson)
         context = {
             "code_process": True,
-            "data_table": data["dataJson"]["data_table"]["data"],
-            "list_page_erros": data["dataJson"]["list_page_erros"],
+            "data_table": dataJson["data_table"]["data"],
+            "list_page_erros": dataJson["list_page_erros"],
 
-            "grupo_lancamento": grupo_lancamento,
-            "tt_rows": data["dataJson"]["tt_rows"],
-            "tt_debit": data["dataJson"]["tt_debit"],
-            "tt_credit": data["dataJson"]["tt_credit"],
+            "tt_rows": dataJson["tt_rows"],
+            "tt_debit": dataJson["tt_debit"],
+            "tt_credit": dataJson["tt_credit"],
+            "host_port": HOST_REDIRECT,
 
         }
         
@@ -170,33 +147,18 @@ def post_file_fastAPI_relacao_GNRE(request):
         print(f"\n\n ------------------------ ")
         print(data_contas)
 
-        # ex:'http://192.168.0.1:9000/convert-xlsx-to-json-relacao-GNRE'
-        url = BASE_URL_API_GAULKE + 'convert-xlsx-to-json-relacao-GNRE'
-
-        headers = {
-            'accept': 'application/json',
-            'accept': 'application/xlsx',
-            'modelo_db': modelo_db,
-            'data_contas': json.dumps(data_contas),
-        }
-        print(url)
-        print(f"\n\n ---- HEADERS ---- ")
-        print(headers)
-        files = {'file': ('Relacao GNRE.xlsx', file, 'application/xlsx')}
-        response = requests.post(url, headers=headers, files=files)
-        
-        print(response)
-        print(response.content)
-        data = json.loads(response.content)
-
+        dataJson = ConvertToDataFrame.read_xlsx_relacao_gnre(file=file, data_contas=data_contas)
+        print(dataJson)
         context = {
             "code_process": True,
-            "data_table": data["dataJson"]["data_table"]["data"],
-            "list_page_erros": data["dataJson"]["list_page_erros"],
-            
-            "tt_rows": data["dataJson"]["tt_rows"],
-            "tt_debit": data["dataJson"]["tt_debit"],
-            "tt_credit": data["dataJson"]["tt_credit"],
+            "data_table": dataJson["data_table"]["data"],
+            "list_page_erros": dataJson["list_page_erros"],
+            'data_contas': json.dumps(data_contas),
+
+            "tt_rows": dataJson["tt_rows"],
+            "tt_debit": dataJson["tt_debit"],
+            "tt_credit": dataJson["tt_credit"],
+            "host_port": HOST_REDIRECT,
 
         }
         
@@ -216,30 +178,17 @@ def post_file_entrada_titulos_desc_sicoob(request):
         file = request.FILES["file"]
         print(file)
 
-        # ex:'http://192.168.0.1:9000/convert-pdf-to-json-relacao-entrada-titulos-desc-sicoob'
-        url = BASE_URL_API_GAULKE + 'convert-pdf-to-json-relacao-entrada-titulos-desc-sicoob'
-        print(">>>>>>>>>>>>>>>>>>>>>> ", url)
-
-        headers = {
-            'accept': 'application/json',
-            'accept': 'application/pdf',
-        }
-        files = {'file': ('Entrada Titulos Descontados Sicoob.pdf', file, 'application/pdf')}
-
-        response = requests.post(url, headers=headers, files=files)
-        
-        print(response)
-        print(response.content)
-        data = json.loads(response.content)
-
+        dataJson = ConvertToDataFrame.read_pdf_relacao_entrada_titulos_desc_sicoob(file=file)
+        print(dataJson)
         context = {
             "code_process": True,
-            "data_table": data["dataJson"]["data_table"]["data"],
-            "list_page_erros": data["dataJson"]["list_page_erros"],
+            "data_table": dataJson["data_table"]["data"],
+            "list_page_erros": dataJson["list_page_erros"],
 
-            "tt_rows": data["dataJson"]["tt_rows"],
-            "tt_debit": data["dataJson"]["tt_debit"],
-            "tt_credit": data["dataJson"]["tt_credit"],
+            "tt_rows": dataJson["tt_rows"],
+            "tt_debit": dataJson["tt_debit"],
+            "tt_credit": dataJson["tt_credit"],
+            "host_port": HOST_REDIRECT,
 
         }
         
@@ -258,44 +207,21 @@ def post_file_fastAPI_relacao_cobrancas_pagas(request):
         print("\n\n ---------- IMPORTAÇÃO GNRE ---------- ")
         file = request.FILES["file"]
 
-        # ex:'http://192.168.0.1:9000/convert-xlsx-to-json-relacao-cobrancas-pagas'
-        url = BASE_URL_API_GAULKE + 'convert-xlsx-to-json-relacao-cobrancas-pagas'
-
-        headers = {
-            'accept': 'application/json',
-            'accept': 'application/xls',
-        }
-        print(url)
-        print(f"\n\n ---- HEADERS ---- ")
-        print(headers)
-        files = {'file': ('Relacao Cobranças Pagas.xls', file, 'application/xls')}
-        response = requests.post(url, headers=headers, files=files)
-        
-        print(response)
-        print(response.content)
-        data = json.loads(response.content)
-
+        dataJson = ConvertToDataFrame.read_xlsx_relacao_cobrancas_pagas(file=file)
+        print(dataJson)
         context = {
             "code_process": True,
-            "data_table": data["dataJson"]["data_table"]["data"],
-            "list_page_erros": data["dataJson"]["list_page_erros"],
+            "data_table": dataJson["data_table"]["data"],
+            "list_page_erros": dataJson["list_page_erros"],
 
-            "tt_rows": data["dataJson"]["tt_rows"],
-            "tt_debit": data["dataJson"]["tt_debit"],
-            "tt_credit": data["dataJson"]["tt_credit"],
+            "tt_rows": dataJson["tt_rows"],
+            "tt_debit": dataJson["tt_debit"],
+            "tt_credit": dataJson["tt_credit"],
+            "host_port": HOST_REDIRECT,
 
         }
         
         return render(request, "app_relations/relation_cobrancas_pagas.html", context=context)
-
-
-
-
-
-
-
-
-
 
 
 
