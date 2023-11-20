@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 
 
+from config_project import BASE_URL_API_GAULKE
 
 # from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
@@ -16,13 +17,6 @@ from django.contrib.auth.decorators import login_required
 from .models import ModelContasGNRE_Estados_x_Contas
 
 
-from prepate_data.prepare_data_GNRE import read_file_xlsx
-from prepate_data.prepare_data_payroll import convert_PDF_to_DataFrame
-from prepate_data.prepare_data_cobran_pagas import create_base_contas_pagas
-from prepate_data.prepare_data_titulos_pagos_sicoob import convert_PDF_to_DataFrame_SICOOB
-
-
-
 def home_page(request):
     return render(request, "app/home.html")
 
@@ -33,10 +27,11 @@ def loginUser(request):
 
         username = request.POST.get("username")
         password = request.POST.get("password")
-        print(f"""
-            username: {username}
-            password: {password}
-        """)
+
+        # print(f"""
+        #     username: {username}
+        #     password: {password}
+        # """)
 
         user = authenticate(username=username, password=password)
         if user is not None:
@@ -61,670 +56,253 @@ def error_404_view(request, exception):
     return render(request, "app/error_404.html")
 
 
+
+# -------------------------------------------- IMPORTAÇÃO DE ARQUIVOS --------------------------------------------
 @login_required(login_url="/automations/login/")
-def payroll_relation(request):
-    if request.method == "GET":
-        return render(request, "app/payroll_relation.html")
-    # ----
-    elif request.method == "POST":
-        try:
-            data = request.POST
-            file = request.FILES["file"]
-            grupo_lancamento = data.get("grupo_lancamento")
-            data_dict_folha = convert_PDF_to_DataFrame(file=file, grupo_lancamento=grupo_lancamento)
-            print(data_dict_folha)
-    
-            print(f" \n\n\n ### grupo_lancamento: {grupo_lancamento}")
-            # data_dict_folha = read_file_data_post(file_name=file, name_user="Leonardo", grupo_lancamento=grupo_lancamento)
-            if data_dict_folha is not None:
-                context = {
-                    "code_process": True,
-                    "grupo_lancamento": grupo_lancamento,
-                    "data_dict_folha": data_dict_folha,
-                }
-                return render(request, "app/payroll_relation.html", context=context)
-            else:
-                context = {
-                    "code_process_error": True,
-                }
-                return render(request, "app/payroll_relation.html", context=context)
-            # return render(request, "app/payroll_relation.html")
-        except Exception as e:
-            context = {
-                "code_process_error": True,
-            }
-            return render(request, "app/payroll_relation.html", context=context)
-
-def preview_payroll_relation(request):
-    try:
-        if request.method == "POST":
-            print("\n\n ### POST PREVIEW ### ")
-            # data_post = request.POST
-            data_body = json.loads(request.body)
-
-            cod_empresa = data_body.get("cod_empresa")
-            filial = data_body.get("filial")
-            data_lacamento = data_body.get("data_lacamento")
-            data_lacamento = datetime.strptime(data_lacamento, "%Y-%m-%d").strftime("%d%m%Y")
-            numero_conta_contabil_debito = data_body.get("numero_conta_contabil_debito")
-            numero_conta_contabil_credito = data_body.get("numero_conta_contabil_credito")
-
-            print(f""""
-                \n\n\n ---------------------------------
-                cod_empresa: {cod_empresa}
-                filial: {filial}
-                data_lacamento: {data_lacamento}
-                numero_conta_contabil_debito: {numero_conta_contabil_debito}
-                numero_conta_contabil_credito: {numero_conta_contabil_credito}
-            """)
-
-            
-            print("\n\n\n ----- POST PREVIEW PAYROLL RELATION ----- ")
-            # print(data_body)
-            # print(data_body["headers"])
-
-            df = pd.DataFrame(columns=data_body["headers"], data=data_body["rows"])
-            print(df)
-
-            list_cod_empresa = list()
-            list_filial = list()
-            list_data_lacamento = list()
-            list_numero_conta_contabil_debito = list()
-            list_numero_conta_contabil_credito = list()
-
-            for i in range(len(df.index)):
-                print(">>> ", i)
-                list_cod_empresa.append(cod_empresa)
-                list_filial.append(filial)
-                list_data_lacamento.append(data_lacamento)
-                list_numero_conta_contabil_debito.append(numero_conta_contabil_debito)
-                list_numero_conta_contabil_credito.append(numero_conta_contabil_credito)
-                print(f"""
-                    cod_empresa: {cod_empresa}
-                    filial: {filial}
-                    data_lacamento: {data_lacamento}
-                    numero_conta_contabil_debito: {numero_conta_contabil_debito}
-                    numero_conta_contabil_credito: {numero_conta_contabil_credito}
-                """)
-
-
-
-            df["COD_EMPRESA"] = list_cod_empresa
-            df["FILIAL"] = list_filial
-            df["DATA_LANC"] = list_data_lacamento
-            # df["NUMERO_CONTA_CONTABIL_CREDITO"] = list_numero_conta_contabil_credito
-        
-            print(" -------------------- DATA TEMP -------------------- ")
-            print(df)
-
-            df_debito = pd.DataFrame(df)
-            df_debito["NUMERO_CONTA_CONTABIL"] = list_numero_conta_contabil_debito
-            df_debito.drop_duplicates(subset=["COD_EMPRESA"], keep="first")
-            df_credito = pd.DataFrame(df_debito)
-
-            # df_credito["NUMERO_CONTA_CONTABIL"] = list_numero_conta_contabil_credito
-            
-            df = pd.concat([df_debito, df_credito])
-            df = df.drop_duplicates(subset=["COLABORADOR", "TIPO_REGISTRO"])
-
-            for i in range(len(df.index)):
-                if df["TIPO_REGISTRO"][i] == "C":
-                    df["NUMERO_CONTA_CONTABIL"][i] = numero_conta_contabil_credito
-
-                grupo_lanc = df["GRUPO_LANC"][i]
-                colaborador = df["COLABORADOR"][i]
-                complemento_hist = f"Pgto. Salários Ref. Mês {grupo_lanc} - {colaborador}"
-                df["COMPLEM_HIST"][i] = complemento_hist
-                df["GRUPO_LANC"][i] = ""
-
-
-            df = df[[
-                "TIPO_LANC",
-                "COD_EMPRESA",
-                "FILIAL",
-                "DATA_LANC",
-                "COD_ERP_CLIENTE",
-                "TIPO_REGISTRO",
-                "NUMERO_CONTA_CONTABIL",
-                "SUB_CONTA",
-                "VALOR_LIQ",
-                "ACAO_LANC",
-                "PRIM_HIST_CONTA",
-                "COD_HIST",
-                "COMPLEM_HIST",
-                "GRUPO_LANC",
-                "CNPJ",
-                "INSC_ESTADUAL",
-                "TP_CNPJ",
-                "CONTA_ORIGEM",
-                "CNPJ_EMPRESA",
-                "IE_EMPRESA",
-            ]]
-            df = df[df["VALOR_LIQ"] != "0.00"]
-
-            
-        
-            df.sort_values(["COD_ERP_CLIENTE"])            
-            print("------------- data ------------- ")
-            df = df.to_json(orient="records")
-            print(df)
-
-
-            return JsonResponse({"code": 200, "msg": "sucess", "data": df})
-
-        else:
-            return JsonResponse({"code": 401, "msg": "not-found"})
-    except Exception as e:
-        print(e)
-        return JsonResponse({"code": 500, "msg": "error"})
-
-
-# ---------------------- IMPORTAÇÃO GNRE ----------------------
-@login_required(login_url="/automations/login/")
-def gnre_relation(request):
-    if request.method == "GET":
-        return render(request, "app/relation_gnre.html")
-    # ----
-    elif request.method == "POST":
-        try:
-            data = request.POST
-            file = request.FILES["file"]
-            grupo_lancamento = data.get("grupo_lancamento")
-            print(file)
-            print(grupo_lancamento)
-            data_dict_gnre = read_file_xlsx(file_dir=file, grupo_lancamento=grupo_lancamento)
-            context = {
-                "code_process": True,
-                "grupo_lancamento": grupo_lancamento,
-                "data_dict_folha": data_dict_gnre,
-            }
-            
-            return render(request, "app/relation_gnre.html", context=context)
-        except Exception as e:
-            print(f"\n\n ### ERROR POST FILE EXCEL GNRE | ERROR: {e} ### ")
-            context = {
-                "code_process_error": True,
-            }
-            return render(request, "app/relation_gnre.html", context=context)
-
-def preview_gnre_relation(request):
-    try:
-        if request.method == "POST":
-            # ---------- QUERY ALL DATA CONTAS ----------
-            query_contas = ModelContasGNRE_Estados_x_Contas.objects.all()
-            data_contas = dict()
-            for data in query_contas:
-                data_contas.update(
-                    {
-                        data.conta_uf:{
-                            "conta_credito": data.conta_numero,
-                            "conta_debito": data.conta_debito,
-                    }
-                })
-
-            print(data_contas)
-
-
-            # ---------- TRATAMENTO DO POST ----------
-            print("\n\n ### POST PREVIEW ### ")
-            data_body = json.loads(request.body)
-
-            cod_empresa = data_body.get("cod_empresa")
-            filial = data_body.get("filial")
-            modelo_gnre = data_body.get("modelo_gnre")
-            
-            print(f""""
-                \n\n\n ------------------------------
-                cod_empresa: {cod_empresa}
-                filial: {filial}
-                modelo_gnre: {modelo_gnre}
-            """)
-
-            
-            df = pd.DataFrame(columns=data_body["headers"], data=data_body["rows"])
-            print(df)
-
-            list_cod_empresa = list()
-            list_filial = list()
-            list_numero_conta_contabil_debito = list()
-            list_numero_conta_contabil_credito = list()
-
-            for i in range(len(df.index)):
-                list_cod_empresa.append(cod_empresa)
-                list_filial.append(filial)
-                list_numero_conta_contabil_debito.append("-")
-                list_numero_conta_contabil_credito.append("-")
-                
-
-            df["COD_EMPRESA"] = list_cod_empresa
-            df["FILIAL"] = list_filial
-            
-        
-            print(" -------------------- DATA TEMP -------------------- ")
-            df.sort_values(by=["CTE", "TIPO_REGISTRO"], inplace=True)
-            print(df)
-
-            df_debito = pd.DataFrame(df)
-            df_debito["NUMERO_CONTA_CONTABIL"] = list_numero_conta_contabil_debito
-            df_debito.drop_duplicates(subset=["COD_EMPRESA"], keep="first")
-            df_credito = pd.DataFrame(df_debito)
-
-            df_credito["NUMERO_CONTA_CONTABIL"] = list_numero_conta_contabil_credito
-            
-            df = pd.concat([df_debito, df_credito])
-            df = df.drop_duplicates(subset=["CTE", "TIPO_REGISTRO"])
-            
-            df.index = list(range(0, len(df.index)))
-
-            for i in range(len(df.index)):
-
-                uf_inicio = df["UF_INÍCIO"][i]
-                conta_debito = data_contas.get(uf_inicio)["conta_debito"]
-                conta_credito = data_contas.get(uf_inicio)["conta_credito"]
-
-                if df["TIPO_REGISTRO"][i] == "C":
-                    df["NUMERO_CONTA_CONTABIL"][i] = conta_credito
-                elif df["TIPO_REGISTRO"][i] == "D":
-                    df["NUMERO_CONTA_CONTABIL"][i] = conta_debito
-
-            df = df[[
-                "TIPO_LANC",
-                "COD_EMPRESA",
-                "FILIAL",
-                "DATA_EMISSÃO",
-                "COD_ERP_CLIENTE",
-                "TIPO_REGISTRO",
-                "NUMERO_CONTA_CONTABIL",
-                "SUB_CONTA",
-                "VALOR_ICMS",
-                "ACAO_LANC",
-                "PRIM_HIST_CONTA",
-                "COD_HIST",
-                "COMPLEM_HIST",
-                "GRUPO_LANC",
-                "CNPJ",
-                "INSC_ESTADUAL",
-                "TP_CNPJ",
-                "CONTA_ORIGEM",
-                "CNPJ_EMPRESA",
-                "IE_EMPRESA",
-            ]]
-            df['VALOR_ICMS'] = df['VALOR_ICMS'].str.replace(',', '.')
-            df['VALOR_ICMS'] = df['VALOR_ICMS'].astype(float)
-            df["DATA_EMISSÃO"] = list(map(lambda x: x.replace("/", ""), df["DATA_EMISSÃO"].values))
-
-            
-           
-
-            # print("------------- data ------------- ")
-            df = df.to_json(orient="records")
-            print(df)
-            return JsonResponse({"code": 200, "msg": "sucess", "data": df})
-            # return JsonResponse({"code": 200, "msg": "sucess", "data": []})
-
-        else:
-            return JsonResponse({"code": 401, "msg": "not-found"})
-    except Exception as e:
-        print(e)
-        return JsonResponse({"code": 500, "msg": "error"})
-
-
-# ---------------------- IMPORTAÇÃO COBRANÇAS PAGAS ----------------------
-@login_required(login_url="/automations/login/")
-def relation_cobrancas_pagas(request):
-    if request.method == "GET":
-        return render(request, "app/relation_cobrancas_pagas.html")
-    # ----
-    elif request.method == "POST":
-        try:
-            data = request.POST
-            file = request.FILES["file"]
-            grupo_lancamento = data.get("grupo_lancamento")
-            print(file)
-            print(grupo_lancamento)
-            data_dict_gnre = create_base_contas_pagas(file=file)["data"]
-            # print("\n\n\n\n --------------------- JSON DATA --------------------- ")
-            # print(data_dict_gnre)
-            context = {
-                "code_process": True,
-                "data_dict_folha": data_dict_gnre,
-            }
-            
-            return render(request, "app/relation_cobrancas_pagas.html", context=context)
-        except Exception as e:
-            print(f"\n\n ### ERROR POST FILE EXCEL GNRE | ERROR: {e} ### ")
-            context = {
-                "code_process_error": True,
-            }
-            return render(request, "app/relation_cobrancas_pagas.html", context=context)
-
-def preview_relation_cobrancas_pagas(request):
-    try:
-        if request.method == "POST":
-            print("\n\n ### POST PREVIEW ### ")
-            # data_post = request.POST
-            data_body = json.loads(request.body)
-
-            cod_empresa = data_body.get("cod_empresa")
-            filial = data_body.get("filial")
-
-            numero_conta_contabil_debito = data_body.get("numero_conta_contabil_debito")
-            numero_conta_contabil_credito = data_body.get("numero_conta_contabil_credito")
-            numero_conta_contabil_juros = data_body.get("numero_conta_contabil_juros")
-            numero_conta_contabil_desconto = data_body.get("numero_conta_contabil_desconto")
-
-            print(f""""
-                \n\n\n ---------------------------------
-                cod_empresa: {cod_empresa}
-                filial: {filial}
-                numero_conta_contabil_debito: {numero_conta_contabil_debito}
-                numero_conta_contabil_credito: {numero_conta_contabil_credito}
-                numero_conta_contabil_juros: {numero_conta_contabil_juros}
-                numero_conta_contabil_desconto: {numero_conta_contabil_desconto}
-            """)
-
-            
-            print("\n\n\n ----- POST PREVIEW PAYROLL RELATION ----- ")
-            # print(data_body)
-            # print(data_body["headers"])
-
-            df = pd.DataFrame(columns=data_body["headers"], data=data_body["rows"])
-            print(df)
-
-            list_cod_empresa = list()
-            list_filial = list()
-            list_data_lacamento = list()
-            list_numero_conta_contabil_debito = list()
-            list_numero_conta_contabil_credito = list()
-
-            for i in range(len(df.index)):
-                print(">>> ", i)
-                list_cod_empresa.append(cod_empresa)
-                list_filial.append(filial)
-                list_numero_conta_contabil_debito.append(numero_conta_contabil_debito)
-                list_numero_conta_contabil_credito.append(numero_conta_contabil_credito)
-                print(f"""
-                    cod_empresa: {cod_empresa}
-                    filial: {filial}
-                    numero_conta_contabil_debito: {numero_conta_contabil_debito}
-                    numero_conta_contabil_credito: {numero_conta_contabil_credito}
-                    numero_conta_contabil_juros: {numero_conta_contabil_juros}
-                    numero_conta_contabil_desconto: {numero_conta_contabil_desconto}
-                """)
-            
-            df["COD_EMPRESA"] = list_cod_empresa
-            df["FILIAL"] = list_filial
-        
-            print("\n\n -------------------- CREATE DATAFRAME DEBITO -------------------- ")
-            df_debito = pd.DataFrame(df)
-            df_debito["NUMERO_CONTA_CONTABIL"] = list_numero_conta_contabil_debito
-            df_debito.drop_duplicates(subset=["COD_EMPRESA", "TIPO_PROCESSO", "DATA_PAG"], keep="first")
-            print(df_debito)
-
-            print("\n\n -------------------- CREATE DATAFRAME CREDITO -------------------- ")
-            df_credito = pd.DataFrame(df_debito)
-            # ----
-            df = pd.concat([df_debito, df_credito])
-
-            df = df.drop_duplicates(subset=["COD_ERP_CLIENTE"])
-
-            print(df_credito)
-
-            print("\n\n -------------------- CREATE DATAFRAME CONCT -------------------- ")
-            df.index = list(range(0, len(df.index)))
-
-            for i in df.index:
-                
-                df["DATA_PAG"][i] = df["DATA_PAG"][i].replace("/", "")
-                valor = df["VALOR"][i].replace(",", ".")
-                valor_formatado = "{:.2f}".format(float(valor))
-                df["VALOR"][i] = valor_formatado
-
-                if df["TIPO_REGISTRO"][i] == "C" and df["TIPO_PROCESSO"][i] == "comum":
-                    df["NUMERO_CONTA_CONTABIL"][i] = numero_conta_contabil_credito
-
-                elif df["TIPO_REGISTRO"][i] == "D" and df["TIPO_PROCESSO"][i] == "comum":
-                    df["NUMERO_CONTA_CONTABIL"][i] = numero_conta_contabil_debito
-
-                # ----------------------------------------------------------------------- ATUALIZA CONTAS DE JUROS E DESCONTOS
-                if df["TIPO_PROCESSO"][i] == "process_juros":
-                    
-                    df["TIPO_REGISTRO"][i] = "C"
-                    df["NUMERO_CONTA_CONTABIL"][i] = numero_conta_contabil_juros
-                    
-                    data_aux  = df[df.index == i].values[0][12].replace('Receb.','Juros')
-                    df["COMPLEM_HIST"][i] = data_aux
-
-                # ----
-
-                elif df["TIPO_PROCESSO"][i] == "process_desconto":
-                    
-                    df["TIPO_REGISTRO"][i] = "D"
-                    df["NUMERO_CONTA_CONTABIL"][i] = numero_conta_contabil_desconto
-
-                    data_aux  = df[df.index == i].values[0][12].replace('Receb.','Desconto')
-                    df["COMPLEM_HIST"][i] = data_aux
-
-
-
-
-            df.sort_values(["COMPLEM_HIST"])   
-            df = df[[
-                "TIPO_LANC",
-                "COD_EMPRESA",
-                "FILIAL",
-                "DATA_PAG",
-                "COD_ERP_CLIENTE",
-                "TIPO_REGISTRO",
-                "NUMERO_CONTA_CONTABIL",
-                "SUB_CONTA",
-                "VALOR",
-                "ACAO_LANC",
-                "PRIM_HIST_CONTA",
-                "COD_HIST",
-                "COMPLEM_HIST",
-                "GRUPO_LANC",
-                "CNPJ",
-                "INSC_ESTADUAL",
-                "TP_CNPJ",
-                "CONTA_ORIGEM",
-                "CNPJ_EMPRESA",
-                "IE_EMPRESA",
-                # "TIPO_PROCESSO",
-            ]]
-                       
-            
-            df.to_excel("preview_sicoob.xlsx")
-            df = df.to_json(orient="records")
-
-
-            return JsonResponse({"code": 200, "msg": "sucess", "data": df})
-
-        else:
-            return JsonResponse({"code": 401, "msg": "not-found"})
-    except Exception as e:
-        print(e)
-        return JsonResponse({"code": 500, "msg": "error"})
-
-
-# ---------------------- IMPORTAÇÃO TITULOS PAGOS SICOOB ----------------------
-@login_required(login_url="/automations/login/")
-def relation_titulos_pagos_sicoob(request):
-    # --------- GET MANTIDA POREM ESTA DESCONTINUADO --> FOI ADPTADA PARA PREVIEW RELATION ---------
-    if request.method == "GET":
-        return render(request, "app/relation_titulos_pagos_sicoob.html")
-    # ----
-    elif request.method == "POST":
-        file = request.FILES["file"]
-        data = convert_PDF_to_DataFrame_SICOOB(file=file)
-        base = data["df_json"]
-        cols_table = data["cols_table"]
-        # print(base)
-        context = {
-            "code_process": True,
-            "visible_form_file": False,
-            "data_dict": base["data"],
-            "cols_table": cols_table,
-        }
-        # return render(request, "app/relation_titulos_pagos_sicoob.html", context=context)
-        return render(request, "app_relations/relation_preview_generic.html", context=context)
-
-def preview_titulos_pagos_sicoob(request):
-    try:
-        if request.method == "POST":
-            data_body = json.loads(request.body)
-            cod_empresa = data_body.get("cod_empresa")
-            filial = data_body.get("filial")
-            numero_conta_debito = data_body.get("numero_conta_debito")
-            numero_conta_credito = data_body.get("numero_conta_credito")
-            print(f"""
-                cod_empresa: {cod_empresa}
-                filial: {filial}
-                numero_conta_debito: {numero_conta_debito}
-                numero_conta_credito: {numero_conta_credito}
-            """)
-                
-            df = pd.DataFrame(columns=data_body["headers"], data=data_body["rows"])
-            for i in df.index:
-                df["FILIAL"][i] = filial
-                df["COD_EMPRESA"][i] = cod_empresa
-                # ----
-                if df["TIPO_REGISTRO"][i] == "D":
-                    df["CONTA"][i] = numero_conta_debito
-                elif df["TIPO_REGISTRO"][i] == "C":
-                    df["CONTA"][i] = numero_conta_credito
-                df["DATA_ENTRADA"][i] = df["DATA_ENTRADA"][i].replace("/", "")
-                
-            print(df)
-
-
-            df = df[[
-                "TIPO_LANC",
-                "COD_EMPRESA",
-                "FILIAL",
-                "DATA_ENTRADA",
-                "COD_ERP_CLIENTE",
-                "TIPO_REGISTRO",
-                "CONTA",
-                "SUB_CONTA",
-                "VALOR",
-                "ACAO_LANC",
-                "PRIM_HIST_CONTA",
-                "COD_HIST",
-                "COMPLEM_HIST",
-                "GRUPO_LANC",
-                "CNPJ",
-                "INSC_ESTADUAL",
-                "TP_CNPJ",
-                "CONTA_ORIGEM",
-                "CNPJ_EMPRESA",
-                "IE_EMPRESA",
-            ]]
-
-            df.to_csv("base_sicoob_test.csv")
-            df = df.to_json(orient="records")
-
-
-
-            return JsonResponse({
-                "code": 200,
-                "msg": "POST success",
-                "data": df,
-            })
-        else:
-            return JsonResponse({"code": 401, "msg": "not-found"})
-    except Exception as e:
-        print(e)
-        return JsonResponse({"code": 500, "msg": "error"})
-
-
-# ---------------------- PREVIEW RELATION GENERICS ----------------------
-@login_required(login_url="/automations/login/")
-def preview_generic(request):
+def post_file_fastAPI_comprovante_banco_do_brasil(request):
     if request.method == "GET":
         context = {
             "visible_form_file": True,
         }
-        return render(request, "app_relations/relation_preview_generic.html", context=context)
-    
+        return render(request, "app_relations/relation_extrato_banco_do_brasil.html", context=context)
+        
     elif request.method == "POST":
-        json_data = json.loads(request.body)
-        print("\n\n ------------------- ")
-        context={
-            "json_data": json_data,
+        file = request.FILES["file"]
+        print(file)
+
+        # ex:'http://192.168.0.1:9000/convert-pdf-to-json-banco-do-brasil'
+        url = BASE_URL_API_GAULKE + 'convert-pdf-to-json-banco-do-brasil'
+
+        headers = {
+            'accept': 'application/json',
+            'accept': 'application/pdf',
         }
-        df = pd.read_csv("./base_sicoob_test.csv", dtype=str)
-        headers_table = list(df.drop(labels="Unnamed: 0", axis=1).columns)
+        files = {'file': ('Comprovante Banco do Brasil.pdf', file, 'application/pdf')}
+        response = requests.post(url, headers=headers, files=files)
+        
+        print(response)
+        print(response.content)
+        data = json.loads(response.content)
+        context = {
+            "code_process": True,
+            "data_table": data["dataJson"]["data_table"]["data"],
+            "list_page_erros": data["dataJson"]["list_page_erros"],
 
+            "tt_rows": data["dataJson"]["tt_rows"],
+            "tt_debit": data["dataJson"]["tt_debit"],
+            "tt_credit": data["dataJson"]["tt_credit"],
 
-        json_data = json.loads(df.to_json(orient="table"))
+        }
+        
+        return render(request, "app_relations/relation_extrato_banco_do_brasil.html", context=context)
 
-        return JsonResponse({
-            "code": 200,
-            "headers_table": headers_table,
-            "json_data": json_data,
-            })
-# -------------- CREATE JSON TO TEXT
+# ------------------------
 @login_required(login_url="/automations/login/")
-def create_base_preview_to_text(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        cod_empresa = data.get("cod_empresa")
-        filial = data.get("filial")
-        numero_conta_debito = data.get("numero_conta_debito")
-        numero_conta_credito = data.get("numero_conta_credito")
-        print(f""""
-            cod_empresa: {cod_empresa}
-            filial: {filial}
-            numero_conta_debito: {numero_conta_debito}
-            numero_conta_credito: {numero_conta_credito}
-        """)
+def post_file_fastAPI_folha_por_empregado(request):
+    if request.method == "GET":
+        context = {
+            "visible_form_file": True,
+        }
+        return render(request, "app_relations/relation_folha_de_pagamento.html", context=context)
+        
+    elif request.method == "POST":
+        grupo_lancamento = request.POST.get("grupo_lancamento")
+        file = request.FILES["file"]
+        print(file)
+
+        # ex:'http://192.168.0.1:9000/convert-pdf-to-json-relacao-folha-por-empregado'
+        url = BASE_URL_API_GAULKE + 'convert-pdf-to-json-relacao-folha-por-empregado'
+
+        headers = {
+            'accept': 'application/json',
+            'accept': 'application/pdf',
+            'grupo_lancamento': grupo_lancamento,
+        }
+        files = {'file': ('Folha de Pagamento - Empregado.pdf', file, 'application/pdf')}
+        response = requests.post(url, headers=headers, files=files)
+        
+        print(response)
+        print(response.content)
+        data = json.loads(response.content)
+
+        context = {
+            "code_process": True,
+            "data_table": data["dataJson"]["data_table"]["data"],
+            "list_page_erros": data["dataJson"]["list_page_erros"],
+
+            "grupo_lancamento": grupo_lancamento,
+            "tt_rows": data["dataJson"]["tt_rows"],
+            "tt_debit": data["dataJson"]["tt_debit"],
+            "tt_credit": data["dataJson"]["tt_credit"],
+
+        }
+        
+        return render(request, "app_relations/relation_folha_de_pagamento.html", context=context)
+
+# ------------------------
+@login_required(login_url="/automations/login/")
+def post_file_fastAPI_relacao_GNRE(request):
+    if request.method == "GET":
+        context = {
+            "visible_form_file": True,
+        }
+        return render(request, "app_relations/relation_GNRE.html", context=context)
+        
+    elif request.method == "POST":
+        print("\n\n ---------- IMPORTAÇÃO GNRE ---------- ")
+        file = request.FILES["file"]
+        # grupo_lancamento = request.POST.get("grupo_lancamento")
+        modelo_db = request.POST.get("modelo_db")
+
+
+        query_contas = ModelContasGNRE_Estados_x_Contas.objects.filter(modelo=modelo_db)
+        
+        data_contas = dict()
+        for data in query_contas:
+            data_contas.update(
+                {
+                    data.conta_uf:{
+                        "conta_credito": data.conta_numero,
+                        "conta_debito": data.conta_debito,
+                }
+            })
+
+        print(f"\n\n ------------------------ ")
+        print(data_contas)
+
+        # ex:'http://192.168.0.1:9000/convert-xlsx-to-json-relacao-GNRE'
+        url = BASE_URL_API_GAULKE + 'convert-xlsx-to-json-relacao-GNRE'
+
+        headers = {
+            'accept': 'application/json',
+            'accept': 'application/xlsx',
+            'modelo_db': modelo_db,
+            'data_contas': json.dumps(data_contas),
+        }
+        print(url)
+        print(f"\n\n ---- HEADERS ---- ")
+        print(headers)
+        files = {'file': ('Relacao GNRE.xlsx', file, 'application/xlsx')}
+        response = requests.post(url, headers=headers, files=files)
+        
+        print(response)
+        print(response.content)
+        data = json.loads(response.content)
+
+        context = {
+            "code_process": True,
+            "data_table": data["dataJson"]["data_table"]["data"],
+            "list_page_erros": data["dataJson"]["list_page_erros"],
             
-        df = pd.DataFrame(columns=data["table_headers_base"], data=data["table_rows_base"])
-        for i in df.index:
-            df["COD_EMPRESA"][i] = cod_empresa
-            df["FILIAL"][i] = filial
-            if df["TIPO_REGISTRO"][i] == "D":
-                df["CONTA"][i] = numero_conta_debito
-            elif df["TIPO_REGISTRO"][i] == "C":
-                df["CONTA"][i] = numero_conta_credito
-        
-        df = df[[
-            "TIPO_LANC",
-            "COD_EMPRESA",
-            # "NOME",
-            "FILIAL",
-            "DATA_ENTRADA",
-            "COD_ERP_CLIENTE",
-            "TIPO_REGISTRO",
-            "CONTA",
-            "SUB_CONTA",
-            "VALOR",
-            "ACAO_LANC",
-            "PRIM_HIST_CONTA",
-            "COD_HIST",
-            "COMPLEM_HIST",
-            "GRUPO_LANC",
-            "CNPJ",
-            "INSC_ESTADUAL",
-            "TP_CNPJ",
-            "CONTA_ORIGEM",
-            "CNPJ_EMPRESA",
-            "IE_EMPRESA",
-        ]]
-        table_cols = list(df.columns)
-        
-        print(df)
-        print(table_cols)
+            "tt_rows": data["dataJson"]["tt_rows"],
+            "tt_debit": data["dataJson"]["tt_debit"],
+            "tt_credit": data["dataJson"]["tt_credit"],
 
-        data_json = json.loads(df.to_json(orient="records"))
-        return JsonResponse({
-            "code": 200,
-            "data_json": data_json,
-            "table_col": table_cols,
-        })
+        }
+        
+        return render(request, "app_relations/relation_GNRE.html", context=context)
 
-    
+
+# ------------------------
+@login_required(login_url="/automations/login/")
+def post_file_entrada_titulos_desc_sicoob(request):
+    if request.method == "GET":
+        context = {
+            "visible_form_file": True,
+        }
+        return render(request, "app_relations/relation_entrada_titulos_desc_sicoob.html", context=context)
+        
+    elif request.method == "POST":
+        file = request.FILES["file"]
+        print(file)
+
+        # ex:'http://192.168.0.1:9000/convert-pdf-to-json-relacao-entrada-titulos-desc-sicoob'
+        url = BASE_URL_API_GAULKE + 'convert-pdf-to-json-relacao-entrada-titulos-desc-sicoob'
+        print(">>>>>>>>>>>>>>>>>>>>>> ", url)
+
+        headers = {
+            'accept': 'application/json',
+            'accept': 'application/pdf',
+        }
+        files = {'file': ('Entrada Titulos Descontados Sicoob.pdf', file, 'application/pdf')}
+
+        response = requests.post(url, headers=headers, files=files)
+        
+        print(response)
+        print(response.content)
+        data = json.loads(response.content)
+
+        context = {
+            "code_process": True,
+            "data_table": data["dataJson"]["data_table"]["data"],
+            "list_page_erros": data["dataJson"]["list_page_erros"],
+
+            "tt_rows": data["dataJson"]["tt_rows"],
+            "tt_debit": data["dataJson"]["tt_debit"],
+            "tt_credit": data["dataJson"]["tt_credit"],
+
+        }
+        
+        return render(request, "app_relations/relation_entrada_titulos_desc_sicoob.html", context=context)
+
+# ------------------------ DESENVOLVIMENTO ADIADO: PRIODADE ENTRADA DE TITULOS DESCONTADOS SICCOB
+@login_required(login_url="/automations/login/")
+def post_file_fastAPI_relacao_cobrancas_pagas(request):
+    if request.method == "GET":
+        context = {
+            "visible_form_file": True,
+        }
+        return render(request, "app_relations/relation_cobrancas_pagas.html", context=context)
+        
+    elif request.method == "POST":
+        print("\n\n ---------- IMPORTAÇÃO GNRE ---------- ")
+        file = request.FILES["file"]
+
+        # ex:'http://192.168.0.1:9000/convert-xlsx-to-json-relacao-cobrancas-pagas'
+        url = BASE_URL_API_GAULKE + 'convert-xlsx-to-json-relacao-cobrancas-pagas'
+
+        headers = {
+            'accept': 'application/json',
+            'accept': 'application/xls',
+        }
+        print(url)
+        print(f"\n\n ---- HEADERS ---- ")
+        print(headers)
+        files = {'file': ('Relacao Cobranças Pagas.xls', file, 'application/xls')}
+        response = requests.post(url, headers=headers, files=files)
+        
+        print(response)
+        print(response.content)
+        data = json.loads(response.content)
+
+        context = {
+            "code_process": True,
+            "data_table": data["dataJson"]["data_table"]["data"],
+            "list_page_erros": data["dataJson"]["list_page_erros"],
+
+            "tt_rows": data["dataJson"]["tt_rows"],
+            "tt_debit": data["dataJson"]["tt_debit"],
+            "tt_credit": data["dataJson"]["tt_credit"],
+
+        }
+        
+        return render(request, "app_relations/relation_cobrancas_pagas.html", context=context)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ------------------------- TUTORIALS -------------------------
 @login_required(login_url="/automations/login/")
 def use_mode(request):

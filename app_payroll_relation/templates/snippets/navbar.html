@@ -18,10 +18,12 @@
                 Automações
               </span>
               <ul class="dropdown-menu" style="min-width: 260px;">
-                <a class="nav-link" href="{% url 'payroll_relation' %}">Folha de Pagamentos - PDF</a>
-                <a class="nav-link" href="{% url 'gnre_relation' %}">Import. GNRE - Excel</a>
-                <a class="nav-link" href="{% url 'relation_cobrancas_pagas' %}">Import. Cobranças Pagas - Excel</a>
-                <a class="nav-link" href="{% url 'relation_titulos_pagos_sicoob' %}">Import. Títulos Pagos Sicoob - PDF</a>
+                
+                <a class="nav-link" href="{% url 'post_file_fastAPI_comprovante_banco_do_brasil' %}"> Comprovante - Banco do Brasil</a>
+                <a class="nav-link" href="{% url 'post_file_fastAPI_folha_por_empregado' %}"> Folha de Pagamento</a>
+                <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_GNRE' %}"> Relação GNRE</a>
+                <a class="nav-link" href="{% url 'post_file_entrada_titulos_desc_sicoob' %}"> Entrada Títulos Desc. - Sicoob</a>
+                <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_cobrancas_pagas' %}"> Relação Cobranças Pagas</a>
                 
               </ul>
             </li>
