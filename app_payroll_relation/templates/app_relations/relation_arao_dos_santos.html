@@ -32,8 +32,8 @@
             
             <!-- <div class="mb-3">
                 <label for="grupo_lancamento" class="form-label">Grupo Lanç.</label>
-                <input class="form-control" type="text" id="grupo_lancamento" name="grupo_lancamento" required="required" placeholder="ex: 09/2023" value="{{grupo_lancamento}}">
-            </div> -->
+                <input class="form-control" type="text" id="grupo_lancamento" name="grupo_lancamento" required="required" placeholder="ex: 09/2023" value="{{grupo_lancamento}}"> -->
+            <!-- </div> -->
              
             <input class="btn-send-file" type="submit" value="carregar arquivos" style="max-height: 45px; border: 1px solid;" onclick="animationLoadPostFile();">
         </form>
@@ -42,27 +42,27 @@
 
    
     {% if error_code %}
-    <div class="container d-flex flex-column justify-content-center align-content-center" style="align-items: center;">
-        <span class="container block-error-read-file">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <p>Erro na leitura dos arquivos.</p>
-        </span>
+        <div class="container d-flex flex-column justify-content-center align-content-center" style="align-items: center;">
+            <span class="container block-error-read-file">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <p>Erro na leitura dos arquivos.</p>
+            </span>
 
 
-        <span class="container block-error-read-file">
-            <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
-            <p>Verifique se os arquivos enviados possuem a extensão <b>.xlsx</b>.</p>
-        </span>
-        <span class="container block-error-read-file">
-            <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
-            <p>1º arquivo <b>Base Cliente</b><br> - Deve conter as colunas de "Data" e "Nota Fiscal".</p>
-        </span>
-        <span class="container block-error-read-file">
-            <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
-            <p>2º arquivo <b>Base Contábil</b> <br>- Deve conter a coluna de "Nº NF".</p>
-        </span>
+            <span class="container block-error-read-file">
+                <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+                <p>Verifique se os arquivos enviados possuem a extensão <b>.xlsx</b>.</p>
+            </span>
+            <span class="container block-error-read-file">
+                <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+                <p>1º arquivo <b>Base Cliente</b><br> - Deve conter as colunas de "Data" e "Nota Fiscal".</p>
+            </span>
+            <span class="container block-error-read-file">
+                <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+                <p>2º arquivo <b>Base Contábil</b> <br>- Deve conter a coluna de "Nº NF".</p>
+            </span>
 
-    </div>
+        </div>
     {% endif %}
     
     {% else %}
@@ -81,6 +81,10 @@
                 <div class="row">
                     <label for="">*Cod. Empresa</label>
                     <input type="text" name="cod_empresa" id="cod_empresa" placeholder="código da empresa">
+                </div>
+                <div class="row">
+                    <label for="">*Cod. Banco (Débito)</label>
+                    <input type="text" name="cod_banco_debito" id="cod_banco_debito" placeholder="código banco débito">
                 </div>
                 
                 
@@ -252,7 +256,7 @@
     function generateImport() {
 
         let cod_empresa = document.getElementById("cod_empresa").value;
-        // let cod_filial = document.getElementById("cod_filial").value;
+        let cod_banco_debito = document.getElementById("cod_banco_debito").value;
         
         
         // ----
@@ -288,6 +292,7 @@
             for(let i=0; i < table_td.length; i++) {
                 if (i != 1) {
                     if(i==2){
+                        
                         table_td[i].textContent = cod_empresa;
                         data_temp.push(cod_empresa);
                     }
@@ -295,10 +300,14 @@
                         data_temp.push(  removeCaracter( table_td[i].textContent ) );
                     }
                     else if (i==7) {
-                        data_temp.push( cod_empresa );
-                    }
-                    else if (i==7) {
-                        data_temp.push( cod_empresa );
+
+                        if (table_td[i].textContent == "-"){
+                            table_td[i].textContent = cod_banco_debito;
+                            data_temp.push( cod_banco_debito );
+                        } else {
+                            data_temp.push( table_td[i].textContent );
+                        }
+
                     }
                     else if (i==9) {
                         let value_aux = table_td[i].textContent.replace(",", ".");

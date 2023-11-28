@@ -1201,29 +1201,34 @@ class ConvertToDataFrame:
                 if cont_aux == 0:
 
                     df["VALOR"][i] = df["VALOR_NF_LIQ"][i]
+                    df["CONTA"][i] = ""
                     cont_aux += 1
 
                 elif cont_aux == 1:
 
                     df["VALOR"][i] = df["VLR_LIQUIDO"][i]
+                    df["CONTA"][i] = "-"
                     cont_aux += 1
 
                 elif cont_aux == 2:
 
                     df["VALOR"][i] = df["Cofins Retido"][i]
                     df["COMPL_HISTORICO"][i] = df["COMPL_HISTORICO"][i].replace("Recebimento", "COFINS")
+                    df["CONTA"][i] = "88"
                     cont_aux += 1
 
                 elif cont_aux == 3:
 
                     df["VALOR"][i] = df["CSLL Retida"][i]
                     df["COMPL_HISTORICO"][i] = df["COMPL_HISTORICO"][i].replace("Recebimento", "CSLL")
+                    df["CONTA"][i] = "94"
                     cont_aux += 1
 
                 elif cont_aux == 4:
 
                     df["VALOR"][i] = df["PIS Retido"][i]
                     df["COMPL_HISTORICO"][i] = df["COMPL_HISTORICO"][i].replace("Recebimento", "PIS")
+                    df["CONTA"][i] = "87"
                     cont_aux = 0
             
             # ------------------------------------------------------------------------
