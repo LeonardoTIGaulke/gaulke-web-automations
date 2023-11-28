@@ -5,6 +5,7 @@ import tabula
 import pandas as pd
 from time import time
 from PyPDF2 import PdfReader
+import datetime
 
 
 class ConvertToDataFrame:
@@ -39,6 +40,13 @@ class ConvertToDataFrame:
                     # ----
                     # exemplo 5: Entrada Títulos Desc. [nome cliente] venc [data vencimento] [Sicoob, Itau, ...]
                     "model_5": f"Entrada Títulos Desc. [v1] - [v2] - venc [v3] {value_generic}",
+                    # ----
+                    # exemplo 6: Entrada Decorise 22/11/2023
+                    "model_6": f"Pgto. Decorise {grupo_lancamento} - Gateway [v1] [v2]",
+                    # ----
+                    # exemplo 7: Entrada Decorise 22/11/2023
+                    "model_7": f"Recebimento Dupl. nº NF [v1] - [v2]",
+                    
                 }
                 text = data_model_text.get(model)
                 for k,v in dict_data_replace.items():
@@ -50,6 +58,8 @@ class ConvertToDataFrame:
             return None
         
     def create_dict_data_replace(dataframe, list_col_name, index):
+        """ return: texto alternativo para uso no complemento de histórico.  """
+
         dict_data_replace=dict()
         print(">>>>>>>\n", dataframe, index)
         print(dataframe.info())
@@ -63,6 +73,7 @@ class ConvertToDataFrame:
         return dict_data_replace
         
     def create_layout_JB(dataframe, model="-", grupo_lancamento="", value_generic=None):
+        """ return: DataFrame Lançamentos Contábeis - Importação no Sistema JB.  """
         LIST_TP_REGISTRO = list()
         LIST_EMPRESA = list()
         LIST_COD_EMPRESA = list()
@@ -86,14 +97,12 @@ class ConvertToDataFrame:
         LIST_IE_EMPRESA = list()
         LIST_TYPE_PROCESS = list()
 
-        
-
         for i in dataframe.index:
             print(f" INDEX JB: {i}")
             LIST_TP_REGISTRO.append("00")
             LIST_EMPRESA.append("") # MANUAL
             LIST_COD_EMPRESA.append("")
-            LIST_FILIAL.append("") # MANUAL
+            # LIST_FILIAL.append("") # MANUAL
             LIST_DATA.append("-")
             LIST_NR_L_CTO_ERP.append("-") # GERAR ALFANUMERICO
             LIST_TP.append("D") # CRIAR LINHAS ---> D e C (débito/crédito)
@@ -101,45 +110,76 @@ class ConvertToDataFrame:
             LIST_SUBCONTA.append("0")
             LIST_VALOR.append("-")
             LIST_ACAO.append("0")
-            # LIST_PRIMEIRO_HIST_CTA.append("2")
             LIST_COD_HISTORICO.append(grupo_lancamento)
-
+            # LIST_PRIMEIRO_HIST_CTA.append("2")
+            
+            filial = ""
             text = "-"
             value_primeiro_hist_cta = ""
             value_tp_cnpj = ""
             value_cnpj = ""
             try:
                 if model == "model_1":
+                    # modelo: ?
+                    value_primeiro_hist_cta = "2"
                     dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["beneficiario_final", "data_vencimento"], index=i)
                     text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace)
-                    value_primeiro_hist_cta = "2"
+
                 elif model == "model_2":
+                    # modelo: ?
                     value_primeiro_hist_cta = "2"
                     dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["NOME_TEMP"], index=i)
                     text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, grupo_lancamento=grupo_lancamento)
+
                 elif model == "model_3":
+                    # modelo: ?
                     value_primeiro_hist_cta = "2"
                     dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["CTE"], index=i)
                     print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
                     text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace)
+
                 elif model == "model_4":
+                    # modelo: ?
                     value_primeiro_hist_cta = "2"
                     value_tp_cnpj = "1"
                     value_cnpj = dataframe["CNPJ"][i]
                     dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["Nome Cliente", "Vencimento"], index=i)
                     print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
                     text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace)
+
                 elif model == "model_5":
+                    # modelo: ?
                     value_primeiro_hist_cta = "2"
                     dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["SEU_NUMERO", "NOME", "DATA_VENCIMENTO"], index=i)
                     text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, value_generic=value_generic)
                     print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
                     print(f">>>>>>>>>>>>>>>> TEXT: {text}")
+
+                elif model == "model_6":
+                    # modelo: DECORISE
+                    value_primeiro_hist_cta = "2"
+                    # dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["Conf. Gateway", "DATA_TEMP"], index=i)
+                    # text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, grupo_lancamento=grupo_lancamento, value_generic=value_generic)
+                    text = "Recebimento ref. e-commerce Megapay"
+                    # print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
+                    print(f">>>>>>>>>>>>>>>> TEXT: {text}")
+
+                elif model == "model_7":
+                    # modelo: Arão dos Santos
+
+                    filial = dataframe["Filial"][i]
+                    value_primeiro_hist_cta = "2"
+                    dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["Nº NF", "Nome Cliente"], index=i)
+                    text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, value_generic=value_generic)
+                    print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
+                    print(f">>>>>>>>>>>>>>>> TEXT: {text}")
+
                 
             except Exception as e:
                 print(f"\n\n\n -------------->>>> ERROR : {e}")
                 return
             
+            LIST_FILIAL.append(filial) # MANUAL
             LIST_PRIMEIRO_HIST_CTA.append(value_primeiro_hist_cta)
             LIST_COMPL_HISTORICO.append(text) # TEXTO ALTERNATIVO --> CONCATENAR COM?
 
@@ -152,6 +192,10 @@ class ConvertToDataFrame:
             LIST_CNPJ_EMPRESA.append("")
             LIST_IE_EMPRESA.append("")
             LIST_TYPE_PROCESS.append("comum")
+
+
+        
+
         
         dataframe["TP_REGISTRO"] = LIST_TP_REGISTRO
         dataframe["NOME"] = LIST_EMPRESA
@@ -180,6 +224,7 @@ class ConvertToDataFrame:
         # print(dataframe)
 
         return dataframe
+    
     # ----
 
     def create_additional_columns(dataframe, column_name, default_value):
@@ -187,28 +232,60 @@ class ConvertToDataFrame:
         return dataframe
         
     # ----
+    
     def drop_columns_dataframe(dataframe, list_columns: list):
         if len(list_columns) > 0:
             for col_name in list_columns:
                 dataframe = dataframe.drop(labels=col_name, axis=1)
         return dataframe
+    
     # ----
+    
     def transpose_values(dataframe, dict_cols_transpose):
         if len(dict_cols_transpose.keys()) > 0:
             for k,v in dict_cols_transpose.items():
                 dataframe[k] = dataframe[v]
         return dataframe
+    
     # ----
+    
     def rename_columns_dataframe(dataframe, dict_replace_names):
         dataframe = dataframe.rename(columns=dict_replace_names)
         return dataframe
+    
     # ----
-    def create_dataframe_debit_and_credit(dataframe):
-        df_credit = dataframe.copy()
-        df_credit.loc[:, 'TP'] = 'C'
-        new_dataframe = pd.concat([dataframe, df_credit])
+    
+    def duplicate_dataframe_rows(dataframe, TP_account="C"):
+        """" return: DataFrame atualizado com linhas duplicadas. Será atualizado apenas os valoes de "TP" de lançamento. """
+        df_copy = dataframe.copy()
+        df_copy.loc[:, 'TP'] = TP_account
+        new_dataframe = pd.concat([dataframe, df_copy])
+        return new_dataframe
+    
+    # ----
+    
+    def duplicate_dataframe_rows_lote(dataframe, list_update_cols=list):
+        """
+            return: DataFrame atualizado com linhas duplicadas em lote. Serão atualizados os valoes de "TP" e "TYPE_PROCESS".
+        """
+
+        new_dataframe = None
+        list_dataframes = list()
+        for x in list_update_cols:
+            df_copy = dataframe.copy()
+            print(f"""\n
+                ----> TP: {x["TP"]}
+                ----> TYPE_PROCESS: {x["TYPE_PROCESS"]}
+            """)
+            df_copy.loc[:, 'TP'] = x["TP"]
+            df_copy["TYPE_PROCESS"] = x["TYPE_PROCESS"]
+            list_dataframes.append(df_copy)
+
+        list_dataframes.append(dataframe)
+        new_dataframe = pd.concat(list_dataframes)
 
         return new_dataframe
+    
     # ----
     def check_discount_or_fees(document_value, amount_paid):
         document_value = float(str(document_value).replace(".", "").replace(",", "."))
@@ -310,9 +387,14 @@ class ConvertToDataFrame:
     
     # ----
     
-    def create_cod_erp_to_dataframe(dataframe):
+    def create_cod_erp_to_dataframe(dataframe, index_default=0):
         for i in dataframe.index:
-            dataframe["NR_L_CTO_ERP"][i] = f"COD{i}TM{int(time())}"
+            print("\n --------------  ")
+            print(f">>>> COD{i+index_default}TM{int(time())}")
+            numero_lanc_cto_erp = f"COD{i+index_default}TM{int(time())}"
+            dataframe["NR_L_CTO_ERP"][i] = numero_lanc_cto_erp
+        print(" ------ DF ERP FINISH ------ ")
+        print(dataframe)
         return dataframe
     
     # ----
@@ -470,7 +552,7 @@ class ConvertToDataFrame:
             "DATA": "data_pagamento",
             })
         df = ConvertToDataFrame.drop_columns_dataframe(dataframe=df, list_columns=["cnpj", "beneficiario_final", "data_pagamento"])
-        df = ConvertToDataFrame.create_dataframe_debit_and_credit(dataframe=df)
+        df = ConvertToDataFrame.duplicate_dataframe_rows(dataframe=df)
         df = ConvertToDataFrame.create_dataframe_discount_and_fees(dataframe=df)
 
         print(df)
@@ -564,7 +646,7 @@ class ConvertToDataFrame:
         
         # df = ConvertToDataFrame.drop_columns_dataframe(dataframe=df, list_columns=["NOME_TEMP"])
 
-        df = ConvertToDataFrame.create_dataframe_debit_and_credit(dataframe=df)
+        df = ConvertToDataFrame.duplicate_dataframe_rows(dataframe=df)
         df = df.sort_values(by=[ "NOME", "GRUPO_LCTO", "TP" ])
         print(" ***** ---------------------------- ***** ")
 
@@ -594,29 +676,52 @@ class ConvertToDataFrame:
     # ----
     
     def read_xlsx_relacao_gnre(file, data_contas):
+
         print(f"\n\n ----- Arquivo informado GNRE: {file}")
         contents = file.read()
         xlsx_bytes = io.BytesIO(contents)
 
+        print("\n\n ---------------------------------------------- DF READ - STEP 1 ")
+
         file = pd.ExcelFile(xlsx_bytes)
         sheet_name = file.sheet_names[0]
 
+        print("\n\n ---------------------------------------------- DF READ - STEP 2 ")
+
         df = file.parse(sheet_name=sheet_name, dtype='str')
 
-        # df = pd.read_excel(xlsx_bytes)
+        print("\n\n ---------------------------------------------- DF READ - STEP 3 ")
+        print(df)
+
+        print("\n\n ---------------------------------------------- DF READ - STEP 4 ")
+        df = pd.read_excel(xlsx_bytes)
         df.rename(columns={
             "C笈_UF_IN沊IO_PREST": "UF_INÍCIO",
             "C笈_UF_FIM_PREST": "UF_FIM",
             "N渧ERO_CTE": "CTE",
             "DATA_EMISS鬃": "DATA_EMISSÃO"
         }, inplace=True)
+        
+        print("\n\n ---------------------------------------------- DF READ - STEP 5 ")
 
         df = df[(df["UF_INÍCIO"] != "SC") & (df["SITUACAO"] != "CANCELADO")]
 
+        print("\n\n ---------------------------------------------- DF READ - STEP 6 ")
+
         df = df[["CTE", "DATA_EMISSÃO", "VALOR_ICMS", "UF_INÍCIO", "UF_FIM"]]
+
+        print("\n\n ---------------------------------------------- DF READ - STEP 6 ")
+
 
         df = ConvertToDataFrame.filter_columns_dataframe(daraframe=df, list_columns=["CTE", "DATA_EMISSÃO","VALOR_ICMS", "UF_INÍCIO", "UF_FIM"])
 
+        print("\n\n ---------------------------------------------- DF READ - STEP 7 ")
+
+        df['VALOR_ICMS'] = df['VALOR_ICMS'].round(2)
+        df["VALOR_ICMS"] = df['VALOR_ICMS'].astype(str)
+
+        print(df.info())
+        
         for i in df.index:
             if "." not in df["VALOR_ICMS"][i]:
                 df["VALOR_ICMS"][i] = df["VALOR_ICMS"][i] + ".00"
@@ -629,11 +734,12 @@ class ConvertToDataFrame:
         df.dropna(subset=["CTE"], inplace=True)
         df["CTE"] = list(map(lambda x: int(x), df["CTE"].values))
         
-        for i in df.index:
-            date = df["DATA_EMISSÃO"][i]
-            date_time_obj = pd.to_datetime(date)
-            formatted_date = date_time_obj.strftime("%d/%m/%Y")
-            df["DATA_EMISSÃO"][i] = formatted_date
+
+        print(" ----------------  STEP ADJUST DT ---------------- ")
+        print(df.info())
+        dt = pd.to_datetime(df['DATA_EMISSÃO'])
+        formatted_date = dt.dt.strftime("%d/%m/%Y")
+        df['DATA_EMISSÃO'] = formatted_date
         
 
         print(df)
@@ -649,19 +755,24 @@ class ConvertToDataFrame:
         # ----
         df = ConvertToDataFrame.filter_data_dataframe(daraframe=df, name_column="VALOR", list_remove_values=["0.00", "0,00"])
         # ----
-        df = ConvertToDataFrame.create_dataframe_debit_and_credit(dataframe=df)
+        df = ConvertToDataFrame.duplicate_dataframe_rows(dataframe=df)
         df = ConvertToDataFrame.create_additional_columns(dataframe=df, column_name="NUMERO_CONTA_CONTABIL", default_value="-")
 
         df = df.sort_values(by=[ "CTE", "TP" ])
         print(" <<<< ---------------------------- >>>> ")
 
         df.index = list(range(0, len(df.index)))
+
         df = ConvertToDataFrame.create_cod_erp_to_dataframe(dataframe=df)
 
         for i in range(len(df.index)):
+
             uf_inicio = df["UF_INÍCIO"][i]
+            print(f" ----> INDEX REPLACE ACCOUNTS VALUES: {i} | uf_inicio: {uf_inicio}")
+
             conta_debito = data_contas.get(uf_inicio)["conta_debito"]
             conta_credito = data_contas.get(uf_inicio)["conta_credito"]
+
             print(f"""
                 --------- CONFIG CONTAS POR UF
                 --> uf_inicio: {uf_inicio}
@@ -682,6 +793,8 @@ class ConvertToDataFrame:
         tt_rows = len(df)
         tt_debit    = len(df[df["TP"] == "C"])
         tt_credit   = len(df[df["TP"] == "D"])
+
+
         print(f"""
             --------- CONFIG CONTAS POR UF
             --> tt_rows: {tt_rows}
@@ -738,7 +851,7 @@ class ConvertToDataFrame:
                 "VALOR": "Valor (R$)",
                 })
             
-            df = ConvertToDataFrame.create_dataframe_debit_and_credit(dataframe=df)
+            df = ConvertToDataFrame.duplicate_dataframe_rows(dataframe=df)
             df.index = list(range(0, len(df.index)))
             for i in df.index:
                 if df["TP"][i] == "C":
@@ -803,7 +916,7 @@ class ConvertToDataFrame:
                 "VALOR_PAGO": "Valor pago",
                 })
             
-            df = ConvertToDataFrame.create_dataframe_debit_and_credit(dataframe=df)
+            df = ConvertToDataFrame.duplicate_dataframe_rows(dataframe=df)
                        
             df = ConvertToDataFrame.create_dataframe_discount_and_fees_cobrancas_pagas(dataframe=df)
 
@@ -862,5 +975,421 @@ class ConvertToDataFrame:
         except Exception as e:
             print(f" \n\n ERROR GENERATE COBRANÇAS PAGAS | ERROR: {e}")
             return {"code": 500, "msg": "erro ao gerar pacote cobranças pagas.", "error": e}
+    
+    # ----
+    
+    def read_xlsx_decorise(file, grupo_lancamento):
+        try:
+            print(f"\n\n ----- Arquivo informado decorise: {file} | grupo_lancamento: {grupo_lancamento}")
+            contents = file.read()
+            xlsx_bytes = io.BytesIO(contents)
+
+            file = pd.ExcelFile(xlsx_bytes)
+            sheet_name = file.sheet_names[-1]
+            df = file.parse(sheet_name=sheet_name)
+            print(df.columns)
+            df = ConvertToDataFrame.filter_columns_dataframe(daraframe=df, list_columns=[
+                "Conf. Gateway",
+                "Id",
+                "Valor Recebível",
+                "Valor Total",
+                "Comissão Paga",
+                "Data/Hora",
+                "Data Esperada",
+            ])
+
+            # df["Data/Hora"] = pd.to_datetime(df["Data/Hora"].values, errors="raise", format="%d/%m/%Y %H:%M:%S")
+            df["Data/Hora"] = list(map(lambda x: x.split()[0], df["Data/Hora"].values ))
+            df = ConvertToDataFrame.rename_columns_dataframe(dataframe=df, dict_replace_names={
+                "Data/Hora": "DATA_TEMP"
+            })
+            df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_6", grupo_lancamento=grupo_lancamento)
+
+            #  ----------------------- necessário para criar o Dataframe de Commissões -----------------------
+            df_commission  = df.copy()
+            df_commission = df_commission[ df_commission["TP"] == "D" ]
+            df = ConvertToDataFrame.duplicate_dataframe_rows(dataframe=df)
+            df = pd.concat([df, df_commission])
+            # ------------------------------------------------------------------------------------------------
+
+            df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
+                "DATA": "DATA_TEMP",
+                "VALOR": "Valor Recebível",
+            })
 
 
+            df.sort_values(by=["Id", "VALOR", "TP"], inplace=True)
+            df.index = list( range(0, len(df.index)) )
+
+            # df = ConvertToDataFrame.create_cod_erp_to_dataframe(dataframe=df)
+
+            #  REAJUSTE DO VALOR DE COD_HISTORICO, necessário para não ser enviado com o valor de grupo_lancamento.
+            df = ConvertToDataFrame.create_additional_columns(dataframe=df, column_name="COD_HISTORICO", default_value="")
+
+            cont_aux = 0
+            for i in df.index:
+                print(f' ------ INDEX LOOP VALUES: {i}| {df["VALOR"][i]}')
+                if cont_aux == 0:
+                    df["VALOR"][i] = df["Valor Total"][i]
+                    df["TYPE_PROCESS"][i] = "process_credit"
+                    cont_aux += 1
+                elif cont_aux == 1:
+                    df["VALOR"][i] = df["Valor Recebível"][i]
+                    df["TYPE_PROCESS"][i] = "process_debit_valor_receb"
+                    cont_aux += 1
+                elif cont_aux == 2:
+                    df["VALOR"][i] = df["Comissão Paga"][i]
+                    df["TYPE_PROCESS"][i] = "process_debit_valor_comissao"
+                    cont_aux = 0
+
+            
+            df['VALOR'] = df['VALOR'].round(2)
+            df["VALOR"] = df['VALOR'].astype(str)
+
+            for i in df.index:
+                if "." not in df["VALOR"][i]:
+                    df["VALOR"][i] = df["VALOR"][i] + ".00"
+                elif df["VALOR"][i].split(".")[1] in ['0','1','2','3','4','5','6','7','8','9']:
+                    print(" -------------- SPLIT ")
+                    df["VALOR"][i] = df["VALOR"][i] + "0"
+                
+                print(">>>>> ", df["VALOR"][i], type( df["VALOR"][i] ) )
+
+
+            # file_name = r"I:\\1. Gaulke Contábil\\Administrativo\\9. TI\\1. Projetos\\6. Importação DECORISE\\base_test_Leonardo.xlsx"
+            # ConvertToDataFrame.convert_dataframe_to_excel(dataframe=df, file_name=file_name)
+
+            print(df.info())
+            print(df)
+
+            tt_rows = len(df)
+            tt_debit    = len(df[df["TP"] == "C"])
+            tt_credit   = len(df[df["TP"] == "D"])
+
+            data_json = json.loads(df.to_json(orient="table"))
+            # print(data_json)
+
+            print(f"""
+                --------- CONFIG CONTAS
+                --> tt_rows: {tt_rows}
+                --> tt_debit: {tt_debit}
+                --> tt_credit: {tt_credit}
+            """)
+
+            return {
+                "data_table": data_json ,
+                "tt_rows": tt_rows,
+                "tt_debit": tt_debit,
+                "tt_credit": tt_credit,
+                "list_page_erros": [],
+                }
+
+            
+        except Exception as e:
+            print(f" \n\n ERROR GENERATE COBRANÇAS PAGAS | ERROR: {e}")
+            return {"code": 500, "msg": "erro ao gerar pacote cobranças pagas.", "error": e}
+
+    # ----
+    
+    # 
+    #  ----------------------------------- ETL ARAO DOS SANTOS -----------------------------------
+    #  file_populate: Base Arão dos Santos -> Para preenchimento
+    #  file_base_query: Base Arão dos Santos -> Base de consulta
+
+    def read_Excel_File(contents):
+        xlsx_bytes = io.BytesIO(contents)
+        file = pd.ExcelFile(xlsx_bytes)
+        sheet_name = file.sheet_names[0]
+        df = file.parse(sheet_name=sheet_name)
+        return df
+    # ----
+    
+    # @staticmethod
+    def read_xlsx_arao_dos_santos(file_contabil, file_consulta):
+        try:
+            print(f"\n\n ----- Arquivo informado arão dos santos | file_contabil: {file_contabil} | file_consulta: {file_consulta}")
+            
+            # contents = file_populate.read()
+            # xlsx_bytes = io.BytesIO(contents)
+            # file = pd.ExcelFile(xlsx_bytes)
+            # sheet_name = file.sheet_names[-1]
+            # df = file.parse(sheet_name=sheet_name)
+            # df_temp_consulta = ConvertToDataFrame.read_Excel_File(contents=file_consulta)
+            # df_temp_contabil = ConvertToDataFrame.read_Excel_File(contents=file_contabil)
+
+            contents = file_consulta.read()
+            df_temp_consulta = ConvertToDataFrame.read_Excel_File(contents=contents)
+            print("\n\n ------------------------ df_temp_consulta ------------------------ ")
+            print(df_temp_consulta)
+
+            contents = file_contabil.read()
+            df_temp_contabil = ConvertToDataFrame.read_Excel_File(contents=contents)
+
+            # Formata a data como 'dd/mm/yyyy'
+            df_temp_consulta['Data'] = pd.to_datetime(df_temp_consulta['Data'])
+            df_temp_consulta['Data'] = df_temp_consulta['Data'].dt.strftime('%d/%m/%Y')
+
+            print("\n\n ------------------------ df_temp_contabil ------------------------ ")
+            print(df_temp_contabil)
+
+            # df_temp_contabil []
+
+            list_pendencias = list()
+            for i in df_temp_contabil.index:
+                
+                nf = df_temp_contabil["Nº NF"][i]
+                query_df_contabil = df_temp_consulta[df_temp_consulta["Nota Fiscal"] == nf ][["Data", "Nota Fiscal"]]
+                
+                if len(query_df_contabil) >= 1:
+                    df_temp_contabil["Data Recebim. NF"][i] = query_df_contabil["Data"].values[0]
+                else:
+                    list_pendencias.append(nf)
+            
+                print(f" -------------------- QUERY RESULT -------------------- NF: {nf}")
+                print(query_df_contabil)
+
+            # 
+            # 
+            # ------------------------------------------------- DF PENDÊNCIAS -------------------------------------------------
+            print(" \n\n ----------------- DF PENDÊNCIAS ----------------- ")
+            df_pendencias = df_temp_contabil[df_temp_contabil["Nº NF"].isin(list_pendencias)]
+            df_pendencias.index = list(range(0, len(df_pendencias)))
+            print(df_pendencias)
+            
+            #
+            # 
+            #  ------------------------------------------------- DF PENDÊNCIAS -------------------------------------------------
+            print("\n\n ------------------------ query_df_contabil TRATADO ------------------------ ")
+            df_temp_contabil.index = list(range(0, len(df_temp_contabil)))
+            print(df_temp_contabil)
+            print(df_temp_contabil.info())
+            
+            df_temp_contabil = ConvertToDataFrame.rename_columns_dataframe(dataframe=df_temp_contabil, dict_replace_names={
+                "CNPJ": "CNPJ_ORIGIN"
+            })
+
+            df = ConvertToDataFrame.create_layout_JB(dataframe=df_temp_contabil, model="model_7")
+
+            df["VALOR_NF_LIQ"] = df["Valor Bruto NF"] - df["IRPJ Retido"]
+            df["VLR_LIQUIDO"] = df["VALOR_NF_LIQ"] - df["CSLL Retida"] - df["Cofins Retido"] - df["PIS Retido"]
+
+            df = ConvertToDataFrame.duplicate_dataframe_rows_lote(dataframe=df, list_update_cols=[
+                {"TP": "C", "TYPE_PROCESS": "comum"},
+                {"TP": "D", "TYPE_PROCESS": "debit_PIS"},
+                {"TP": "D", "TYPE_PROCESS": "debit_CSLL"},
+                {"TP": "D", "TYPE_PROCESS": "debit_COFINS"},
+            ])
+
+            df.sort_values(by=["Nº NF", "Nome Cliente", "TP", "TYPE_PROCESS"], inplace=True)
+            df.index = list(range(0, len(df.index)))
+            #
+            # 
+            #  ------------------------------------------------- CÁLCULO DE IMPOSTOS -------------------------------------------------
+            # TP | CONTA
+            # -- - --------------
+            # C  | crédito
+            # D  | débito
+            # D  | Cofins Retido
+            # D  | CSLL Retida
+            # D  | PIS Retido
+
+            cont_aux = 0
+            for i in df.index:
+                
+                # df["COMPL_HISTORICO"][i] = f"Recebimento dupl. nr {numero_NF} - {nome_cliente}"
+
+                if cont_aux == 0:
+
+                    df["VALOR"][i] = df["VALOR_NF_LIQ"][i]
+                    cont_aux += 1
+
+                elif cont_aux == 1:
+
+                    df["VALOR"][i] = df["VLR_LIQUIDO"][i]
+                    cont_aux += 1
+
+                elif cont_aux == 2:
+
+                    df["VALOR"][i] = df["Cofins Retido"][i]
+                    df["COMPL_HISTORICO"][i] = df["COMPL_HISTORICO"][i].replace("Recebimento", "COFINS")
+                    cont_aux += 1
+
+                elif cont_aux == 3:
+
+                    df["VALOR"][i] = df["CSLL Retida"][i]
+                    df["COMPL_HISTORICO"][i] = df["COMPL_HISTORICO"][i].replace("Recebimento", "CSLL")
+                    cont_aux += 1
+
+                elif cont_aux == 4:
+
+                    df["VALOR"][i] = df["PIS Retido"][i]
+                    df["COMPL_HISTORICO"][i] = df["COMPL_HISTORICO"][i].replace("Recebimento", "PIS")
+                    cont_aux = 0
+            
+            # ------------------------------------------------------------------------
+
+
+
+            # df['VALOR'] = df['VALOR'].astype('float64')
+            # df['VALOR'] = df['VALOR'].round(2)
+            # df["VALOR"] = df['VALOR'].astype(str)
+
+            # for i in df.index:
+            #     if "." not in df["VALOR"][i]:
+            #         df["VALOR"][i] = df["VALOR"][i] + ".00"
+            #     elif df["VALOR"][i].split(".")[1] in ['0','1','2','3','4','5','6','7','8','9']:
+            #         print(" -------------- SPLIT ")
+            #         df["VALOR"][i] = df["VALOR"][i] + "0"
+                
+            #     print(">>>>> ", df["VALOR"][i], type( df["VALOR"][i] ) )
+
+            
+            print(" \n\n ---------------------- TRANSPOSE VALUES DATAFRAME ---------------------- ")
+
+            df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
+                "CNPJ": "CNPJ_ORIGIN",
+                "DATA": "Data Recebim. NF",
+                "NOME": "Nome Cliente",
+
+            })
+
+            df = ConvertToDataFrame.create_cod_erp_to_dataframe(dataframe=df)
+
+            print(df)
+            print(df.info())
+
+            # ------------------------------------------------------------------------------------
+            # ---------------------- AJUSTE PARA MODELO TP_REGISTRO ===> 03 ----------------------
+            # ------------------------------------------------------------------------------------
+
+            df_tp_registro_03 = df.copy()
+            df_tp_registro_03 = df_tp_registro_03[  df_tp_registro_03["TYPE_PROCESS"] != "comum"  ]
+            df_tp_registro_03["TP_REGISTRO"] = "03"
+
+            df_tp_registro_03 = ConvertToDataFrame.create_additional_columns(dataframe=df_tp_registro_03, column_name="IMPOSTO", default_value="")
+            df_tp_registro_03["CODIGO_IMPOSTO"] = "5952"
+            df_tp_registro_03["BC_IMPOSTO"] = df_tp_registro_03["Valor Bruto NF"]
+            df_tp_registro_03["ALIQUOTA"] = "-"
+            df_tp_registro_03["VALOR_IMPOSTO"] = "-"
+            df_tp_registro_03["TP_RETENCAO"] = "3"
+            df_tp_registro_03["COD_MINICIPIO_DEVIDO_ISS"] = ""
+            df_tp_registro_03["NAT_RETENCAO"] = "3"
+            df_tp_registro_03["TP_RECEITA"] = "1"
+            df_tp_registro_03["CNPJ_EMPRESA_03"] = ""
+            df_tp_registro_03["IE_EMPRESA_03"] = ""
+
+            for i in df_tp_registro_03.index:
+                if df_tp_registro_03["TYPE_PROCESS"][i] == "debit_COFINS":
+                    df_tp_registro_03["IMPOSTO"][i] = "1102"
+                    df_tp_registro_03["ALIQUOTA"][i] = "3"
+                    df_tp_registro_03["VALOR_IMPOSTO"][i] = df_tp_registro_03["VALOR"][i]
+
+                # ----
+                elif df_tp_registro_03["TYPE_PROCESS"][i] == "debit_PIS":
+                    df_tp_registro_03["IMPOSTO"][i] = "1101"
+                    df_tp_registro_03["ALIQUOTA"][i] = "0,65"
+                    df_tp_registro_03["VALOR_IMPOSTO"][i] = df_tp_registro_03["VALOR"][i]
+                # ----
+                elif df_tp_registro_03["TYPE_PROCESS"][i] == "debit_CSLL":
+                    df_tp_registro_03["IMPOSTO"][i] = "1103"
+                    df_tp_registro_03["ALIQUOTA"][i] = "1"
+                    df_tp_registro_03["VALOR_IMPOSTO"][i] = df_tp_registro_03["VALOR"][i]
+
+
+            #  --------------------------------------
+
+            df_tp_registro_03 = ConvertToDataFrame.create_additional_columns(dataframe=df_tp_registro_03, column_name="COL_AUX__18", default_value="")
+            df_tp_registro_03 = ConvertToDataFrame.create_additional_columns(dataframe=df_tp_registro_03, column_name="COL_AUX__19", default_value="")
+            df_tp_registro_03 = ConvertToDataFrame.create_additional_columns(dataframe=df_tp_registro_03, column_name="COL_AUX__20", default_value="")
+            df_tp_registro_03 = ConvertToDataFrame.create_additional_columns(dataframe=df_tp_registro_03, column_name="COL_AUX__21", default_value="")
+            
+            df_tp_registro_03 = df_tp_registro_03[[
+                
+                # ------------------ BASE LAYOUT JB 03 ------------------
+
+                "TP_REGISTRO", # 01
+                "NOME",
+                "COD_EMPRESA", # 02
+                "FILIAL", # 03
+                "NR_L_CTO_ERP", # 04
+                "TP", # 05
+                "CNPJ", # 06
+                "IMPOSTO", # 07
+                "CODIGO_IMPOSTO", # 08
+                "BC_IMPOSTO", # 09
+                "ALIQUOTA", # 10
+                "VALOR_IMPOSTO", # 11
+                "TP_RETENCAO", # 12
+                "COD_MINICIPIO_DEVIDO_ISS", # 13
+                "NAT_RETENCAO", # 14
+                "TP_RECEITA", # 15
+                "CNPJ_EMPRESA_03", # 16
+                "IE_EMPRESA_03", # 17
+
+                "COL_AUX__18",
+                "COL_AUX__19",
+                "COL_AUX__20",
+                "COL_AUX__21",
+                
+                "TYPE_PROCESS",    
+            ]]
+
+            tt_index_00 = len(df.index)
+            tt_index_03 = len(df_tp_registro_03.index)
+
+            # df_tp_registro_03["NR_L_CTO_ERP"] = ConvertToDataFrame.create_cod_erp_to_dataframe(dataframe=df_tp_registro_03, index_default=tt_index_00)
+
+            print(df_tp_registro_03)
+
+
+            tt_rows = len(df)
+            tt_debit    = len(df[df["TP"] == "C"])
+            tt_credit   = len(df[df["TP"] == "D"])
+
+            list_remove = [0, 0.0, "0.0", "0.00", "0.00", "0,00"]
+
+            df = df.dropna(subset=['DATA'])
+            df = df[~df['VALOR'].isin(list_remove)]
+            df_tp_registro_03 = df_tp_registro_03[~df_tp_registro_03['VALOR_IMPOSTO'].isin(list_remove)]
+            
+            print("\n\n -------------- DF 00 -------------- ")
+            print(df)
+            print(df.info())
+
+            print("\n\n -------------- DF 03 -------------- ")
+            print(df_tp_registro_03)
+            print(df_tp_registro_03.info())
+
+            data_json = json.loads(df.to_json(orient="table"))
+            data_json_03 = json.loads(df_tp_registro_03.to_json(orient="table"))
+            # print(data_json)
+
+            print(f"""
+                --------- CONFIG CONTAS
+                --> tt_rows: {tt_rows}
+                --> tt_debit: {tt_debit}
+                --> tt_credit: {tt_credit}
+
+                --> tt_index_00: {tt_index_00}
+                --> tt_index_03: {tt_index_03}
+            """)
+
+            file_name = r"I:\\1. Gaulke Contábil\\Administrativo\\9. TI\\1. Projetos\\8. Importação Arão dos Santos Recebimentos\\00_base_tratada_arao_dos_santos.xlsx"
+            ConvertToDataFrame.convert_dataframe_to_excel(dataframe=df, file_name=file_name)
+
+            file_name = r"I:\\1. Gaulke Contábil\\Administrativo\\9. TI\\1. Projetos\\8. Importação Arão dos Santos Recebimentos\\03_base_tratada_arao_dos_santos.xlsx"
+            ConvertToDataFrame.convert_dataframe_to_excel(dataframe=df_tp_registro_03, file_name=file_name)
+
+            return {
+                "data_table": data_json,
+                "data_json_03": data_json_03,
+                "tt_rows": tt_rows,
+                "tt_debit": tt_debit,
+                "tt_credit": tt_credit,
+                "list_page_erros": [],
+                }
+            
+        except Exception as e:
+            print(f" \n\n ERROR GENERATE ARÃO DOS SANTOS | ERROR: {e}")
+            return {"code": 500, "msg": "erro ao gerar pacote Arão dos Santos.", "error": e}
+        

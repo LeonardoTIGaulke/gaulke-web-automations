@@ -109,26 +109,28 @@
   border-radius: 4px;
   background-color: #e3d5d5;
 }
-.container-table-preview {
+.container-table-preview,
+.container-table-preview-extra-02 {
   max-width: 100%;
   max-height: 45vh;
   overflow: scroll;
   box-sizing: border-box;
+  font-size: 12px;
 }
-.container-table-preview table {
+.container-table-preview table,
+.container-table-preview-extra-02 table {
   max-width: 100%;
   background: aqua;
   margin: 10px;
 }
-.container-table-preview table thead {
+.container-table-preview table thead,
+.container-table-preview-extra-02 table thead {
   position: sticky;
   top: 0;
   z-index: 999;
   background-color: white;
 }
-.container-table-preview {
-  font-size: 12px;
-}
+
 .col-fixed-2 {
   position: sticky;
   top: 0;

@@ -1,0 +1,421 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Preview de Importação {% endblock %}
+{% block content %}
+
+<div class="container-fluid  container-base-elements" id="form-file-payroll-relation"> 
+    <div class="container-processing-data">
+        <article>
+            <div class="lds-ellipsis">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </article>
+    </div>
+    {% if visible_form_file %}
+    <div class="container">
+        <h3 style="text-align: center; padding: 8px 0px;">Importação Arão dos Santos</h3>
+    </div>
+    <div class="d-flex justify-content-center align-content-center" id="form-payroll" style="min-height: 40vh;">
+        <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_relacao_arao_dos_santos' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="file" class="form-label"><b>Base Cliente</b></label>
+                <input class="form-control" type="file" id="file" name="file" required="required" accept=".xlsx">
+            </div>
+            <div class="mb-3">
+                <label for="file_2" class="form-label"> <b>Base Contábil</b></label>
+                <input class="form-control" type="file" id="file_2" name="file_2" required="required" accept=".xlsx">
+            </div>
+            
+            <!-- <div class="mb-3">
+                <label for="grupo_lancamento" class="form-label">Grupo Lanç.</label>
+                <input class="form-control" type="text" id="grupo_lancamento" name="grupo_lancamento" required="required" placeholder="ex: 09/2023" value="{{grupo_lancamento}}">
+            </div> -->
+             
+            <input class="btn-send-file" type="submit" value="carregar arquivos" style="max-height: 45px; border: 1px solid;" onclick="animationLoadPostFile();">
+        </form>
+        
+    </div>
+
+   
+    {% if error_code %}
+    <div class="container d-flex flex-column justify-content-center align-content-center" style="align-items: center;">
+        <span class="container block-error-read-file">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <p>Erro na leitura dos arquivos.</p>
+        </span>
+
+
+        <span class="container block-error-read-file">
+            <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+            <p>Verifique se os arquivos enviados possuem a extensão <b>.xlsx</b>.</p>
+        </span>
+        <span class="container block-error-read-file">
+            <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+            <p>1º arquivo <b>Base Cliente</b><br> - Deve conter as colunas de "Data" e "Nota Fiscal".</p>
+        </span>
+        <span class="container block-error-read-file">
+            <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+            <p>2º arquivo <b>Base Contábil</b> <br>- Deve conter a coluna de "Nº NF".</p>
+        </span>
+
+    </div>
+    {% endif %}
+    
+    {% else %}
+
+        <script>
+            animationLoadPostFile();
+        </script>
+
+        <div class="container block-config-data-to-text">
+
+            <div class="row mt-3">
+                <h3>Configuração de Contas</h3>
+            </div>
+            <form action="">
+                
+                <div class="row">
+                    <label for="">*Cod. Empresa</label>
+                    <input type="text" name="cod_empresa" id="cod_empresa" placeholder="código da empresa">
+                </div>
+                
+                
+                <div class="row my-3 gap-3 block-btns-options-modal">
+                    <input type="button" value="gerar importação" onclick="generateImport();">
+                    <input type="button" value="fechar" onclick="displayModalAccounts();">
+                </div>
+            
+            </form>
+        </div>
+        <div class="container block-btns-config-accounts">
+            
+            <div class="row block-resume-data-table">
+                <p>registros</p>
+                <p>débito</p>
+                <p>crédito</p>
+            </div>
+            <div class="row block-resume-data-table">
+                <p>{{tt_rows}}</p>
+                <p>{{tt_debit}}</p>
+                <p>{{tt_credit}}</p>
+            </div>
+
+            <input type="button" value="configurar contas" onclick="displayModalAccounts();">
+            <input type="text" id="input-serch" placeholder="Digite para filtrar" onkeydown="filtrarTabela();" style="background: #dcdcdc;">
+        </div>
+        <div class="container container-table-preview" id="table-data-01">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>TP_REGISTRO</th>
+                        <th>NOME</th>
+                        <th>COD_EMPRESA</th>
+                        <th>FILIAL</th>
+                        <th>DATA</th>
+                        <th>NR_L_CTO_ERP</th>
+                        <th>TP</th>
+                        <th>CONTA</th>
+                        <th>SUBCONTA</th>
+                        <th>VALOR</th>
+                        <th>ACAO</th>
+                        <th>PRIMEIRO_HIST_CTA</th>
+                        <th>COD_HISTORICO</th>
+                        <th>COMPL_HISTORICO</th>
+                        <th>GRUPO_LCTO</th>
+                        <th>CNPJ</th>
+                        <th>IESTADUAL</th>
+                        <th>TP_CNPJ</th>
+                        <th>CONTA_ORIGEM</th>
+                        <th>CNPJ_EMPRESA</th>
+                        <th>IE_EMPRESA</th>
+                        <th>TYPE_PROCESS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in data_table %}
+                        <tr class="data-row-{{data.index}}">
+                            <td>{{data.TP_REGISTRO}}</td>
+                            <td>{{data.NOME}}</td>
+                            <td>{{data.COD_EMPRESA}}</td>
+                            <td>{{data.FILIAL}}</td>
+                            <td>{{data.DATA}}</td>
+                            <td>{{data.NR_L_CTO_ERP}}</td>
+                            <td>{{data.TP}}</td>
+                            <td>{{data.CONTA}}</td>
+                            <td>{{data.SUBCONTA}}</td>
+                            <td>{{data.VALOR}}</td>
+                            <td>{{data.ACAO}}</td>
+                            <td>{{data.PRIMEIRO_HIST_CTA}}</td>
+                            <td>{{data.COD_HISTORICO}}</td>
+                            <td>{{data.COMPL_HISTORICO}}</td>
+                            <td>{{data.GRUPO_LCTO}}</td>
+                            <td>{{data.CNPJ}}</td>
+                            <td>{{data.IESTADUAL}}</td>
+
+                            <!-- {{data.TP_CNPJ}} -->
+                            <td>1</td>
+                            <td>{{data.CONTA_ORIGEM}}</td>
+                            <td>{{data.CNPJ_EMPRESA}}</td>
+                            <td>{{data.IE_EMPRESA}}</td>
+                            <td>{{data.TYPE_PROCESS}}</td>
+                        </tr>
+                    {% endfor %}
+                    
+                </tbody>
+            </table>
+            
+        </div>
+
+        <!-- ------------------------------------------------------------------------------------------- -->
+        
+        <div class="container container-table-preview-extra-02 mt-4">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>TP_REGISTRO</th>
+                        <th>NOME</th>
+                        <th>COD_EMPRESA</th>
+                        <th>FILIAL</th>
+                        <th>NR_L_CTO_ERP</th>
+                        <th>TP</th>
+                        <th>CNPJ</th>
+                        <th>IMPOSTO</th>
+                        <th>CODIGO_IMPOSTO</th>
+                        <th>BC_IMPOSTO</th>
+                        <th>ALIQUOTA</th>
+                        <th>VALOR_IMPOSTO</th>
+                        <th>TP_RETENCAO</th>
+                        <th>COD_MINICIPIO_DEVIDO_ISS</th>
+                        <th>NAT_RETENCAO</th>
+                        <th>TP_RECEITA</th>
+                        <th>CNPJ_EMPRESA_03</th>
+                        <th>IE_EMPRESA_03</th>
+                        <th>-</th>
+                        <th>-</th>
+                        <th>-</th>
+                        <th>-</th>
+                        <th>TYPE_PROCESS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in data_table_03 %}
+                        <tr class="data-row-{{data.index}}">
+                            <td>{{data.TP_REGISTRO}}</td>
+                            <td>{{data.NOME}}</td>
+                            <td>{{data.COD_EMPRESA}}</td>
+                            <td>{{data.FILIAL}}</td>
+                            <td>{{data.NR_L_CTO_ERP}}</td>
+                            <td>{{data.TP}}</td>
+                            <td>{{data.CNPJ}}</td>
+                            <td>{{data.IMPOSTO}}</td>
+                            <td>{{data.CODIGO_IMPOSTO}}</td>
+                            <td>{{data.BC_IMPOSTO}}</td>
+                            <td>{{data.ALIQUOTA}}</td>
+                            <td>{{data.VALOR_IMPOSTO}}</td>
+                            <td>{{data.TP_RETENCAO}}</td>
+                            <td>{{data.COD_MINICIPIO_DEVIDO_ISS}}</td>
+                            <td>{{data.NAT_RETENCAO}}</td>
+                            <td>{{data.TP_RECEITA}}</td>
+                            <td>{{data.CNPJ_EMPRESA_03}}</td>
+                            <td>{{data.IE_EMPRESA_03}}</td>
+                            
+                            <td>{{data.COL_AUX__18}}</td>
+                            <td>{{data.COL_AUX__19}}</td>
+                            <td>{{data.COL_AUX__20}}</td>
+                            <td>{{data.COL_AUX__21}}</td>
+                            <td>{{data.TYPE_PROCESS}}</td>
+                        </tr>
+                    {% endfor %}
+                    
+                </tbody>
+            </table>
+            
+        </div>
+
+
+    {% endif %}
+</div>
+    
+<script src="{% static 'animations.js' %}"></script>
+<script src="{% static 'controller_tables.js' %}"></script>
+<script src="{% static 'prepare_data.js' %}"></script>
+
+
+
+<script>
+
+    // ------------------
+    function generateImport() {
+
+        let cod_empresa = document.getElementById("cod_empresa").value;
+        // let cod_filial = document.getElementById("cod_filial").value;
+        
+        
+        // ----
+        let table = document.querySelector(".container-table-preview").querySelector("table");
+        let table_head = table.querySelector("thead").querySelector("tr").querySelectorAll("th");
+        let table_body = table.querySelector("tbody").querySelectorAll("tr");
+
+        // ------------------------------------------
+
+        let table_02 = document.querySelector(".container-table-preview-extra-02").querySelector("table");
+        let table_body_02 = table_02.querySelector("tbody").querySelectorAll("tr");
+
+
+        let data_table_rows = new Array();
+        // ----
+
+       
+
+        // ----
+        let table_td = null;
+        let data_temp = null;
+
+        let id_push_row = null;
+        let list_rows_insert = new Array();
+        let list_values_check_decimal = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+        
+        table_body.forEach((row)=>{
+
+            data_temp = new Array();
+
+            table_td = row.querySelectorAll("td");
+
+            for(let i=0; i < table_td.length; i++) {
+                if (i != 1) {
+                    if(i==2){
+                        table_td[i].textContent = cod_empresa;
+                        data_temp.push(cod_empresa);
+                    }
+                    else if (i==4) {
+                        data_temp.push(  removeCaracter( table_td[i].textContent ) );
+                    }
+                    else if (i==7) {
+                        data_temp.push( cod_empresa );
+                    }
+                    else if (i==7) {
+                        data_temp.push( cod_empresa );
+                    }
+                    else if (i==9) {
+                        let value_aux = table_td[i].textContent.replace(",", ".");
+                        let decimal_data =  value_aux.split(".")[1];
+                        if ( decimal_data in list_values_check_decimal ) {
+                            value_aux = `${value_aux}0`;
+                        }
+                        data_temp.push(value_aux);
+                    }
+                    else if (i==15) {
+
+                        let new_cnpj = table_td[i].textContent.replace(".", "").replace(".", "").replace("/", "").replace("-", "");
+                        table_td[i].textContent = new_cnpj;
+                        data_temp.push(new_cnpj);
+
+                    }
+                    else if (i < 21) {
+                        data_temp.push(table_td[i].textContent);
+                    }
+                }
+
+            }
+            data_table_rows.push(data_temp);
+        });
+
+        // ----
+
+        table_body_02.forEach((row)=>{
+
+            data_temp = new Array();
+
+            table_td = row.querySelectorAll("td");
+
+            for(let i=0; i < table_td.length; i++) {
+
+                if (i != 1) {
+
+                    if(i==2){
+                        table_td[i].textContent = cod_empresa;
+                        data_temp.push(cod_empresa);
+                    }
+                    
+                    else if (i==6) {
+
+                        let new_cnpj = table_td[i].textContent.replace(".", "").replace(".", "").replace("/", "").replace("-", "");
+                        table_td[i].textContent = new_cnpj;
+                        data_temp.push(new_cnpj);
+
+                    }
+
+                    else if (i==11) {
+
+                        let value_aux = table_td[i].textContent.replace(",", ".");
+                        let decimal_data =  value_aux.split(".")[1];
+                        if ( decimal_data in list_values_check_decimal ) {
+                            value_aux = `${value_aux}0`;
+                        }
+                        data_temp.push(value_aux);
+
+                    }
+
+                    else if (i < 21) {
+                        data_temp.push(table_td[i].textContent);
+                    }
+                }
+
+            }
+            data_table_rows.push(data_temp);
+        });
+
+
+
+        var csv = '';
+        for(var i=0; i<data_table_rows.length; i++){
+            var values = Object.values(data_table_rows[i]);
+            csv += values.join(';') + '\n';
+        }
+        
+        var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "Importortação JB Relação Arão dos Santos.txt");
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        
+        // displayModalAccounts();
+        window.location.href = `{{host_port}}/automations/relacao-arao-dos-santos/`;
+
+    }
+
+    
+</script>
+
+<!-- ------------------------ -->
+<script>
+    function filtrarTabela() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("input-serch");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("table-data-01");
+        tr = table.getElementsByTagName("tr");
+
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[1]; // Altere o índice para a coluna desejada
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "table-row";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

@@ -194,7 +194,7 @@ def post_file_entrada_titulos_desc_sicoob(request):
         
         return render(request, "app_relations/relation_entrada_titulos_desc_sicoob.html", context=context)
 
-# ------------------------ DESENVOLVIMENTO ADIADO: PRIODADE ENTRADA DE TITULOS DESCONTADOS SICCOB
+# ------------------------
 @login_required(login_url="/automations/login/")
 def post_file_fastAPI_relacao_cobrancas_pagas(request):
     if request.method == "GET":
@@ -223,6 +223,78 @@ def post_file_fastAPI_relacao_cobrancas_pagas(request):
         
         return render(request, "app_relations/relation_cobrancas_pagas.html", context=context)
 
+# ------------------------
+@login_required(login_url="/automations/login/")
+def post_file_fastAPI_relacao_decorise(request):
+    if request.method == "GET":
+        context = {
+            "visible_form_file": True,
+        }
+        return render(request, "app_relations/relation_decorise.html", context=context)
+        
+    elif request.method == "POST":
+        print("\n\n ---------- IMPORTAÇÃO DECORISE ---------- ")
+        file = request.FILES["file"]
+        grupo_lancamento = request.POST.get("grupo_lancamento")
+        print(f"\n--------------->> GRUPO LANÇ: {grupo_lancamento}")
+
+        dataJson = ConvertToDataFrame.read_xlsx_decorise(file=file, grupo_lancamento=grupo_lancamento)
+        print(dataJson)
+        context = {
+            "code_process": True,
+            "data_table": dataJson["data_table"]["data"],
+            "list_page_erros": dataJson["list_page_erros"],
+
+            "tt_rows": dataJson["tt_rows"],
+            "tt_debit": dataJson["tt_debit"],
+            "tt_credit": dataJson["tt_credit"],
+            "host_port": HOST_REDIRECT,
+
+        }
+        
+        return render(request, "app_relations/relation_decorise.html", context=context)
+
+# ------------------------
+@login_required(login_url="/automations/login/")
+def post_file_fastAPI_relacao_arao_dos_santos(request):
+    if request.method == "GET":
+        context = {
+            "visible_form_file": True,
+        }
+        return render(request, "app_relations/relation_arao_dos_santos.html", context=context)
+        
+    elif request.method == "POST":
+        print("\n\n ---------- IMPORTAÇÃO ARÃO DOS SANTOS ---------- ")
+        file = request.FILES["file"]
+        file_2 = request.FILES["file_2"]
+
+        try:
+
+        
+            dataJson = ConvertToDataFrame.read_xlsx_arao_dos_santos(file_consulta=file,file_contabil=file_2)
+            # print(dataJson)
+            context = {
+                "code_process": True,
+                "data_table": dataJson["data_table"]["data"],
+                "data_table_03": dataJson["data_json_03"]["data"],
+                "list_page_erros": dataJson["list_page_erros"],
+
+                "tt_rows": dataJson["tt_rows"],
+                "tt_debit": dataJson["tt_debit"],
+                "tt_credit": dataJson["tt_credit"],
+                "host_port": HOST_REDIRECT,
+
+            }
+            
+            return render(request, "app_relations/relation_arao_dos_santos.html", context=context)
+        except Exception as e:
+            context = {
+                "error_code": True,
+                "visible_form_file": True
+                
+
+            }
+            return render(request, "app_relations/relation_arao_dos_santos.html", context=context)
 
 
 

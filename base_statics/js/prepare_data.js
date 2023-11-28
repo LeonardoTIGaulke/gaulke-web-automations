@@ -26,6 +26,20 @@ function SelectAllDataTemp(){
         console.log(table_td);
     });
 }
+function SelectAllDataTemp_extra_02(){
+    let btn_select_all = document.querySelector(".btn-select-all-rows-extra-02");
+    let table = document.querySelector(".container-table-preview-extra-02").querySelector("table");
+    let table_body = table.querySelector("tbody").querySelectorAll("tr");
+    let table_td = null;
+    table_body.forEach((row)=>{
+        if (btn_select_all.checked){
+            table_td = row.querySelectorAll("td")[0].querySelector("input").checked = true;
+        } else {
+            table_td = row.querySelectorAll("td")[0].querySelector("input").checked = false;
+        }
+        console.log(table_td);
+    });
+}
 // ----
 function disabledRowsTable(){
     let btn_select_all = document.querySelector(".btn-select-all-rows");

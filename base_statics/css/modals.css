@@ -276,3 +276,26 @@
   }
 }
 
+
+
+/*  ------------------------ BLOCK ERROR FILES MODAL ------------------------ */
+.block-error-read-file {
+    max-width: 495px;
+    height: 56px        ;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 10px 0px;
+    border-radius: 5px;
+    gap: 15px;
+}
+.block-error-read-file:nth-child(1) {
+    background-color: #f9eff3;
+    justify-content: center;
+    box-shadow: var(--color-box-shadow);
+}
+.block-error-read-file p {
+    margin: 0;
+    padding: 0;
+}
