@@ -277,6 +277,24 @@
 }
 
 
+/*  ------------------------ BLOCK IMAGE MODAL CLIENT ------------------------ */
+/* .block-image-layout-client {
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 242px;
+} */
+
+.block-image-layout-client img {
+    /* width: 180px;
+    height: 180px;
+    object-fit: contain;
+    border-radius: 5px; */
+    width: 235px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
 
 /*  ------------------------ BLOCK ERROR FILES MODAL ------------------------ */
 .block-error-read-file {

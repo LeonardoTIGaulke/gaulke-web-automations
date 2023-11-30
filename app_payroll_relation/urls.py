@@ -17,7 +17,13 @@ urlpatterns = [
     path("relacao-decorise/", views.post_file_fastAPI_relacao_decorise, name="post_file_fastAPI_relacao_decorise"),
     path("relacao-arao-dos-santos/", views.post_file_fastAPI_relacao_arao_dos_santos, name="post_file_fastAPI_relacao_arao_dos_santos"),
     
-    # TUTORIALS
+    path("relacao-comprovante-banco-bradesco/", views.post_file_fastAPI_comprovante_banco_bradesco, name="post_file_fastAPI_comprovante_banco_bradesco"),
+
+    # -------------  DASHBOARDS -------------
+    path("dashboard-visao-geral/", views.dashboard_visao_geral, name="dashboard_visao_geral"),
+
+
+    # ------------- TUTORIALS -------------
     path("modos-de-uso/",  views.use_mode, name="use_mode"),
     path("use-login-e-logout/",  views.use_login_logout, name="use_login_logout"),
 

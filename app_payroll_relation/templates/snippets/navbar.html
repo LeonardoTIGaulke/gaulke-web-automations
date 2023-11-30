@@ -15,18 +15,36 @@
           {% if user.is_authenticated %}
             <li class="nav-item dropdown">
               <span class="nav-link dropdown-toggle"  role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Automações
+                Gerais/Utilitários
+              </span>
+              <ul class="dropdown-menu" style="min-width: 260px;">
+                
+                <a class="nav-link" href="{% url 'post_file_fastAPI_folha_por_empregado' %}"> Folha de Pagamento </a>
+                <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_GNRE' %}"> Relação GNRE </a>
+                <a class="nav-link" href="{% url 'post_file_entrada_titulos_desc_sicoob' %}"> Entrada Títulos Desc. - Sicoob </a>
+                
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <span class="nav-link dropdown-toggle"  role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Contas a pargar/receber
+              </span>
+              <ul class="dropdown-menu" style="min-width: 305px;">
+                
+                <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_cobrancas_pagas' %}"> Relação Cobranças Pagas (WB telecom)</a>
+                <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_decorise' %}"> Relação Decorise </a>
+                <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_arao_dos_santos' %}"> Relação Arão dos Santos </a>
+                
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <span class="nav-link dropdown-toggle"  role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Comprovantes de Pag.
               </span>
               <ul class="dropdown-menu" style="min-width: 260px;">
                 
                 <a class="nav-link" href="{% url 'post_file_fastAPI_comprovante_banco_do_brasil' %}"> Comprovante - Banco do Brasil </a>
-                <a class="nav-link" href="{% url 'post_file_fastAPI_folha_por_empregado' %}"> Folha de Pagamento </a>
-                <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_GNRE' %}"> Relação GNRE </a>
-                <a class="nav-link" href="{% url 'post_file_entrada_titulos_desc_sicoob' %}"> Entrada Títulos Desc. - Sicoob </a>
-                <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_cobrancas_pagas' %}"> Relação Cobranças Pagas </a>
-                
-                <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_decorise' %}"> Relação Decorise </a>
-                <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_arao_dos_santos' %}"> Relação Arão dos Santos </a>
+                <!-- <a class="nav-link" href="{% url 'post_file_fastAPI_comprovante_banco_bradesco' %}"> Comprovante - Bradesco </a> -->
                 
               </ul>
             </li>

@@ -282,6 +282,9 @@ def post_file_fastAPI_relacao_arao_dos_santos(request):
                 "tt_rows": dataJson["tt_rows"],
                 "tt_debit": dataJson["tt_debit"],
                 "tt_credit": dataJson["tt_credit"],
+                "tt_rows_03": dataJson["tt_rows_03"],
+                "tt_debit_03": dataJson["tt_debit_03"],
+                "tt_credit_03": dataJson["tt_credit_03"],
                 "host_port": HOST_REDIRECT,
 
             }
@@ -296,10 +299,41 @@ def post_file_fastAPI_relacao_arao_dos_santos(request):
             }
             return render(request, "app_relations/relation_arao_dos_santos.html", context=context)
 
+# ------------------------
+@login_required(login_url="/automations/login/")
+def post_file_fastAPI_comprovante_banco_bradesco(request):
+    if request.method == "GET":
+        context = {
+            "visible_form_file": True,
+        }
+        return render(request, "app_relations/relation_extrato_banco_bradesco.html", context=context)
+        
+    elif request.method == "POST":
+        file = request.FILES["file"]
+        print(file)
 
+        dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_bradesco(file=file)
+        print(dataJson)
+        context = {
+            "code_process": True,
+            # "data_table": dataJson["data_table"]["data"],
+            # "list_page_erros": dataJson["list_page_erros"],
 
+            # "tt_rows": dataJson["tt_rows"],
+            # "tt_debit": dataJson["tt_debit"],
+            # "tt_credit": dataJson["tt_credit"],
+            "host_port": HOST_REDIRECT,
 
+        }
+        
+        return render(request, "app_relations/relation_extrato_banco_bradesco.html", context=context)
 
+# ------------------------
+@login_required(login_url="/automations/login/")
+def dashboard_visao_geral(request):
+    if request.method == "GET":
+        return render(request, "app_dashboard/dashboard_visao_geral.html")
+    return render(request, "app/error_404.html")
 
 # ------------------------- TUTORIALS -------------------------
 @login_required(login_url="/automations/login/")

@@ -16,7 +16,10 @@
         </article>
     </div>
     {% if visible_form_file %}
-    <div class="d-flex justify-content-center align-content-center" id="form-payroll" style="min-height: 40vh;">
+    <div class="d-flex justify-content-center align-content-center align-items-center gap-3 " id="form-payroll" style="min-height: 40vh; flex-wrap: wrap;">
+        <div class="block-image-layout-client">
+            <img src="{% static 'logo-banco-do-brasil.png' %}" alt="">
+        </div>
         <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_comprovante_banco_do_brasil' %}" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="mb-3">

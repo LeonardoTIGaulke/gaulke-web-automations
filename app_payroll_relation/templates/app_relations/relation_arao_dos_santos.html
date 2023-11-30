@@ -98,15 +98,24 @@
         <div class="container block-btns-config-accounts">
             
             <div class="row block-resume-data-table">
+                <p>TP</p>
                 <p>registros</p>
                 <p>débito</p>
                 <p>crédito</p>
             </div>
             <div class="row block-resume-data-table">
+                <p>TP 00</p>
                 <p>{{tt_rows}}</p>
                 <p>{{tt_debit}}</p>
                 <p>{{tt_credit}}</p>
             </div>
+            <div class="row block-resume-data-table">
+                <p>TP 03</p>
+                <p>{{tt_rows_03}}</p>
+                <p>{{tt_debit_03}}</p>
+                <p>{{tt_credit_03}}</p>
+            </div>
+            
 
             <input type="button" value="configurar contas" onclick="displayModalAccounts();">
             <input type="text" id="input-serch" placeholder="Digite para filtrar" onkeydown="filtrarTabela();" style="background: #dcdcdc;">

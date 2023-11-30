@@ -39,7 +39,7 @@ class ConvertToDataFrame:
                     "model_4": f"Receb. Dupl [v1] venc [v2]",
                     # ----
                     # exemplo 5: Entrada Títulos Desc. [nome cliente] venc [data vencimento] [Sicoob, Itau, ...]
-                    "model_5": f"Entrada Títulos Desc. [v1] - [v2] - venc [v3] {value_generic}",
+                    "model_5": f"Entrada Títulos Desc. {value_generic} Dupl. [v1] - [v2] - venc [v3]",
                     # ----
                     # exemplo 6: Entrada Decorise 22/11/2023
                     "model_6": f"Pgto. Decorise {grupo_lancamento} - Gateway [v1] [v2]",
@@ -148,7 +148,7 @@ class ConvertToDataFrame:
                     text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace)
 
                 elif model == "model_5":
-                    # modelo: ?
+                    # modelo: SICOOB
                     value_primeiro_hist_cta = "2"
                     dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["SEU_NUMERO", "NOME", "DATA_VENCIMENTO"], index=i)
                     text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, value_generic=value_generic)
@@ -422,6 +422,7 @@ class ConvertToDataFrame:
         return dataframe
     
     # ----
+    
     def read_pdf_comprovante_banco_do_brasil(file):
         
         contents = file.read()
@@ -821,21 +822,25 @@ class ConvertToDataFrame:
     
     def read_pdf_relacao_entrada_titulos_desc_sicoob(file):
         try:
-            print(f"\n\n ----- Arquivo informado: {file}")
+            print(f"\n\n ----- Arquivo informado SICOOB: {file}")
 
             contents = file.read()
             pdf_bytes = io.BytesIO(contents)
-            dataframes = tabula.read_pdf(pdf_bytes, pages="all")
+            dataframes = tabula.read_pdf( pdf_bytes, pages="all" )
 
             list_df = list()
             for df in dataframes:
+                print(" ------------------------ df ------------------------ ")
+                print(df)
                 list_df.append(df)
             
             df = pd.concat(list_df)
             df.index = list(range(0, len(df.index)))
 
             print(" <<<< ----------------- >>>> ")
-            
+
+            print(df)
+
             df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
                 "NOME": "Sacado",
                 "VALOR": "Valor (R$)",
@@ -1102,9 +1107,9 @@ class ConvertToDataFrame:
         sheet_name = file.sheet_names[0]
         df = file.parse(sheet_name=sheet_name)
         return df
-    # ----
     
-    # @staticmethod
+    # ----
+
     def read_xlsx_arao_dos_santos(file_contabil, file_consulta):
         try:
             print(f"\n\n ----- Arquivo informado arão dos santos | file_contabil: {file_contabil} | file_consulta: {file_consulta}")
@@ -1268,6 +1273,12 @@ class ConvertToDataFrame:
             # ------------------------------------------------------------------------------------
 
             df_tp_registro_03 = df.copy()
+
+            list_remove = [0, 0.0, "0.0", "0.00", "0.00", "0,00"]
+            df_tp_registro_03 = df_tp_registro_03[~df_tp_registro_03['VALOR'].isin(list_remove)]
+            df_tp_registro_03 = df_tp_registro_03.dropna(subset=['DATA'])
+            
+
             df_tp_registro_03 = df_tp_registro_03[  df_tp_registro_03["TYPE_PROCESS"] != "comum"  ]
             df_tp_registro_03["TP_REGISTRO"] = "03"
 
@@ -1286,7 +1297,7 @@ class ConvertToDataFrame:
             for i in df_tp_registro_03.index:
                 if df_tp_registro_03["TYPE_PROCESS"][i] == "debit_COFINS":
                     df_tp_registro_03["IMPOSTO"][i] = "1102"
-                    df_tp_registro_03["ALIQUOTA"][i] = "3"
+                    df_tp_registro_03["ALIQUOTA"][i] = "3,00"
                     df_tp_registro_03["VALOR_IMPOSTO"][i] = df_tp_registro_03["VALOR"][i]
 
                 # ----
@@ -1297,7 +1308,7 @@ class ConvertToDataFrame:
                 # ----
                 elif df_tp_registro_03["TYPE_PROCESS"][i] == "debit_CSLL":
                     df_tp_registro_03["IMPOSTO"][i] = "1103"
-                    df_tp_registro_03["ALIQUOTA"][i] = "1"
+                    df_tp_registro_03["ALIQUOTA"][i] = "1,00"
                     df_tp_registro_03["VALOR_IMPOSTO"][i] = df_tp_registro_03["VALOR"][i]
 
 
@@ -1347,14 +1358,12 @@ class ConvertToDataFrame:
             print(df_tp_registro_03)
 
 
-            tt_rows = len(df)
-            tt_debit    = len(df[df["TP"] == "C"])
-            tt_credit   = len(df[df["TP"] == "D"])
-
+            
             list_remove = [0, 0.0, "0.0", "0.00", "0.00", "0,00"]
 
             df = df.dropna(subset=['DATA'])
             df = df[~df['VALOR'].isin(list_remove)]
+
             df_tp_registro_03 = df_tp_registro_03[~df_tp_registro_03['VALOR_IMPOSTO'].isin(list_remove)]
             
             print("\n\n -------------- DF 00 -------------- ")
@@ -1369,6 +1378,17 @@ class ConvertToDataFrame:
             data_json_03 = json.loads(df_tp_registro_03.to_json(orient="table"))
             # print(data_json)
 
+
+            tt_rows = len(df)
+            tt_debit    = len(df[df["TP"] == "C"])
+            tt_credit   = len(df[df["TP"] == "D"])
+
+            # ------------
+
+            tt_rows_03 = len(df_tp_registro_03)
+            tt_debit_03    = len(df_tp_registro_03[df_tp_registro_03["TP"] == "C"])
+            tt_credit_03   = len(df_tp_registro_03[df_tp_registro_03["TP"] == "D"])
+
             print(f"""
                 --------- CONFIG CONTAS
                 --> tt_rows: {tt_rows}
@@ -1377,6 +1397,10 @@ class ConvertToDataFrame:
 
                 --> tt_index_00: {tt_index_00}
                 --> tt_index_03: {tt_index_03}
+
+                --> tt_rows_03: {tt_rows_03}
+                --> tt_debit_03: {tt_debit_03}
+                --> tt_credit_03: {tt_credit_03}
             """)
 
             file_name = r"I:\\1. Gaulke Contábil\\Administrativo\\9. TI\\1. Projetos\\8. Importação Arão dos Santos Recebimentos\\00_base_tratada_arao_dos_santos.xlsx"
@@ -1391,6 +1415,9 @@ class ConvertToDataFrame:
                 "tt_rows": tt_rows,
                 "tt_debit": tt_debit,
                 "tt_credit": tt_credit,
+                "tt_rows_03": tt_rows_03,
+                "tt_debit_03": tt_debit_03,
+                "tt_credit_03": tt_credit_03,
                 "list_page_erros": [],
                 }
             
@@ -1398,3 +1425,134 @@ class ConvertToDataFrame:
             print(f" \n\n ERROR GENERATE ARÃO DOS SANTOS | ERROR: {e}")
             return {"code": 500, "msg": "erro ao gerar pacote Arão dos Santos.", "error": e}
         
+    # ----
+    
+    def read_pdf_comprovante_banco_bradesco(file):
+
+        print(f"\n\n ----- Arquivo informado comprovante Bradesco | arquivo: {file}")
+
+        contents = file.read()
+        pdf_bytes = io.BytesIO(contents)
+        pdf_reader = PdfReader(pdf_bytes)
+
+        list_data_pages = list()
+        list_page_erros = list()
+        index_page = 0
+        print(f" TT PAGES: {len(pdf_reader.pages)}")
+
+
+        data_to_table = {
+            # ---------- IDENTIFICADORES
+            # "nome_beneficiario": list(),
+            "cnpj_beneficiario": list(),
+
+            # "nome_pagador": list(),
+            "cnpj_pagador": list(),
+
+            # # ---------- DATAS
+            "data_de_debito": list(),
+            "data_de_vencimento": list(),
+
+            # ---------- VALORES
+            "valor": list(),
+            "desconto": list(),
+            "abatimento": list(),
+            "bonificacao": list(),
+            "multa": list(),
+            "juros": list(),
+            "valor_total": list(),
+
+        }
+
+        for index_page in range(len(pdf_reader.pages)):
+            try:
+                print(f"\n\n\n ---- INDEX PAGE: {index_page}")
+                
+                page = pdf_reader.pages[index_page]
+                
+                
+                data_page = page.extract_text()
+                print("\n\n ----------------------- DATA EXTRACT ----------------------- ")
+                print(data_page)
+                cont_aux = 0
+                for i in range(len(data_page)):
+                    
+                    if "Beneficiário Final" in data_page[i:i+18]:
+                        print(f" << {data_page[i:i+18]} >>")
+                        print(f" ---> CNPJ BENEFICIARIO {i} / {data_page[i+19:i+38]}")
+                        data_to_table["cnpj_beneficiario"].append( data_page[i+19:i+38] )
+
+                    if data_page[ i : i+23 ] == "CPF/CNPJ Beneficiário:":
+                        print(f" << {data_page[i+22 : i+50]} >>")
+                        data_temp = data_page[i+22 :]
+                        
+                        for j in range(len(data_temp)):
+                            if "Nome" in data_temp[j:j+5]:
+                                print(f"\n ---> NOME BENEFICIARIO {i} / {data_page[i+j+8:i+(j+20)]}")
+                                break
+                            
+                        # data_to_table["cnpj_beneficiario"].append( data_page[i+19:i+38] )
+
+
+
+                   
+                    if data_page[i:i+2] == "R$":
+                        value_aux = data_page[i:i+15]
+                        print(f" -------------->>>> {value_aux}")
+                        index_fim = None
+
+                        data_aux = data_page[i:i+18]
+                        for j in range(len(data_aux)):
+                            if data_aux[j] == ",":
+                                index_fim = i + (j+3)
+                                break
+                        value = data_page[i:index_fim]
+                        print(f" ---> VALOR: {value}")
+                        
+                        if " V" in value_aux:
+                            data_to_table["valor_total"].append(value)
+
+                        elif "Va" in value_aux:
+                            data_to_table["valor"].append(value)
+                            data_de_vencimento = data_page[index_fim+5:index_fim+15]
+                            cnpj_pagador = data_page[index_fim+61:index_fim+80]
+
+                            data_de_debito = data_page[index_fim+35:index_fim+45]
+                            data_to_table["data_de_debito"].append(data_de_debito)
+                            data_to_table["data_de_vencimento"].append(data_de_vencimento)
+
+                            data_to_table["cnpj_pagador"].append( cnpj_pagador )
+                        
+                        elif "Descont" in data_aux:
+                            data_to_table["desconto"].append(value)
+
+                        elif "Abatime" in data_aux:
+                            data_to_table["abatimento"].append(value)
+
+                        elif "Bonific" in data_aux:
+                            data_to_table["bonificacao"].append(value)
+
+                        elif "Multa" in data_aux:
+                            data_to_table["multa"].append(value)
+
+                        elif "Juros" in data_aux:
+                            data_to_table["juros"].append(value)
+                        
+
+                    
+            except Exception as e:
+                print(f" ### ERROR EXTRACT DATA PDF | ERROR: {e}")
+                list_page_erros.append({index_page: e})
+            
+        print(data_to_table)
+        df = pd.DataFrame.from_dict(data_to_table)
+        print(df)
+
+        # return {
+        #     "data_table": data_json,
+        #     "tt_rows": tt_rows,
+        #     "tt_debit": tt_debit,
+        #     "tt_credit": tt_credit,
+        #     "list_page_erros": [],
+        #      }
+        return {}

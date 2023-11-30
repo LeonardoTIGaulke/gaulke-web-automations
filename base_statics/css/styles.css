@@ -24,6 +24,14 @@ nav {
 .navbar-brand {
     box-sizing: border-box;
 }
+
+.block-menu-block {
+    text-align: center;
+    margin-top: 21px !important;
+    border-top: 1px solid #cfc7c7;
+    padding-top: 7px;
+}
+
 .img-logo-navbar-desktop {
     width: 60px;
     height: 60px;
