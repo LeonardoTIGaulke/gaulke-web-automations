@@ -19,23 +19,18 @@
         <h3 style="text-align: center; padding: 8px 0px;">Importação Arão dos Santos</h3>
     </div>
     <div class="d-flex justify-content-center align-content-center" id="form-payroll" style="min-height: 40vh;">
-        <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_relacao_arao_dos_santos' %}" enctype="multipart/form-data">
+        <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_relacao_arao_dos_santos' %}" id="form-select-file-01" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="mb-3">
                 <label for="file" class="form-label"><b>Base Cliente</b></label>
-                <input class="form-control" type="file" id="file" name="file" required="required" accept=".xlsx">
+                <input class="form-control" type="file" id="file" name="file"  accept=".xlsx">
             </div>
             <div class="mb-3">
                 <label for="file_2" class="form-label"> <b>Base Contábil</b></label>
-                <input class="form-control" type="file" id="file_2" name="file_2" required="required" accept=".xlsx">
+                <input class="form-control" type="file" id="file_2" name="file_2"  accept=".xlsx">
             </div>
             
-            <!-- <div class="mb-3">
-                <label for="grupo_lancamento" class="form-label">Grupo Lanç.</label>
-                <input class="form-control" type="text" id="grupo_lancamento" name="grupo_lancamento" required="required" placeholder="ex: 09/2023" value="{{grupo_lancamento}}"> -->
-            <!-- </div> -->
-             
-            <input class="btn-send-file" type="submit" value="carregar arquivos" style="max-height: 45px; border: 1px solid;" onclick="animationLoadPostFile();">
+            <input class="btn-send-file" type="button" value="carregar arquivos" style="max-height: 45px; border: 1px solid;" onclick="checkSelectFile();">
         </form>
         
     </div>
@@ -256,7 +251,7 @@
 <script src="{% static 'animations.js' %}"></script>
 <script src="{% static 'controller_tables.js' %}"></script>
 <script src="{% static 'prepare_data.js' %}"></script>
-
+<script src="{% static 'controller_check_inputs.js' %}"></script>
 
 
 <script>

@@ -117,7 +117,9 @@
                             <td>{{data.NOME}}</td>
                             <td>{{data.COD_EMPRESA}}</td>
                             <td>{{data.FILIAL}}</td>
-                            <td>{{data.DATA}}</td>
+                            <!-- <td>{{data.DATA}}</td> -->
+                            <td><input type="text" value="{{data.DATA}}"></td>
+
                             <td>{{data.NR_L_CTO_ERP}}</td>
                             <td>{{data.TP}}</td>
                             <td>{{data.CONTA}}</td>
@@ -177,7 +179,7 @@
         let data_temp = null;
         table_body.forEach((row)=>{
             table_td = row.querySelectorAll("td");
-
+            
             if (table_td[0].querySelector("input")){
                 if (table_td[0].querySelector("input").checked & row.style.display != "none"){
                     // console.log(" ----->> INPUT CHECKBOX CHECKED TRUE");
@@ -197,9 +199,17 @@
                             } else if(i==4){
                                 table_td[i].textContent = cod_filial;
                                 data_temp.push(cod_filial);
+
                             } else if(i==5){
-                                table_td[i].textContent;
-                                data_temp.push( removeCaracter(table_td[i].textContent) );
+                                // table_td[i].textContent;
+                                let date_input = table_td[i].querySelector("input").value;
+                                console.log(date_input);
+                                try {
+                                    data_temp.push( removeCaracter(date_input) );
+                                } catch (error) {
+                                    data_temp.push( date_input );
+                                }
+
                             } else if(i==8){
                                 
                                 if (table_td[i-1].textContent == "C"){
