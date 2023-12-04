@@ -16,12 +16,13 @@
         </article>
     </div>
     {% if visible_form_file %}
-    <div class="d-flex justify-content-center align-content-center align-items-center gap-3 " id="form-payroll" style="min-height: 40vh; flex-wrap: wrap;">
+    <div class="d-flex justify-content-center align-content-center align-items-center gap-3 "  id="form-input-files" style="flex-wrap: wrap;">
         <div class="block-image-layout-client">
             <img src="{% static 'logo-banco-bradesco.png' %}" alt="">
         </div>
         <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_comprovante_banco_bradesco' %}" enctype="multipart/form-data">
             {% csrf_token %}
+            <input type="hidden" value="{{user.username}}" name="username" id="username">
             <div class="mb-3">
                 <label for="file" class="form-label">Importação Comp. de Pag. Banco Bradesco</label>
                 <input class="form-control" type="file" id="file" name="file" required="required" accept=".pdf">

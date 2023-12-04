@@ -75,6 +75,10 @@
 
 
 /* ------------------------- NOVO MODELO MODAL ------------------------- */
+#form-input-files {
+    min-height: 40vh;
+    max-height: 420px;
+}
 .block-config-data-to-text,
 .block-config-data-to-text form,
 .block-config-data-to-text form div {
@@ -316,4 +320,10 @@
 .block-error-read-file p {
     margin: 0;
     padding: 0;
+}
+
+
+.block-info-erros-input-file {
+    display: none;
+    color: red;
 }

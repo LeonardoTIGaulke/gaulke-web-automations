@@ -2,7 +2,10 @@ import io
 import json
 import random
 import tabula
+
 import pandas as pd
+pd.options.mode.chained_assignment = None
+
 from time import time
 from PyPDF2 import PdfReader
 import datetime
@@ -389,12 +392,12 @@ class ConvertToDataFrame:
     
     def create_cod_erp_to_dataframe(dataframe, index_default=0):
         for i in dataframe.index:
-            print("\n --------------  ")
-            print(f">>>> COD{i+index_default}TM{int(time())}")
+            # print("\n --------------  ")
+            # print(f">>>> COD{i+index_default}TM{int(time())}")
             numero_lanc_cto_erp = f"COD{i+index_default}TM{int(time())}"
             dataframe["NR_L_CTO_ERP"][i] = numero_lanc_cto_erp
-        print(" ------ DF ERP FINISH ------ ")
-        print(dataframe)
+        # print(" ------ DF ERP FINISH ------ ")
+        # print(dataframe)
         return dataframe
     
     # ----
@@ -1105,12 +1108,12 @@ class ConvertToDataFrame:
         xlsx_bytes = io.BytesIO(contents)
         file = pd.ExcelFile(xlsx_bytes)
         sheet_name = file.sheet_names[0]
-        df = file.parse(sheet_name=sheet_name)
+        df = file.parse(sheet_name=sheet_name, date_parser="")
         return df
     
     # ----
 
-    def read_xlsx_arao_dos_santos(file_contabil, file_consulta):
+    def read_xlsx_arao_dos_santos(file_contabil, file_consulta, modelo):
         try:
             print(f"\n\n ----- Arquivo informado arão dos santos | file_contabil: {file_contabil} | file_consulta: {file_consulta}")
             
@@ -1131,8 +1134,15 @@ class ConvertToDataFrame:
             df_temp_contabil = ConvertToDataFrame.read_Excel_File(contents=contents)
 
             # Formata a data como 'dd/mm/yyyy'
-            df_temp_consulta['Data'] = pd.to_datetime(df_temp_consulta['Data'])
-            df_temp_consulta['Data'] = df_temp_consulta['Data'].dt.strftime('%d/%m/%Y')
+            if modelo == "modelo_multiadv":
+                # ---------------------- FORMATO 01
+                df_temp_consulta['Data'] = pd.to_datetime(df_temp_consulta['Data'])
+                df_temp_consulta['Data'] = df_temp_consulta['Data'].dt.strftime('%d/%m/%Y')
+            
+            elif modelo == "modelo_email":
+                # ---------------------- FORMATO 02
+                df_temp_consulta['Data Emissão'] = pd.to_datetime(df_temp_consulta['Data Emissão'])
+                df_temp_consulta['Data Emissão'] = df_temp_consulta['Data Emissão'].dt.strftime('%d/%m/%Y')
 
             print("\n\n ------------------------ df_temp_contabil ------------------------ ")
             print(df_temp_contabil)
@@ -1143,24 +1153,28 @@ class ConvertToDataFrame:
             for i in df_temp_contabil.index:
                 
                 nf = df_temp_contabil["Nº NF"][i]
-                query_df_contabil = df_temp_consulta[df_temp_consulta["Nota Fiscal"] == nf ][["Data", "Nota Fiscal"]]
+
+
+                if modelo == "modelo_multiadv":
+                    query_df_contabil = df_temp_consulta[df_temp_consulta["Nota Fiscal"] == nf ][["Data", "Nota Fiscal"]]
+
+                    if len(query_df_contabil) >= 1:
+                        df_temp_contabil["Data Recebim. NF"][i] = query_df_contabil["Data"].values[0]
+                    else:
+                        list_pendencias.append(nf)
+
+                if modelo == "modelo_email":
+                    query_df_contabil = df_temp_consulta[df_temp_consulta["Nº Nota"] == nf ][["Data Emissão", "Nº Nota"]]
                 
-                if len(query_df_contabil) >= 1:
-                    df_temp_contabil["Data Recebim. NF"][i] = query_df_contabil["Data"].values[0]
-                else:
-                    list_pendencias.append(nf)
+                    if len(query_df_contabil) >= 1:
+                        df_temp_contabil["Data Recebim. NF"][i] = query_df_contabil["Data Emissão"].values[0]
+                    else:
+                        list_pendencias.append(nf)
+
             
                 print(f" -------------------- QUERY RESULT -------------------- NF: {nf}")
                 print(query_df_contabil)
 
-            # 
-            # 
-            # ------------------------------------------------- DF PENDÊNCIAS -------------------------------------------------
-            print(" \n\n ----------------- DF PENDÊNCIAS ----------------- ")
-            df_pendencias = df_temp_contabil[df_temp_contabil["Nº NF"].isin(list_pendencias)]
-            df_pendencias.index = list(range(0, len(df_pendencias)))
-            print(df_pendencias)
-            
             #
             # 
             #  ------------------------------------------------- DF PENDÊNCIAS -------------------------------------------------
@@ -1409,9 +1423,47 @@ class ConvertToDataFrame:
             file_name = r"I:\\1. Gaulke Contábil\\Administrativo\\9. TI\\1. Projetos\\8. Importação Arão dos Santos Recebimentos\\03_base_tratada_arao_dos_santos.xlsx"
             ConvertToDataFrame.convert_dataframe_to_excel(dataframe=df_tp_registro_03, file_name=file_name)
 
+
+            #
+            # 
+            # ------------------------------------------------- DF PENDÊNCIAS -------------------------------------------------
+            print(" \n\n ----------------- DF PENDÊNCIAS ----------------- ")
+            df_pendencias = df_temp_contabil[df_temp_contabil["Nº NF"].isin(list_pendencias)]
+            df_pendencias.index = list(range(0, len(df_pendencias)))
+            df_pendencias = ConvertToDataFrame.rename_columns_dataframe(dataframe=df_pendencias, dict_replace_names={
+                "Nº NF": "NUMERO_NF",
+                "Data de Emissão": "DATA_EMISSAO",
+                "Cód. Cliente": "COD_CLIENTE",
+                "Nome Cliente": "NOME_CLIENTE",
+                # "CNPJ_ORIGIN": "CNPJ",
+                "Valor Bruto NF": "VALOR_BRUTO_NF",
+
+                "IRPJ Retido": "IRPJ",
+                "CSLL Retida": "CSLL",
+                "Cofins Retido": "COFINS",
+                "PIS Retido": "PIS",
+                "Filial": "FILIAL",
+
+            })
+
+            tt_pendencias = len(df_pendencias.index)
+            if tt_pendencias > 0:
+                btn_pendencias = True
+            else:
+                btn_pendencias = False
+            
+            # df_pendencias.to_excel("df_pendencias.xlsx")
+
+            df_json_pendencias = json.loads(df_pendencias.to_json(orient="table"))
+            print(df_pendencias)
+            print(f"\n\n ----------- TT Pendências: {tt_pendencias} -----------")
+
             return {
                 "data_table": data_json,
                 "data_json_03": data_json_03,
+                "df_json_pendencias": df_json_pendencias,
+                "btn_pendencias": btn_pendencias,
+                "tt_pendencias": tt_pendencias,
                 "tt_rows": tt_rows,
                 "tt_debit": tt_debit,
                 "tt_credit": tt_credit,

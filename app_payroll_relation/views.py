@@ -67,24 +67,32 @@ def post_file_fastAPI_comprovante_banco_do_brasil(request):
         return render(request, "app_relations/relation_extrato_banco_do_brasil.html", context=context)
         
     elif request.method == "POST":
-        file = request.FILES["file"]
-        print(file)
+        try:
+            username = request.POST.get("username")
+            file = request.FILES["file"]
+            print(file)
 
-        dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_do_brasil(file=file)
-        print(dataJson)
-        context = {
-            "code_process": True,
-            "data_table": dataJson["data_table"]["data"],
-            "list_page_erros": dataJson["list_page_erros"],
+            dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_do_brasil(file=file)
+            print(dataJson)
+            context = {
+                "code_process": True,
+                "data_table": dataJson["data_table"]["data"],
+                "list_page_erros": dataJson["list_page_erros"],
 
-            "tt_rows": dataJson["tt_rows"],
-            "tt_debit": dataJson["tt_debit"],
-            "tt_credit": dataJson["tt_credit"],
-            "host_port": HOST_REDIRECT,
+                "tt_rows": dataJson["tt_rows"],
+                "tt_debit": dataJson["tt_debit"],
+                "tt_credit": dataJson["tt_credit"],
+                "host_port": HOST_REDIRECT,
 
-        }
-        
-        return render(request, "app_relations/relation_extrato_banco_do_brasil.html", context=context)
+            }
+            print(f" ### PROCESSO FINALIZADO POR: {username}")
+            return render(request, "app_relations/relation_extrato_banco_do_brasil.html", context=context)
+        except Exception as e:
+            context = {
+                "error_code": True,
+                "visible_form_file": True
+            }
+            return render(request, "app_relations/relation_extrato_banco_do_brasil.html", context=context)
 
 # ------------------------
 @login_required(login_url="/automations/login/")
@@ -96,25 +104,34 @@ def post_file_fastAPI_folha_por_empregado(request):
         return render(request, "app_relations/relation_folha_de_pagamento.html", context=context)
         
     elif request.method == "POST":
-        grupo_lancamento = request.POST.get("grupo_lancamento")
-        file = request.FILES["file"]
-        print(file)
+        try:
+            username = request.POST.get("username")
+            grupo_lancamento = request.POST.get("grupo_lancamento")
+            file = request.FILES["file"]
+            print(file)
 
-        dataJson = ConvertToDataFrame.read_pdf_relacao_folha_por_empregado(file=file, grupo_lancamento=grupo_lancamento)
-        print(dataJson)
-        context = {
-            "code_process": True,
-            "data_table": dataJson["data_table"]["data"],
-            "list_page_erros": dataJson["list_page_erros"],
+            dataJson = ConvertToDataFrame.read_pdf_relacao_folha_por_empregado(file=file, grupo_lancamento=grupo_lancamento)
+            print(dataJson)
+            context = {
+                "code_process": True,
+                "data_table": dataJson["data_table"]["data"],
+                "list_page_erros": dataJson["list_page_erros"],
 
-            "tt_rows": dataJson["tt_rows"],
-            "tt_debit": dataJson["tt_debit"],
-            "tt_credit": dataJson["tt_credit"],
-            "host_port": HOST_REDIRECT,
+                "tt_rows": dataJson["tt_rows"],
+                "tt_debit": dataJson["tt_debit"],
+                "tt_credit": dataJson["tt_credit"],
+                "host_port": HOST_REDIRECT,
 
-        }
-        
-        return render(request, "app_relations/relation_folha_de_pagamento.html", context=context)
+            }
+            print(f" ### PROCESSO FINALIZADO POR: {username}")
+            
+            return render(request, "app_relations/relation_folha_de_pagamento.html", context=context)
+        except Exception as e:
+            context = {
+                "error_code": True,
+                "visible_form_file": True
+            }
+            return render(request, "app_relations/relation_folha_de_pagamento.html", context=context)
 
 # ------------------------
 @login_required(login_url="/automations/login/")
@@ -127,42 +144,50 @@ def post_file_fastAPI_relacao_GNRE(request):
         
     elif request.method == "POST":
         print("\n\n ---------- IMPORTAÇÃO GNRE ---------- ")
-        file = request.FILES["file"]
-        # grupo_lancamento = request.POST.get("grupo_lancamento")
-        modelo_db = request.POST.get("modelo_db")
+        try:
+            username = request.POST.get("username")
+            file = request.FILES["file"]
+            # grupo_lancamento = request.POST.get("grupo_lancamento")
+            modelo_db = request.POST.get("modelo_db")
 
 
-        query_contas = ModelContasGNRE_Estados_x_Contas.objects.filter(modelo=modelo_db)
-        
-        data_contas = dict()
-        for data in query_contas:
-            data_contas.update(
-                {
-                    data.conta_uf:{
-                        "conta_credito": data.conta_numero,
-                        "conta_debito": data.conta_debito,
-                }
-            })
+            query_contas = ModelContasGNRE_Estados_x_Contas.objects.filter(modelo=modelo_db)
+            
+            data_contas = dict()
+            for data in query_contas:
+                data_contas.update(
+                    {
+                        data.conta_uf:{
+                            "conta_credito": data.conta_numero,
+                            "conta_debito": data.conta_debito,
+                    }
+                })
 
-        print(f"\n\n ------------------------ ")
-        print(data_contas)
+            print(f"\n\n ------------------------ ")
+            print(data_contas)
 
-        dataJson = ConvertToDataFrame.read_xlsx_relacao_gnre(file=file, data_contas=data_contas)
-        print(dataJson)
-        context = {
-            "code_process": True,
-            "data_table": dataJson["data_table"]["data"],
-            "list_page_erros": dataJson["list_page_erros"],
-            'data_contas': json.dumps(data_contas),
+            dataJson = ConvertToDataFrame.read_xlsx_relacao_gnre(file=file, data_contas=data_contas)
+            print(dataJson)
+            context = {
+                "code_process": True,
+                "data_table": dataJson["data_table"]["data"],
+                "list_page_erros": dataJson["list_page_erros"],
+                'data_contas': json.dumps(data_contas),
 
-            "tt_rows": dataJson["tt_rows"],
-            "tt_debit": dataJson["tt_debit"],
-            "tt_credit": dataJson["tt_credit"],
-            "host_port": HOST_REDIRECT,
+                "tt_rows": dataJson["tt_rows"],
+                "tt_debit": dataJson["tt_debit"],
+                "tt_credit": dataJson["tt_credit"],
+                "host_port": HOST_REDIRECT,
 
-        }
-        
-        return render(request, "app_relations/relation_GNRE.html", context=context)
+            }
+            print(f" ### PROCESSO FINALIZADO POR: {username}")
+            return render(request, "app_relations/relation_GNRE.html", context=context)
+        except Exception as e:
+            context = {
+                "error_code": True,
+                "visible_form_file": True
+            }
+            return render(request, "app_relations/relation_GNRE.html", context=context)
 
 
 # ------------------------
@@ -175,24 +200,32 @@ def post_file_entrada_titulos_desc_sicoob(request):
         return render(request, "app_relations/relation_entrada_titulos_desc_sicoob.html", context=context)
         
     elif request.method == "POST":
-        file = request.FILES["file"]
-        print(file)
+        try:
+            username = request.POST.get("username")
+            file = request.FILES["file"]
+            print(file)
 
-        dataJson = ConvertToDataFrame.read_pdf_relacao_entrada_titulos_desc_sicoob(file=file)
-        print(dataJson)
-        context = {
-            "code_process": True,
-            "data_table": dataJson["data_table"]["data"],
-            "list_page_erros": dataJson["list_page_erros"],
+            dataJson = ConvertToDataFrame.read_pdf_relacao_entrada_titulos_desc_sicoob(file=file)
+            print(dataJson)
+            context = {
+                "code_process": True,
+                "data_table": dataJson["data_table"]["data"],
+                "list_page_erros": dataJson["list_page_erros"],
 
-            "tt_rows": dataJson["tt_rows"],
-            "tt_debit": dataJson["tt_debit"],
-            "tt_credit": dataJson["tt_credit"],
-            "host_port": HOST_REDIRECT,
+                "tt_rows": dataJson["tt_rows"],
+                "tt_debit": dataJson["tt_debit"],
+                "tt_credit": dataJson["tt_credit"],
+                "host_port": HOST_REDIRECT,
 
-        }
-        
-        return render(request, "app_relations/relation_entrada_titulos_desc_sicoob.html", context=context)
+            }
+            print(f" ### PROCESSO FINALIZADO POR: {username}")
+            return render(request, "app_relations/relation_entrada_titulos_desc_sicoob.html", context=context)
+        except Exception as e:
+            context = {
+                "error_code": True,
+                "visible_form_file": True
+            }
+            return render(request, "app_relations/relation_entrada_titulos_desc_sicoob.html", context=context)
 
 # ------------------------
 @login_required(login_url="/automations/login/")
@@ -204,24 +237,32 @@ def post_file_fastAPI_relacao_cobrancas_pagas(request):
         return render(request, "app_relations/relation_cobrancas_pagas.html", context=context)
         
     elif request.method == "POST":
-        print("\n\n ---------- IMPORTAÇÃO GNRE ---------- ")
-        file = request.FILES["file"]
+        print("\n\n ---------- IMPORTAÇÃO COBRANÇAS PAGAS ---------- ")
+        try:
+            username = request.POST.get("username")
+            file = request.FILES["file"]
 
-        dataJson = ConvertToDataFrame.read_xlsx_relacao_cobrancas_pagas(file=file)
-        print(dataJson)
-        context = {
-            "code_process": True,
-            "data_table": dataJson["data_table"]["data"],
-            "list_page_erros": dataJson["list_page_erros"],
+            dataJson = ConvertToDataFrame.read_xlsx_relacao_cobrancas_pagas(file=file)
+            print(dataJson)
+            context = {
+                "code_process": True,
+                "data_table": dataJson["data_table"]["data"],
+                "list_page_erros": dataJson["list_page_erros"],
 
-            "tt_rows": dataJson["tt_rows"],
-            "tt_debit": dataJson["tt_debit"],
-            "tt_credit": dataJson["tt_credit"],
-            "host_port": HOST_REDIRECT,
+                "tt_rows": dataJson["tt_rows"],
+                "tt_debit": dataJson["tt_debit"],
+                "tt_credit": dataJson["tt_credit"],
+                "host_port": HOST_REDIRECT,
 
-        }
-        
-        return render(request, "app_relations/relation_cobrancas_pagas.html", context=context)
+            }
+            print(f" ### PROCESSO FINALIZADO POR: {username}")
+            return render(request, "app_relations/relation_cobrancas_pagas.html", context=context)
+        except Exception as e:
+            context = {
+                "error_code": True,
+                "visible_form_file": True
+            }
+            return render(request, "app_relations/relation_cobrancas_pagas.html", context=context)
 
 # ------------------------
 @login_required(login_url="/automations/login/")
@@ -234,25 +275,33 @@ def post_file_fastAPI_relacao_decorise(request):
         
     elif request.method == "POST":
         print("\n\n ---------- IMPORTAÇÃO DECORISE ---------- ")
-        file = request.FILES["file"]
-        grupo_lancamento = request.POST.get("grupo_lancamento")
-        print(f"\n--------------->> GRUPO LANÇ: {grupo_lancamento}")
+        try:
+            username = request.POST.get("username")
+            file = request.FILES["file"]
+            grupo_lancamento = request.POST.get("grupo_lancamento")
+            print(f"\n--------------->> GRUPO LANÇ: {grupo_lancamento}")
 
-        dataJson = ConvertToDataFrame.read_xlsx_decorise(file=file, grupo_lancamento=grupo_lancamento)
-        print(dataJson)
-        context = {
-            "code_process": True,
-            "data_table": dataJson["data_table"]["data"],
-            "list_page_erros": dataJson["list_page_erros"],
+            dataJson = ConvertToDataFrame.read_xlsx_decorise(file=file, grupo_lancamento=grupo_lancamento)
+            print(dataJson)
+            context = {
+                "code_process": True,
+                "data_table": dataJson["data_table"]["data"],
+                "list_page_erros": dataJson["list_page_erros"],
 
-            "tt_rows": dataJson["tt_rows"],
-            "tt_debit": dataJson["tt_debit"],
-            "tt_credit": dataJson["tt_credit"],
-            "host_port": HOST_REDIRECT,
+                "tt_rows": dataJson["tt_rows"],
+                "tt_debit": dataJson["tt_debit"],
+                "tt_credit": dataJson["tt_credit"],
+                "host_port": HOST_REDIRECT,
 
-        }
-        
-        return render(request, "app_relations/relation_decorise.html", context=context)
+            }
+            print(f" ### PROCESSO FINALIZADO POR: {username}")
+            return render(request, "app_relations/relation_decorise.html", context=context)
+        except Exception as e:
+            context = {
+                "error_code": True,
+                "visible_form_file": True
+            }
+            return render(request, "app_relations/relation_decorise.html", context=context)
 
 # ------------------------
 @login_required(login_url="/automations/login/")
@@ -265,20 +314,25 @@ def post_file_fastAPI_relacao_arao_dos_santos(request):
         
     elif request.method == "POST":
         print("\n\n ---------- IMPORTAÇÃO ARÃO DOS SANTOS ---------- ")
-        file = request.FILES["file"]
-        file_2 = request.FILES["file_2"]
-
         try:
+            username = request.POST.get("username")
+            modelo = request.POST.get("modelo")
+            file = request.FILES["file"]
+            file_2 = request.FILES["file_2"]
+
 
         
-            dataJson = ConvertToDataFrame.read_xlsx_arao_dos_santos(file_consulta=file,file_contabil=file_2)
+            dataJson = ConvertToDataFrame.read_xlsx_arao_dos_santos(file_consulta=file,file_contabil=file_2, modelo=modelo)
             # print(dataJson)
             context = {
                 "code_process": True,
                 "data_table": dataJson["data_table"]["data"],
                 "data_table_03": dataJson["data_json_03"]["data"],
+                "df_json_pendencias": dataJson["df_json_pendencias"]["data"],
                 "list_page_erros": dataJson["list_page_erros"],
 
+                "btn_pendencias": dataJson["btn_pendencias"],
+                "tt_pendencias": dataJson["tt_pendencias"],
                 "tt_rows": dataJson["tt_rows"],
                 "tt_debit": dataJson["tt_debit"],
                 "tt_credit": dataJson["tt_credit"],
@@ -288,14 +342,12 @@ def post_file_fastAPI_relacao_arao_dos_santos(request):
                 "host_port": HOST_REDIRECT,
 
             }
-            
+            print(f" ### PROCESSO FINALIZADO POR: {username} | MODELO ARQUIVO CONSULTA: {modelo}")
             return render(request, "app_relations/relation_arao_dos_santos.html", context=context)
         except Exception as e:
             context = {
                 "error_code": True,
                 "visible_form_file": True
-                
-
             }
             return render(request, "app_relations/relation_arao_dos_santos.html", context=context)
 
@@ -309,24 +361,33 @@ def post_file_fastAPI_comprovante_banco_bradesco(request):
         return render(request, "app_relations/relation_extrato_banco_bradesco.html", context=context)
         
     elif request.method == "POST":
-        file = request.FILES["file"]
-        print(file)
+        try:
+            username = request.POST.get("username")
+            file = request.FILES["file"]
+            print(file)
 
-        dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_bradesco(file=file)
-        print(dataJson)
-        context = {
-            "code_process": True,
-            # "data_table": dataJson["data_table"]["data"],
-            # "list_page_erros": dataJson["list_page_erros"],
+            dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_bradesco(file=file)
+            print(dataJson)
+            context = {
+                "code_process": True,
+                # "data_table": dataJson["data_table"]["data"],
+                # "list_page_erros": dataJson["list_page_erros"],
 
-            # "tt_rows": dataJson["tt_rows"],
-            # "tt_debit": dataJson["tt_debit"],
-            # "tt_credit": dataJson["tt_credit"],
-            "host_port": HOST_REDIRECT,
+                # "tt_rows": dataJson["tt_rows"],
+                # "tt_debit": dataJson["tt_debit"],
+                # "tt_credit": dataJson["tt_credit"],
+                "host_port": HOST_REDIRECT,
 
-        }
-        
-        return render(request, "app_relations/relation_extrato_banco_bradesco.html", context=context)
+            }
+            print(f" ### PROCESSO FINALIZADO POR: {username}")
+            return render(request, "app_relations/relation_extrato_banco_bradesco.html", context=context)
+        except Exception as e:
+            context = {
+                "error_code": True,
+                "visible_form_file": True
+            }
+            return render(request, "app_relations/relation_extrato_banco_bradesco.html", context=context)
+
 
 # ------------------------
 @login_required(login_url="/automations/login/")

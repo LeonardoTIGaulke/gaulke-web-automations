@@ -16,22 +16,48 @@
         </article>
     </div>
     {% if visible_form_file %}
-    <div class="d-flex justify-content-center align-content-center" id="form-payroll" style="min-height: 40vh;">
+    <div class="d-flex justify-content-center align-content-center"  id="form-input-files">
         <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_folha_por_empregado' %}" enctype="multipart/form-data">
             {% csrf_token %}
+            <input type="hidden" value="{{user.username}}" name="username" id="username">
             <div class="mb-3">
                 <label for="file" class="form-label">Importação Folha de Pagamentos</label>
-                <input class="form-control" type="file" id="file" name="file" required="required" accept=".pdf">
+                <input class="form-control" type="file" id="file" name="file" accept=".pdf">
             </div>
             <div class="mb-3">
                 <label for="grupo_lancamento" class="form-label">Grupo Lanç.</label>
-                <input class="form-control" type="text" id="grupo_lancamento" name="grupo_lancamento" required="required" placeholder="ex: 09/2023" value="{{grupo_lancamento}}">
+                <input class="form-control" type="text" id="grupo_lancamento" name="grupo_lancamento" placeholder="ex: 09/2023" value="{{grupo_lancamento}}">
             </div>
              
             <input class="btn-send-file" type="submit" value="carregar arquivo" style="max-height: 45px; border: 1px solid;" onclick="animationLoadPostFile();">
         </form>
         
     </div>
+
+        {% if error_code %}
+            <div class="container d-flex flex-column justify-content-center align-content-center" style="align-items: center;">
+                <span class="container block-error-read-file">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <p>Erro na leitura do arquivo Folha de Pagamento.</p>
+                </span>
+                <span class="container block-error-read-file">
+                    <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+                    <p>Selecione um arquivo para importação;</p>
+                </span>
+                <span class="container block-error-read-file">
+                    <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+                    <p>Insira um grupo de lançamento válido. Exemplo: 09/2023;</p>
+                </span>
+                <span class="container block-error-read-file">
+                    <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+                    <p>Verifique se o arquivo enviado possui a extensão <b>.pdf</b>.</p>
+                </span>
+            </div>
+        {% endif %}
+
+
+
+
     {% else %}
 
         <script>

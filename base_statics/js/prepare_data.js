@@ -1,6 +1,12 @@
 function removeCaracter(date_string){
     return date_string.replace("/", "").replace("/", "");
 }
+function removeCaracterCNPJ(date_string){
+    for(let i=0; i < 6; i++){
+        date_string = date_string.replace("/", "").replace(".", "").replace("-", "");
+    }
+    return date_string;
+}
 // ------------------
 function formatDateToString(date_to_str) {
     console.log(` ------------>> DATE: ${date_to_str}`);

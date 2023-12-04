@@ -16,12 +16,13 @@
         </article>
     </div>
     {% if visible_form_file %}
-    <div class="d-flex justify-content-center align-content-center" id="form-payroll" style="min-height: 40vh;">
+    <div class="d-flex justify-content-center align-content-center" id="form-input-files">
         <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_relacao_GNRE' %}" enctype="multipart/form-data">
             {% csrf_token %}
+            <input type="hidden" value="{{user.username}}" name="username" id="username">
             <div class="mb-3">
                 <label for="file" class="form-label">Importação GNRE</label>
-                <input class="form-control" type="file" id="file" name="file" required="required" accept=".xls">
+                <input class="form-control" type="file" id="file" name="file" accept=".xls">
             </div>
             <div class="container gap-3 block-inputs-form-post-file">
                 <!-- <div class="mb-3">
@@ -42,6 +43,29 @@
         </form>
         
     </div>
+
+
+        {% if error_code %}
+            <div class="container d-flex flex-column justify-content-center align-content-center" style="align-items: center;">
+                <span class="container block-error-read-file">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <p>Erro na leitura do arquivo GNRE.</p>
+                </span>
+
+
+                <span class="container block-error-read-file">
+                    <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+                    <p>Selecione um arquivo para importação;</p>
+                </span>
+                <span class="container block-error-read-file">
+                    <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+                    <p>Verifique se o arquivo enviado possui a extensão <b>.xls</b>.</p>
+                </span>
+                
+
+            </div>
+        {% endif %}
+
     {% else %}
 
         <script>
