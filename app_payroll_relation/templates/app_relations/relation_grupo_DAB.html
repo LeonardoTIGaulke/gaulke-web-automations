@@ -6,6 +6,7 @@
 <div class="container-fluid  container-base-elements" id="form-file-payroll-relation"> 
     <div class="container-processing-data">
         <article>
+            <!-- <p class="progress_table_update">Progresso (%)</p> -->
             <div class="lds-ellipsis">
                 <div></div>
                 <div></div>
@@ -15,19 +16,25 @@
         </article>
     </div>
     {% if visible_form_file %}
+    <div class="container">
+        <h3 style="text-align: center; padding: 8px 0px;">{{info_01}}</h3>
+    </div>
     <div class="d-flex justify-content-center align-content-center" id="form-input-files">
-        <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_relacao_decorise' %}" enctype="multipart/form-data">
+        <form class="row g-3" method="POST" action="{{post_file}}" enctype="multipart/form-data">
             {% csrf_token %}
-
             <input type="hidden" value="{{user.username}}" name="username" id="username">
             
             <div class="mb-3">
-                <label for="file" class="form-label">Importação Decorise</label>
-                <input class="form-control" type="file" id="file" name="file" accept=".xlsx">
+                <label for="file" class="form-label"><b>Base Fornecedores</b></label>
+                <input class="form-control" type="file" id="file" name="file"  accept=".xls">
             </div>
             <div class="mb-3">
-                <label for="grupo_lancamento" class="form-label">Grupo Lanç.</label>
-                <input class="form-control" type="text" id="grupo_lancamento" name="grupo_lancamento" placeholder="ex: 09/2023" value="{{grupo_lancamento}}">
+                <label for="file_2" class="form-label"> <b>Base Pagamentos (RN)</b></label>
+                <input class="form-control" type="file" id="file_2" name="file_2"  accept=".xlsx">
+            </div>
+
+            <div class="mb-3 block-info-erros-input-file">
+                <span class="container" style="max-width: 100%;">Por favor, selecione os dois arquivos para importação.</span>
             </div>
              
             <input class="btn-send-file" type="submit" value="carregar arquivo" style="max-height: 45px; border: 1px solid;" onclick="animationLoadPostFile();">
@@ -36,25 +43,24 @@
     </div>
 
 
-
         {% if error_code %}
             <div class="container d-flex flex-column justify-content-center align-content-center" style="align-items: center;">
                 <span class="container block-error-read-file">
                     <i class="fa-solid fa-triangle-exclamation"></i>
-                    <p>Erro na leitura do arquivo Decorise.</p>
+                    <p>Erro na leitura do arquivo DAB.</p>
                 </span>
+
+
                 <span class="container block-error-read-file">
                     <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
-                    <p>Selecione um arquivo para importação;</p>
-                </span>
-                <span class="container block-error-read-file">
-                    <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
-                    <p>Insira um grupo de lançamento válido. Exemplo: 09/2023;</p>
+                    <p>Selecione os arquivos <br>- Base de Fornecedores; <br>- Base de Pagamentos;</p>
                 </span>
                 <span class="container block-error-read-file">
                     <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
                     <p>Verifique se o arquivo enviado possui a extensão <b>.xlsx</b>.</p>
                 </span>
+                
+
             </div>
         {% endif %}
 
@@ -66,16 +72,13 @@
 
         <div class="container block-config-data-to-text">
 
+            <!-- <div class="block-action-close-modal">
+                <i class="fa-solid fa-xmark" onclick="displayModalAccounts();"></i>
+            </div> -->
             <div class="row mt-3">
                 <h3>Configuração de Contas</h3>
             </div>
             <form action="">
-
-                <!-- --------------- inputs --------------- -->
-                <!-- ----- contas -----
-                    - código da empresa: identificador da empresa
-                    - filial: identificação do estabelecimento
-                 -->
                 <div class="row">
                     <label for="">*Cod. Empresa</label>
                     <input type="text" name="cod_empresa" id="cod_empresa" placeholder="código da empresa">
@@ -84,33 +87,16 @@
                     <label for="">*Filial</label>
                     <input type="text" name="cod_filial" id="cod_filial" placeholder="filial">
                 </div>
-                
-                <!-- ----- contas -----
-                    - crédito: número da conta de crédito
-                    - débito: número da conta de débito
-                    - débito: número da conta de débito
-                 -->
-                 
-                 <div class="row">
-                    <label for="">*Conta Crédito</label>
-                    <input type="text" name="cod_conta_credito" id="cod_conta_credito" value="2245" placeholder="filial">
-                </div>
                 <div class="row">
-                    <label for="">*Conta Débito (recebível)</label>
-                    <input type="text" name="cod_conta_debito_recebivel" id="cod_conta_debito_recebivel" value="353" placeholder="filial">
+                    <label for="">*Conta Débito</label>
+                    <input type="text" name="cod_conta_debito" id="cod_conta_debito" value="5" placeholder="conta débito">
                 </div>
-                <div class="row">
-                    <label for="">*Conta Débito (comissão)</label>
-                    <input type="text" name="cod_conta_debito_comissao" id="cod_conta_debito_comissao" value="946" placeholder="filial">
-                </div>
-
 
 
                 <div class="row my-3 gap-3 block-btns-options-modal">
                     <input type="button" value="gerar importação" onclick="generateImport();">
                     <input type="button" value="fechar" onclick="displayModalAccounts();">
                 </div>
-            
             </form>
         </div>
         <div class="container block-btns-config-accounts">
@@ -134,7 +120,7 @@
                     <tr>
                         <th class="align-text-center  col-fixed-2" id="select-all-rows">SELEÇÃO<input type="checkbox" class="btn-select-all-rows" onclick="SelectAllDataTemp(this);"></th>
                         <th>TP_REGISTRO</th>
-                        <!-- <th>NOME</th> -->
+                        <th>NOME</th>
                         <th>COD_EMPRESA</th>
                         <th>FILIAL</th>
                         <th>DATA</th>
@@ -162,7 +148,7 @@
                         <tr class="data-row-{{data.index}}">
                             <td class="align-text-center  col-fixed-2"><input type="checkbox" name="data-row-{{data.index}}" onclick="calculateValues(this)"></td>
                             <td>{{data.TP_REGISTRO}}</td>
-                            <!-- <td>{{data.NOME}}</td> -->
+                            <td>{{data.NOME}}</td>
                             <td>{{data.COD_EMPRESA}}</td>
                             <td>{{data.FILIAL}}</td>
                             <td>{{data.DATA}}</td>
@@ -196,8 +182,6 @@
 <script src="{% static 'controller_tables.js' %}"></script>
 <script src="{% static 'prepare_data.js' %}"></script>
 
-
-
 <script>
 
     // ------------------
@@ -205,96 +189,68 @@
 
         let cod_empresa = document.getElementById("cod_empresa").value;
         let cod_filial = document.getElementById("cod_filial").value;
-        
-        let cod_conta_credito = document.getElementById("cod_conta_credito").value;
-        let cod_conta_debito_recebivel = document.getElementById("cod_conta_debito_recebivel").value;
-        let cod_conta_debito_comissao = document.getElementById("cod_conta_debito_comissao").value;
-
-        console.log(`
-
-            cod_empresa: ${cod_empresa}
-            cod_filial: ${cod_filial}
-            cod_conta_credito: ${cod_conta_credito}
-            cod_conta_debito_recebivel: ${cod_conta_debito_recebivel}
-            cod_conta_debito_comissao: ${cod_conta_debito_comissao}
-
-        `);
-        
+        let cod_conta_debito = document.getElementById("cod_conta_debito").value;
         // ----
         let table = document.querySelector(".container-table-preview").querySelector("table");
         let table_head = table.querySelector("thead").querySelector("tr").querySelectorAll("th");
         let table_body = table.querySelector("tbody").querySelectorAll("tr");
 
         // ----
-        let data_table_headers = new Array();
         let data_table_rows = new Array();
         // ----
 
-        table_head.forEach((e)=>{
-            if (e.textContent != "SELEÇÃO" & e.textContent != "NOME" & e.textContent != "TYPE_PROCESS" ){
-                data_table_headers.push(e.textContent);
-            }
-        });
 
         // ----
         let table_td = null;
         let data_temp = null;
-        
         table_body.forEach((row)=>{
             table_td = row.querySelectorAll("td");
 
             if (table_td[0].querySelector("input")){
                 if (table_td[0].querySelector("input").checked & row.style.display != "none"){
-                    // console.log(" ----->> INPUT CHECKBOX CHECKED TRUE");
                     data_temp = new Array();
+
+                    // cod_empresa
+                    // cod_filial
+                    // cod_conta_debito
                     
                     for(let i=1; i < table_td.length; i++){
-                        
-                        if (i==2){
+                        if (i != 2){
 
-                            table_td[i].textContent = cod_empresa;
-                            data_temp.push(cod_empresa);
+                            if (i==3){
+                                table_td[i].textContent = cod_empresa;
+                                data_temp.push(cod_empresa);
 
-                        } else if(i==3){
+                            } else if(i==4){
+                                table_td[i].textContent = cod_filial;
+                                data_temp.push(cod_filial);
 
-                            table_td[i].textContent = cod_filial;
-                            data_temp.push(cod_filial);
-
-                        } else if(i==4){
-
-                            table_td[i].textContent;
-                            data_temp.push( removeCaracter(table_td[i].textContent) );
-
-                        } else if(i==7){
-                            // console.log(`--> type process 2: ${table_td[i+14].textContent}`);
-                            if ( table_td[i+14].textContent == "process_debit_valor_receb" ){
-                                table_td[i].textContent = cod_conta_debito_recebivel;
-                                data_temp.push(cod_conta_debito_recebivel);
+                            } else if(i==5){
+                                table_td[i].textContent;
+                                data_temp.push( removeCaracter( table_td[i].textContent ) );
+                            } else if(i==8){
+                                console.log(table_td[i+14].textContent);
+                                if(table_td[i+14].textContent == "debit_comum"){
+                                    table_td[i].textContent = cod_conta_debito;
+                                    data_temp.push( cod_conta_debito );
+                                }
+                                else {
+                                    data_temp.push( table_td[i].textContent );
+                                }
+                            } else if(i==16){
+                                table_td[i].textContent;
+                                data_temp.push( removeCaracterCNPJ( table_td[i].textContent ) );
                             }
-                            else if ( table_td[i+14].textContent == "process_debit_valor_comissao" ){
-                                table_td[i].textContent = cod_conta_debito_comissao;
-                                data_temp.push(cod_conta_debito_comissao);
-                            }
-                            else {
-                                table_td[i].textContent = cod_conta_credito;
-                                data_temp.push(cod_conta_credito);
-                            }
-                            
 
-                        }
-                        else if(i==9){
-                            let value_aux = table_td[i].textContent.replace(",", ".");
-                            table_td[i].textContent = value_aux;
-                            data_temp.push(value_aux);
-                        }
-
-                        else if(i < 21){
-                            data_temp.push(table_td[i].textContent);
+                            else if( i< 22) {
+                                data_temp.push(table_td[i].textContent);
+                            }
 
                         }
                         
                     }
                     data_table_rows.push(data_temp);
+                    
                    
                 }
             }
@@ -311,7 +267,7 @@
         var url = URL.createObjectURL(blob);
         var link = document.createElement("a");
         link.setAttribute("href", url);
-        link.setAttribute("download", "Importortação JB Relação Decorise.txt");
+        link.setAttribute("download", "Importortação JB - Grupo DAB.txt");
         link.style.visibility = "hidden";
         document.body.appendChild(link);
         link.click();
@@ -319,13 +275,14 @@
 
         disabledRowsTable();
         displayModalAccounts();
-        checktotalRowsExported("{{host_port}}", "automations", "relacao-decorise");
+        checktotalRowsExported("{{host_port}}", "automations", "relacao-grupo-DAB");
 
     }
 
+    // ------------------
+
     
+
 </script>
-
-
 
 {% endblock %}

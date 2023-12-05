@@ -79,6 +79,17 @@
     min-height: 40vh;
     max-height: 420px;
 }
+#form-input-files form {
+    max-width: 580px;
+    border-radius: 5px;
+    /* background: #eee8e8; */
+    /* box-shadow: var(--color-box-shadow); */
+}
+#form-input-files form .btn-send-file {
+    max-width: 98%;
+    margin: 0 auto;
+}
+
 .block-config-data-to-text,
 .block-config-data-to-text form,
 .block-config-data-to-text form div {

@@ -354,6 +354,7 @@ def post_file_fastAPI_relacao_arao_dos_santos(request):
 # ------------------------
 @login_required(login_url="/automations/login/")
 def post_file_fastAPI_comprovante_banco_bradesco(request):
+    # print(request.user.username)
     if request.method == "GET":
         context = {
             "visible_form_file": True,
@@ -367,15 +368,15 @@ def post_file_fastAPI_comprovante_banco_bradesco(request):
             print(file)
 
             dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_bradesco(file=file)
-            print(dataJson)
+            # print(dataJson)
             context = {
                 "code_process": True,
-                # "data_table": dataJson["data_table"]["data"],
-                # "list_page_erros": dataJson["list_page_erros"],
+                "data_table": dataJson["data_table"]["data"],
+                "list_page_erros": dataJson["list_page_erros"],
 
-                # "tt_rows": dataJson["tt_rows"],
-                # "tt_debit": dataJson["tt_debit"],
-                # "tt_credit": dataJson["tt_credit"],
+                "tt_rows": dataJson["tt_rows"],
+                "tt_debit": dataJson["tt_debit"],
+                "tt_credit": dataJson["tt_credit"],
                 "host_port": HOST_REDIRECT,
 
             }
@@ -388,6 +389,49 @@ def post_file_fastAPI_comprovante_banco_bradesco(request):
             }
             return render(request, "app_relations/relation_extrato_banco_bradesco.html", context=context)
 
+# ------------------------
+@login_required(login_url="/automations/login/")
+def post_file_fastAPI_relacao_grupo_DAB(request):
+    # print(request.user.username)
+    if request.method == "GET":
+        context = {
+            "visible_form_file": True,
+            "post_file": "/automations/relacao-grupo-DAB/",
+            "info_01": "Importação Grupo DAB",
+        }
+        return render(request, "app_relations/relation_grupo_DAB.html", context=context)
+        
+    elif request.method == "POST":
+        try:
+            username = request.POST.get("username")
+            file = request.FILES["file"]
+            file_2 = request.FILES["file_2"]
+
+            print(file)
+            print(file_2)
+
+            dataJson = ConvertToDataFrame.read_xls_comprovante_grupo_DAB(file_suppliers=file, file_payments=file_2)
+            # print(dataJson)
+            context = {
+                "code_process": True,
+                "data_table": dataJson["data_table"]["data"],
+                "list_page_erros": dataJson["list_page_erros"],
+
+                "tt_rows": dataJson["tt_rows"],
+                "tt_debit": dataJson["tt_debit"],
+                "tt_credit": dataJson["tt_credit"],
+                "host_port": HOST_REDIRECT,
+
+            }
+            print(f" ### PROCESSO FINALIZADO POR: {username}")
+            return render(request, "app_relations/relation_grupo_DAB.html", context=context)
+        except Exception as e:
+            context = {
+                "error_code": True,
+                "error": e,
+                "visible_form_file": True
+            }
+            return render(request, "app_relations/relation_grupo_DAB.html", context=context)
 
 # ------------------------
 @login_required(login_url="/automations/login/")

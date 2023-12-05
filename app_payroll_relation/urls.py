@@ -17,7 +17,15 @@ urlpatterns = [
     path("relacao-decorise/", views.post_file_fastAPI_relacao_decorise, name="post_file_fastAPI_relacao_decorise"),
     path("relacao-arao-dos-santos/", views.post_file_fastAPI_relacao_arao_dos_santos, name="post_file_fastAPI_relacao_arao_dos_santos"),
     
+
+    # ------------------- EM DESENVOLVIMENTO -------------------
     path("relacao-comprovante-banco-bradesco/", views.post_file_fastAPI_comprovante_banco_bradesco, name="post_file_fastAPI_comprovante_banco_bradesco"),
+
+    path("relacao-grupo-DAB/", views.post_file_fastAPI_relacao_grupo_DAB, name="post_file_fastAPI_relacao_grupo_DAB"),
+
+
+
+
 
     # -------------  DASHBOARDS -------------
     path("dashboard-visao-geral/", views.dashboard_visao_geral, name="dashboard_visao_geral"),

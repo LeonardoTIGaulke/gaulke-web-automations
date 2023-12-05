@@ -21,7 +21,9 @@
     <div class="d-flex justify-content-center align-content-center"  id="form-input-files">
         <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_relacao_arao_dos_santos' %}" id="form-select-file-01" enctype="multipart/form-data" style="max-width: 85vh;">
             {% csrf_token %}
+
             <input type="hidden" value="{{user.username}}" name="username" id="username">
+            
             <div class="mb-3">
                 <label for="file" class="form-label"><b>Base Cliente</b></label>
                 <input class="form-control" type="file" id="file" name="file"  accept=".xlsx">
