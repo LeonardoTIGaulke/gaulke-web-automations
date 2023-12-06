@@ -188,6 +188,7 @@ class ConvertToDataFrame:
                 elif model == "model_8":
                     # modelo: Extrato Bradesco
                     value_primeiro_hist_cta = "2"
+                    value_tp_cnpj = "2"
                     dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["nome_pagador", "data_de_vencimento"], index=i)
                     text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, value_generic=value_generic)
                     print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
@@ -432,6 +433,17 @@ class ConvertToDataFrame:
     # ----
     
     def create_cod_erp_to_dataframe(dataframe, index_default=0):
+        """
+            return: DataFrame com valores da colunas "NR_L_CTO_ERP" atualizados com valores randômicos.\n
+                - index_default int: deve um valor inteiro (int) para iteração com i (index) do DataFrame;\n
+                - exemplo:
+
+                    valor de "index_default" passado na função com 2.\n
+                    porém, já está definido valor padrão como 0 (ZERO).\n
+                    -   for i in dataframe.index:\n
+                            ... --> equação: i + index_default ==> é o mesmo que i + 2
+        """
+        
         for i in dataframe.index:
             # print("\n --------------  ")
             # print(f">>>> COD{i+index_default}TM{int(time())}")
@@ -444,14 +456,27 @@ class ConvertToDataFrame:
     # ----
     
     def filter_columns_dataframe(daraframe, list_columns: list):
-        daraframe = daraframe[list_columns]
-        return daraframe
+        """
+            return: DataFrame com colunas exclusivas.\n
+                - list_columns list: deve ser uma lista Python (list) com nomes das colunas a serem indexadas ao DataFrame;\n
+                - exemplo:
+                    -   list_columns = ["VALOR", "CNPJ", "NOME"];
+        """
+        return daraframe[list_columns]
     
     # ----
     
     def filter_data_dataframe(daraframe, name_column: str, list_remove_values: list):
-        daraframe = daraframe[~daraframe[name_column].isin(list_remove_values)]
+        """
+            return: DataFrame com valores filtrados.\n
+                - name_column str: deve ser o nome (str) da coluna do DF;\n
+                - list_remove_values list: deve ser uma lista (list) Python com os valores a serem removidos do DF;\n\n
+                - exemplo:
+                    -   name_column = "VALOR";
+                    -   list_remove_values = ["0.00", "0,00", 0.00];
 
+        """
+        daraframe = daraframe[~daraframe[name_column].isin(list_remove_values)]
         return daraframe
     
     # ----
@@ -1567,7 +1592,7 @@ class ConvertToDataFrame:
                 data_page = page.extract_text()
                 print("\n\n ----------------------- DATA EXTRACT ----------------------- ")
                 print(data_page)
-                cont_aux = 0
+                
                 for i in range(len(data_page)):
                     
                     # -------------------------- NOME PAGADOR --------------------------
@@ -1590,7 +1615,7 @@ class ConvertToDataFrame:
                     if "Beneficiário Final" in data_page[i:i+18]:
                         print(f" << {data_page[i:i+18]} >>")
                         print(f" ---> CNPJ BENEFICIARIO {i} / {data_page[i+19:i+38]}")
-                        data_to_table["cnpj_beneficiario"].append( data_page[i+19:i+38] )
+                        data_to_table["cnpj_beneficiario"].append( data_page[i+1+19:i+38] )
 
                     if data_page[ i : i+23 ] == "CPF/CNPJ Beneficiário:":
                         print(f" << {data_page[i+22 : i+50]} >>")
@@ -1655,12 +1680,10 @@ class ConvertToDataFrame:
         df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_8")
         df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
             "DATA": "data_de_debito",
-            "CNPJ": "cnpj_pagador",
+            "CNPJ": "cnpj_beneficiario",
             "NOME": "nome_pagador",
             "VALOR": "valor",
         })
-
-        df = ConvertToDataFrame.duplicate_dataframe_rows(dataframe=df)
 
         # desconto
         # abatimento
@@ -1677,18 +1700,43 @@ class ConvertToDataFrame:
             {"TP": "D", "TYPE_PROCESS": "juros"},
         ])
 
-
-
-
-
         df.sort_values(by=["nome_beneficiario", "GRUPO_LCTO", "TP"], inplace=True)
-
         df.index = list(range(0, len(df.index)))
+
+        count_aux = 0
+        for i in df.index:
+
+            if count_aux == 0:
+                df["VALOR"][i] = df["valor_total"][i]
+                count_aux += 1
+            elif count_aux == 1:
+                df["VALOR"][i] = df["desconto"][i]
+                df["CONTA"][i] = "936"
+                count_aux += 1
+            elif count_aux == 2:
+                df["VALOR"][i] = df["abatimento"][i]
+                df["CONTA"][i] = "936"
+                count_aux += 1
+            elif count_aux == 3:
+                df["VALOR"][i] = df["bonificacao"][i]
+                df["CONTA"][i] = "936"
+                count_aux += 1
+            elif count_aux == 4:
+                df["VALOR"][i] = df["multa"][i]
+                df["CONTA"][i] = "947"
+                count_aux += 1
+            elif count_aux == 5:
+                df["VALOR"][i] = df["juros"][i]
+                df["CONTA"][i] = "947"
+                count_aux += 1
+            elif count_aux == 6:
+                df["VALOR"][i] = df["valor"][i]
+                df["CONTA"][i] = ""
+                count_aux = 0
+        
+        df = ConvertToDataFrame.filter_data_dataframe(daraframe=df, name_column="VALOR", list_remove_values=["0.00"])
         df = ConvertToDataFrame.create_cod_erp_to_dataframe(dataframe=df)
-        print(df)
-
-
-        df.to_excel("data_bradesco.xlsx")
+        
 
         print(df.info())
         print(df)
@@ -1706,6 +1754,11 @@ class ConvertToDataFrame:
             --> tt_debit: {tt_debit}
             --> tt_credit: {tt_credit}
         """)
+
+        # try:
+        #     df.to_excel("data_bradesco.xlsx")
+        # except Exception as e:
+        #     print(f"\n\n ### ERROR CONVERT DATAFRAME TO EXCEL | ERROR: {e} ### ")
 
         return {
             "data_table": data_json ,
