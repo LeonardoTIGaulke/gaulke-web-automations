@@ -88,8 +88,8 @@
                     <input type="text" name="cod_filial" id="cod_filial" placeholder="filial">
                 </div>
                 <div class="row">
-                    <label for="">*Conta Débito</label>
-                    <input type="text" name="cod_conta_debito" id="cod_conta_debito" value="5" placeholder="conta débito">
+                    <label for="">*Conta Crédito</label>
+                    <input type="text" name="cod_conta_credito" id="cod_conta_credito" value="5" placeholder="conta débito">
                 </div>
 
 
@@ -189,7 +189,7 @@
 
         let cod_empresa = document.getElementById("cod_empresa").value;
         let cod_filial = document.getElementById("cod_filial").value;
-        let cod_conta_debito = document.getElementById("cod_conta_debito").value;
+        let cod_conta_credito = document.getElementById("cod_conta_credito").value;
         // ----
         let table = document.querySelector(".container-table-preview").querySelector("table");
         let table_head = table.querySelector("thead").querySelector("tr").querySelectorAll("th");
@@ -212,7 +212,7 @@
 
                     // cod_empresa
                     // cod_filial
-                    // cod_conta_debito
+                    // cod_conta_credito
                     
                     for(let i=1; i < table_td.length; i++){
                         if (i != 2){
@@ -230,9 +230,9 @@
                                 data_temp.push( removeCaracter( table_td[i].textContent ) );
                             } else if(i==8){
                                 console.log(table_td[i+14].textContent);
-                                if(table_td[i+14].textContent == "debit_comum"){
-                                    table_td[i].textContent = cod_conta_debito;
-                                    data_temp.push( cod_conta_debito );
+                                if(table_td[i+14].textContent == "credit_comum"){
+                                    table_td[i].textContent = cod_conta_credito;
+                                    data_temp.push( cod_conta_credito );
                                 }
                                 else {
                                     data_temp.push( table_td[i].textContent );

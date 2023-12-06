@@ -1864,7 +1864,7 @@ class ConvertToDataFrame:
         cont_aux = 0
         for i in df.index:
 
-            if cont_aux == 0: # Crédito comum
+            if cont_aux == 0: # Débito comum
                 df["CONTA"][i] = ""
                 df["TP"][i] = "D"
                 df["VALOR"][i] = df["a Pagar"][i]
@@ -1881,9 +1881,9 @@ class ConvertToDataFrame:
                 df["CONTA"][i] = "1688"
                 df["VALOR"][i] = df["JUROS"][i]
                 
-            elif cont_aux == 4: # Débito - comum
+            elif cont_aux == 4: # Crédito - comum
                 df["CONTA"][i] = "5"
-                df["TYPE_PROCESS"][i] = "debit_comum"
+                df["TYPE_PROCESS"][i] = "credit_comum"
                 df["TP"][i] = "C"
                 df["VALOR"][i] = df["VALOR_PAGO"][i]
 
