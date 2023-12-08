@@ -18,39 +18,45 @@
     {% if visible_form_file %}
     <div class="d-flex justify-content-center align-content-center align-items-center gap-3 "  id="form-input-files" style="flex-wrap: wrap;">
         <div class="block-image-layout-client">
-            <img src="{% static 'logo-banco-bradesco.png' %}" alt="">
+            <img src="{% static 'logo-banco-sicredi.png' %}" alt="" style="object-fit: contain;">
         </div>
-        <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_comprovante_banco_bradesco' %}" enctype="multipart/form-data">
+        <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_comprovante_banco_sicredi' %}" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="hidden" value="{{user.username}}" name="username" id="username">
             <div class="mb-3">
-                <label for="file" class="form-label">Importação Comp. de Pag. Banco Bradesco</label>
+                <label for="file" class="form-label">Importação Comp. de Pag. Banco Sicredi</label>
                 <input class="form-control" type="file" id="file" name="file" accept=".pdf">
             </div>
+
+            <!-- <div class="mb-3">
+                <label for="modelo_empresa" class="form-label">Empresa Modelo</label>
+                <select name="modelo_empresa" id="modelo_empresa" required>
+                    <option value="modelo_decorise"> Decorise </option>
+                </select>
+            </div> -->
                             
             <input class="btn-send-file" type="submit" value="carregar arquivo" style="max-height: 45px; border: 1px solid;" onclick="animationLoadPostFile();">
         </form>
         
     </div>
 
-
         {% if error_code %}
-                <div class="container d-flex flex-column justify-content-center align-content-center" style="align-items: center;">
-                    <span class="container block-error-read-file">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        <p>Erro na leitura do arquivo Banco Bradesco.</p>
-                    </span>
-                    <span class="container block-error-read-file">
-                        <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
-                        <p>Selecione um arquivo para importação;</p>
-                    </span>
-                    <span class="container block-error-read-file">
-                        <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
-                        <p>Verifique se o arquivo enviado possui a extensão <b>.pdf</b>.</p>
-                    </span>
-                </div>
-            {% endif %}
-
+            <div class="container d-flex flex-column justify-content-center align-content-center" style="align-items: center;">
+                <span class="container block-error-read-file">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <p>Erro na leitura do arquivo Banco Sicredi.</p>
+                </span>
+                <span class="container block-error-read-file">
+                    <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+                    <p>Selecione um arquivo para importação;</p>
+                </span>
+                <span class="container block-error-read-file">
+                    <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+                    <p>Verifique se o arquivo enviado possui a extensão <b>.pdf</b>.</p>
+                </span>
+            </div>
+        {% endif %}
+    
     {% else %}
 
         <script>
@@ -262,7 +268,7 @@
         var url = URL.createObjectURL(blob);
         var link = document.createElement("a");
         link.setAttribute("href", url);
-        link.setAttribute("download", "Importortação JB Banco Bradesco.txt");
+        link.setAttribute("download", "Importortação JB Banco Sicredi.txt");
         link.style.visibility = "hidden";
         document.body.appendChild(link);
         link.click();
@@ -270,7 +276,7 @@
 
         disabledRowsTable();
         displayModalAccounts();
-        checktotalRowsExported("{{host_port}}", "automations", "relacao-comprovante-banco-bradesco");
+        checktotalRowsExported("{{host_port}}", "automations", "relacao-comprovante-banco-sicredi");
 
     }
 

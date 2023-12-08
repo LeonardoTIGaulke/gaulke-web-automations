@@ -19,9 +19,10 @@ urlpatterns = [
     
 
     # ------------------- EM DESENVOLVIMENTO -------------------
-    path("relacao-comprovante-banco-bradesco/", views.post_file_fastAPI_comprovante_banco_bradesco, name="post_file_fastAPI_comprovante_banco_bradesco"),
-
     path("relacao-grupo-DAB/", views.post_file_fastAPI_relacao_grupo_DAB, name="post_file_fastAPI_relacao_grupo_DAB"),
+
+    path("relacao-comprovante-banco-bradesco/", views.post_file_fastAPI_comprovante_banco_bradesco, name="post_file_fastAPI_comprovante_banco_bradesco"),
+    path("relacao-comprovante-banco-sicredi/", views.post_file_fastAPI_comprovante_banco_sicredi, name="post_file_fastAPI_comprovante_banco_sicredi"),
 
 
 

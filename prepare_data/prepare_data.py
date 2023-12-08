@@ -51,8 +51,8 @@ class ConvertToDataFrame:
                     "model_7": f"Recebimento Dupl. nº NF [v1] - [v2]",
 
                     # ----
-                    # exemplo 8: Nome do Benefiário Data Venc: dd/mm/yyyy
-                    "model_8": "Pgto. [v1] - Data Venc: [v2]",
+                    # exemplo 8: Nome do Beneficiário Data Venc: dd/mm/yyyy
+                    "model_8": f"Pgto. {value_generic} [v1] - Data Venc: [v2]",
                     # ----
                     # exemplo 9: [Nome] NFº [NF] Data Venc. [dd/mm/yyyy]
                     "model_9": "Pgto. [v1] Nº [v2] Data Venc. [v3]",
@@ -1677,7 +1677,7 @@ class ConvertToDataFrame:
             
         print(data_to_table)
         df = pd.DataFrame.from_dict(data_to_table)
-        df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_8")
+        df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_8", value_generic="Bradesco")
         df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
             "DATA": "data_de_debito",
             "CNPJ": "cnpj_beneficiario",
@@ -1767,6 +1767,244 @@ class ConvertToDataFrame:
             "tt_credit": tt_credit,
             "list_page_erros": [],
         }
+    
+    # ----
+    
+    def read_pdf_comprovante_banco_sicredi(file):
+
+        print(f"\n\n ----- Arquivo informado comprovante Sicredi | arquivo: {file}")
+
+        contents = file.read()
+        pdf_bytes = io.BytesIO(contents)
+        pdf_reader = PdfReader(pdf_bytes)
+
+        list_data_pages = list()
+        list_page_erros = list()
+        index_page = 0
+        print(f" TT PAGES: {len(pdf_reader.pages)}")
+
+
+        data_to_table = {
+            # ---------- IDENTIFICADORES
+            "nome_beneficiario": list(),
+            "cnpj_beneficiario": list(),
+
+            "nome_pagador": list(),
+            "cnpj_pagador": list(),
+
+            # # # ---------- DATAS
+            "data_de_debito": list(),
+            "data_de_vencimento": list(),
+
+            # # ---------- VALORES
+            "valor": list(),
+            "desconto": list(),
+            "abatimento": list(),
+            # "bonificacao": list(),
+            "multa": list(),
+            "juros": list(),
+            "valor_total": list(),
+
+        }
+
+        for index_page in range(len(pdf_reader.pages)):
+            try:
+                print(f"\n\n\n ---- INDEX PAGE: {index_page}")
+                
+                page = pdf_reader.pages[index_page]
+                
+                
+                data_page = page.extract_text()
+                if "Valor Pago (R$):" in data_page:
+                # if "boleto" in data_page:
+                    print("\n\n ----------------------- DATA EXTRACT ----------------------- ")
+                    print(data_page)
+                    
+                    for i in range(len(data_page)):
+                        
+                        # 
+                        # 
+                        # -------------------------- CNPJ PAGADOR / NOME BENEFICIARIO --------------------------
+                        # CPF/CNPJ do Pagador: ---> 20 caract.
+                        if "CPF/CNPJ do Pagador:" == data_page[i:i+20]:
+                            # ----------------------------------------------------------------------------- CNPJ PAGADOR
+                            data_temp = data_page[i-20:i-1].split(":")[-1]
+                            data_to_table["cnpj_pagador"].append(data_temp)
+                            print(f"\n\n ---------->> CNPJ PAGADOR")
+                            print(f">>>>>>>> {data_temp}\n\n")
+                        # --------------------------------------------------------------------------------- NOME BENEFICIARIO
+                            data_temp = data_page[i+20:i+120].split("Nome")[0]
+                            data_to_table["nome_beneficiario"].append( data_temp )
+                            print(f"\n\n ---------->> NOME PAGADOR")
+                            print(f">>>>>>>>>>>>>> {data_temp}")
+                        
+                        # 
+                        # 
+                        # -------------------------- CNPJ BENEFIARIO / NOME PAGADOR -------------------------- 
+                        if "CPF/CNPJ do Beneficiário:" == data_page[i:i+25]:
+                            data_temp = data_page[i-22:i].split(":")[-1] # CNPJ PAGADOR
+                            data_to_table["cnpj_beneficiario"].append( data_temp )
+                            print(f"\n\n ---------->> CNPJ BENEFIARIO")
+                            print(f">>>>>>>>>>>>>> {data_temp}")
+
+                            data_temp = data_page[i+25:i+100].split("Razão")[0].split("Nome")[0] # NOME PAGADOR
+                            data_to_table["nome_pagador"].append( data_temp )
+                            print(f"\n\n ---------->> NOME BENEFIARIO")
+                            print(f">>>>>>>>>>>>>> {data_temp}")
+
+                        
+                        # 
+                        # 
+                        # -------------------------- DATA DE VENCIMENTO E PAGAMENTO -------------------------- 
+                        if "Data da Transação:" == data_page[i:i+18]:
+                            # print(f"\n\n -------------------------- DATA DEBITO -------------------------- ")
+                            data_temp = data_page[i-11:i].strip()
+                            data_to_table["data_de_debito"].append( data_temp )
+                            # print(f">>>>>>>>>>>>>> {data_temp}")
+                        
+                            # print(f"\n\n -------------------------- DATA CREDITO -------------------------- ")
+                            data_temp = data_page[i+18:i+29].strip()
+                            data_to_table["data_de_vencimento"].append( data_temp )
+                            # print(f">>>>>>>>>>>>>> {data_temp}")
+                        # 
+                        # 
+                        # -------------------------- VALORES (R$) -------------------------- 
+
+                        # Nº Ident. DDA: --> 14 caract.
+
+                        if data_page[i:i+14] == "Nº Ident. DDA:":
+                            data_temp = data_page[i+14:i+28].split(" ")[0].strip().replace(".", "").replace(".", "").replace(",", ".")
+                            if "." in data_temp:
+                                data_to_table["valor"].append( data_temp )
+                                print(f"\n\n\n\n  -------------->>>> VALOR 1-1 {data_temp}")
+
+                        if data_page[i:i+23] == "Descrição do Pagamento:":
+                            data_temp = data_page[i+23:i+36].split(" ")[0].strip().replace(".", "").replace(".", "").replace(",", ".")
+                            if "." in data_temp:
+                                data_to_table["valor"].append( data_temp )
+                                print(f"\n\n\n\n  -------------->>>> VALOR 1-2 {data_temp}")
+
+                        if data_page[i:i+23] == "Valor do Desconto (R$):":
+                            data_temp = data_page[i+23:i+38].split(" ")[0].strip().replace(".", "").replace(".", "").replace(",", ".")
+                            data_to_table["valor_total"].append( data_temp )
+                            print(f"\n\n\n\n  -------------->>>> VALOR 2 {data_temp}")
+
+                            # ----------------------- OUTROS VALORES -----------------------
+                            cont_aux = 0
+                            name_aux = None
+                            for j in range(len(data_page)):
+                                if cont_aux < 4:
+                                    if data_page[j:j+5] == "(R$):":
+                                        if cont_aux == 0:
+                                            name_aux = "desconto"
+                                        if cont_aux == 1:
+                                            name_aux = "juros"
+                                        if cont_aux == 2:
+                                            name_aux = "multa"
+                                        if cont_aux == 3:
+                                            name_aux = "abatimento"
+
+                                        data_aux_valores = data_page[j+5:j+10]
+                                        data_to_table[name_aux].append( data_aux_valores )
+                                        print(f"\n\n\n\n ------------------------------------------> name_aux: {name_aux} | data_aux_valores: {data_aux_valores}\n\n\n\n")
+                                        cont_aux += 1
+
+            
+            except Exception as e:
+                print(f" ### ERROR EXTRACT DATA PDF | ERROR: {e}")
+                list_page_erros.append({index_page: e})
+            
+        
+        df = pd.DataFrame.from_dict(data_to_table)
+        
+        df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_8", value_generic="Sicredi")
+        df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
+            "DATA": "data_de_debito",
+            "CNPJ": "cnpj_beneficiario",
+            "NOME": "nome_pagador",
+            "VALOR": "valor",
+        })
+
+        # # desconto
+        # # abatimento
+        # # bonificacao | neste caso não possui
+        # # multa
+        # # juros
+        
+        df = ConvertToDataFrame.duplicate_dataframe_rows_lote(dataframe=df, list_update_cols=[
+            {"TP": "C", "TYPE_PROCESS": "comum"},
+            {"TP": "D", "TYPE_PROCESS": "desconto"},
+            {"TP": "D", "TYPE_PROCESS": "abatimento"},
+            # {"TP": "D", "TYPE_PROCESS": "bonificacao"},
+            {"TP": "D", "TYPE_PROCESS": "multa"},
+            {"TP": "D", "TYPE_PROCESS": "juros"},
+        ])
+
+        df.sort_values(by=["nome_beneficiario", "GRUPO_LCTO", "TP"], inplace=True)
+        df.index = list(range(0, len(df.index)))
+
+
+        count_aux = 0
+        for i in df.index:
+
+            if count_aux == 0:
+                df["VALOR"][i] = df["valor_total"][i].strip().replace(".", "").replace(".", "").replace(",", ".")
+                count_aux += 1
+            elif count_aux == 1:
+                df["VALOR"][i] = df["desconto"][i].strip().replace(".", "").replace(".", "").replace(",", ".")
+                df["CONTA"][i] = "936"
+                count_aux += 1
+            elif count_aux == 2:
+                df["VALOR"][i] = df["abatimento"][i].strip().replace(".", "").replace(".", "").replace(",", ".")
+                df["CONTA"][i] = "936"
+                count_aux += 1
+            elif count_aux == 3:
+                df["VALOR"][i] = df["multa"][i].strip().replace(".", "").replace(".", "").replace(",", ".")
+                df["CONTA"][i] = "947"
+                count_aux += 1
+            elif count_aux == 4:
+                df["VALOR"][i] = df["juros"][i].strip().replace(".", "").replace(".", "").replace(",", ".")
+                df["CONTA"][i] = "947"
+                count_aux += 1
+            elif count_aux == 5:
+                df["VALOR"][i] = df["valor"][i].strip().replace(".", "").replace(".", "").replace(",", ".")
+                df["CONTA"][i] = ""
+                count_aux = 0
+        
+        df = ConvertToDataFrame.filter_data_dataframe(daraframe=df, name_column="VALOR", list_remove_values=["0.00"])
+        df = ConvertToDataFrame.create_cod_erp_to_dataframe(dataframe=df)
+
+        print("\n\n ---------------------------- DF LAYOUT JB ---------------------------- ")
+        print(df.info())
+        print(df)
+
+        tt_rows = len(df)
+        tt_debit    = len(df[df["TP"] == "C"])
+        tt_credit   = len(df[df["TP"] == "D"])
+
+        data_json = json.loads(df.to_json(orient="table"))
+        # print(data_json)
+
+        print(f"""
+            --------- CONFIG CONTAS
+            --> tt_rows: {tt_rows}
+            --> tt_debit: {tt_debit}
+            --> tt_credit: {tt_credit}
+        """)
+
+        try:
+            df.to_excel("data_sicredi.xlsx")
+        except Exception as e:
+            print(f"\n\n ### ERROR CONVERT DATAFRAME TO EXCEL | ERROR: {e} ### ")
+
+        return {
+            "data_table": data_json ,
+            "tt_rows": tt_rows,
+            "tt_debit": tt_debit,
+            "tt_credit": tt_credit,
+            "list_page_erros": [],
+        }
+        # return {}
     
     # ----
     
