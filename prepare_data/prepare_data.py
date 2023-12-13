@@ -1193,35 +1193,30 @@ class ConvertToDataFrame:
 
             contents = file_consulta.read()
             df_temp_consulta = ConvertToDataFrame.read_Excel_File(contents=contents)
+            df_temp_consulta['Data'] = pd.to_datetime(df_temp_consulta['Data'])
+            df_temp_consulta['Data'] = df_temp_consulta['Data'].dt.strftime('%d/%m/%Y')
+            df_temp_consulta["Nota Fiscal"] = pd.to_numeric(df_temp_consulta['Nota Fiscal'].values)
             print("\n\n ------------------------ df_temp_consulta ------------------------ ")
             print(df_temp_consulta)
 
+
             contents = file_contabil.read()
             df_temp_contabil = ConvertToDataFrame.read_Excel_File(contents=contents)
-
-            # Formata a data como 'dd/mm/yyyy'
-            if modelo == "modelo_multiadv":
-                # ---------------------- FORMATO 01
-                df_temp_consulta['Data'] = pd.to_datetime(df_temp_consulta['Data'])
-                df_temp_consulta['Data'] = df_temp_consulta['Data'].dt.strftime('%d/%m/%Y')
-            
-            elif modelo == "modelo_email":
-                # ---------------------- FORMATO 02
-                df_temp_consulta['Data Emissão'] = pd.to_datetime(df_temp_consulta['Data Emissão'])
-                df_temp_consulta['Data Emissão'] = df_temp_consulta['Data Emissão'].dt.strftime('%d/%m/%Y')
-
             print("\n\n ------------------------ df_temp_contabil ------------------------ ")
             print(df_temp_contabil)
+
 
             # df_temp_contabil []
 
             list_pendencias = list()
+    
             for i in df_temp_contabil.index:
                 
                 nf = df_temp_contabil["Nº NF"][i]
+                print(f"\n\n\n ************** NF CONTABIL ====> {nf}")
 
-
-                if modelo == "modelo_multiadv":
+        
+                if modelo == "modelo_fiscal":
                     query_df_contabil = df_temp_consulta[df_temp_consulta["Nota Fiscal"] == nf ][["Data", "Nota Fiscal"]]
 
                     if len(query_df_contabil) >= 1:
@@ -1230,10 +1225,10 @@ class ConvertToDataFrame:
                         list_pendencias.append(nf)
 
                 if modelo == "modelo_email":
-                    query_df_contabil = df_temp_consulta[df_temp_consulta["Nº Nota"] == nf ][["Data Emissão", "Nº Nota"]]
+                    query_df_contabil = df_temp_consulta[df_temp_consulta["Nota Fiscal"] == nf ][["Data", "Nota Fiscal"]]
                 
                     if len(query_df_contabil) >= 1:
-                        df_temp_contabil["Data Recebim. NF"][i] = query_df_contabil["Data Emissão"].values[0]
+                        df_temp_contabil["Data Recebim. NF"][i] = query_df_contabil["Data"].values[0]
                     else:
                         list_pendencias.append(nf)
 
@@ -1248,12 +1243,35 @@ class ConvertToDataFrame:
             df_temp_contabil.index = list(range(0, len(df_temp_contabil)))
             print(df_temp_contabil)
             print(df_temp_contabil.info())
+
             
             df_temp_contabil = ConvertToDataFrame.rename_columns_dataframe(dataframe=df_temp_contabil, dict_replace_names={
                 "CNPJ": "CNPJ_ORIGIN"
             })
 
             df = ConvertToDataFrame.create_layout_JB(dataframe=df_temp_contabil, model="model_7")
+
+            print("\n\n\n -------------------------- DATAFRAME ")
+            print(df)
+
+
+
+
+
+            # -------------------------------------------------------------- REPLACE NAMES COLS
+            # if modelo == "modelo_email":
+            #     df = ConvertToDataFrame.rename_columns_dataframe(
+            #         dataframe=df, dict_replace_names={
+            #             "CNPJ"
+            #             "Valor Serviço": "Valor Bruto NF",
+            #             "Valor IRRF": "IRPJ Retido",
+            #             "Valor CSLL": "CSLL Retida",
+            #             "": "Cofins Retido",
+            #             "Valor PIS/PASEP": "PIS Retido",
+
+            #         }
+            #     )
+
 
             df["VALOR_NF_LIQ"] = df["Valor Bruto NF"] - df["IRPJ Retido"]
             df["VLR_LIQUIDO"] = df["VALOR_NF_LIQ"] - df["CSLL Retida"] - df["Cofins Retido"] - df["PIS Retido"]
