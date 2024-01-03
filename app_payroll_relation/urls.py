@@ -28,6 +28,7 @@ urlpatterns = [
     path("relacao-comprovante-banco-bradesco/", views.post_file_fastAPI_comprovante_banco_bradesco, name="post_file_fastAPI_comprovante_banco_bradesco"),
     path("relacao-comprovante-banco-sicredi/", views.post_file_fastAPI_comprovante_banco_sicredi, name="post_file_fastAPI_comprovante_banco_sicredi"),
     path("relacao-comprovante-banco-sicoob/", views.post_file_fastAPI_comprovante_banco_sicoob, name="post_file_fastAPI_comprovante_banco_sicoob"),
+    path("relacao-comprovante-banco-itau/", views.post_file_fastAPI_comprovante_itau, name="post_file_fastAPI_comprovante_banco_itau"),
 
 
 

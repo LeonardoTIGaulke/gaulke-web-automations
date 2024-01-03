@@ -2243,6 +2243,165 @@ class ConvertToDataFrame:
     
     # ----
     
+    def read_xls_comprovante_banco_itau(file):
+
+        print(f"\n\n ----- Arquivo informado comprovante ITAÚ | file: {file}")
+
+        # --------------- READ SUPPLIERS ---------------
+        contents = file.read()
+        xlsx_bytes = io.BytesIO(contents)
+        file = pd.ExcelFile(xlsx_bytes)
+        sheet_name = file.sheet_names[0]
+        print(f"\n ---> sheet_name: {sheet_name}\n\n")
+        df = file.parse(sheet_name=sheet_name, dtype='str')
+        df.dropna(subset=["Unnamed: 6"], inplace=True)
+        df.index = list(range(0, len(df.index)))
+        df = df[1:]
+
+        df = ConvertToDataFrame.rename_columns_dataframe(dataframe=df, dict_replace_names={
+            "Unnamed: 0": "nome_pagador",
+            "Unnamed: 1": "CNPJ_ORIGIN",
+            "Unnamed: 2": "TIPO_PAGAMENTO",
+            "Unnamed: 3": "REFERENCIA_EMPRESA",
+            "Unnamed: 4": "data_de_vencimento",
+            "Unnamed: 5": "VALOR_PAGO",
+            "Unnamed: 6": "STATUS_PAGAMENTO",
+        })
+
+        df_pendencias = df.copy()
+        df = df[~df['CNPJ_ORIGIN'].str.contains('\*')]
+        df_pendencias = df_pendencias[df_pendencias['CNPJ_ORIGIN'].str.contains('\*')]
+
+        df.index = list(range(0, len(df.index)))
+        df_pendencias.index = list(range(0, len(df_pendencias.index)))
+
+
+        print(f"\n\n ------------------ DF ------------------  ")
+        print(df)
+        print(f"\n\n ------------------ DF PENDÊNCIAS ------------------  ")
+        print(df_pendencias)
+        print("\n ----------------------------------------------------- \n")
+
+
+
+        df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_8", value_generic="Itaú")
+        df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
+            "DATA": "data_de_vencimento",
+            # "CNPJ": "cnpj_beneficiario",
+            "NOME": "nome_pagador",
+            "VALOR": "VALOR_PAGO",
+        })
+
+        # # desconto
+        # # abatimento
+        # # bonificacao | neste caso não possui
+        # # multa
+        # # juros
+        
+        df = ConvertToDataFrame.duplicate_dataframe_rows_lote(dataframe=df, list_update_cols=[
+            {"TP": "C", "TYPE_PROCESS": "comum"},
+            # {"TP": "D", "TYPE_PROCESS": "desconto"},
+            # {"TP": "D", "TYPE_PROCESS": "abatimento"},
+            # # {"TP": "D", "TYPE_PROCESS": "bonificacao"},
+            # {"TP": "D", "TYPE_PROCESS": "multa"},
+            # {"TP": "D", "TYPE_PROCESS": "juros"},
+        ])
+
+        df.sort_values(by=["nome_beneficiario", "GRUPO_LCTO", "TP"], inplace=True)
+        df.index = list(range(0, len(df.index)))
+        print(f"\n\n ------------------ DF IMPORTAÇÃO ------------------ ")
+        print(df)
+
+        return {}
+   
+
+        df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
+            "NOME": "NOME_ORIGIN",
+            "CNPJ": "CNPJ_ORIGIN",
+            "DATA": "DATA_PAG",
+        })
+
+        df = ConvertToDataFrame.duplicate_dataframe_rows_lote(dataframe=df, list_update_cols=[
+                {"TP": "C", "TYPE_PROCESS": "comum"},
+                {"TP": "C", "TYPE_PROCESS": "DESCONTO"},
+                {"TP": "C", "TYPE_PROCESS": "DEVOLUCAO"},
+                {"TP": "D", "TYPE_PROCESS": "JUROS"},
+            ])
+        
+        
+        print("\n\n reajustando valores: juros, desconto, devolução, débito/crédito comum...\n\n")
+        df = df.sort_values(by=["NOME", "GRUPO_LCTO", "TP"])
+        df.index = list(range(0, len(df.index)))
+
+        cont_aux = 0
+        for i in df.index:
+
+            if cont_aux == 0: # Débito comum
+                df["CONTA"][i] = ""
+                df["TP"][i] = "D"
+                df["VALOR"][i] = df["a Pagar"][i]
+                
+            elif cont_aux == 1: # Desconto - Crédito
+                df["CONTA"][i] = "1664"
+                df["VALOR"][i] = df["DESCONTO"][i]
+                
+            elif cont_aux == 2: # Devolução - Crédito
+                df["CONTA"][i] = "126"
+                df["VALOR"][i] = df["DEVOLUCAO"][i]
+                
+            elif cont_aux == 3: # Juros - Débito
+                df["CONTA"][i] = "1688"
+                df["VALOR"][i] = df["JUROS"][i]
+                
+            elif cont_aux == 4: # Crédito - comum
+                df["CONTA"][i] = "5"
+                df["TYPE_PROCESS"][i] = "credit_comum"
+                df["TP"][i] = "C"
+                df["VALOR"][i] = df["VALOR_PAGO"][i]
+
+            if cont_aux == 4:
+                cont_aux = 0
+            else:
+                cont_aux += 1
+
+            df["VALOR"][i] = df["VALOR"][i].replace(".", "").replace(".", "").replace(",", ".")
+
+        
+        df = df[~df["VALOR"].isin( ["0,00", "0.00"] )]
+        df.index = list(range(0, len(df.index)))
+        df = ConvertToDataFrame.create_cod_erp_to_dataframe(dataframe=df)
+        
+
+        tt_rows = len(df)
+        tt_debit    = len(df[df["TP"] == "C"])
+        tt_credit   = len(df[df["TP"] == "D"])
+
+        data_json = json.loads(df.to_json(orient="table"))
+        # print(data_json)
+
+        print(df)
+        # df.to_excel("df_payments.xlsx")
+
+        print(f"""
+            --------- CONFIG CONTAS
+            --> tt_rows: {tt_rows}
+            --> tt_debit: {tt_debit}
+            --> tt_credit: {tt_credit}
+        """)
+
+        
+
+        return {
+            "data_table": data_json ,
+            "tt_rows": tt_rows,
+            "tt_debit": tt_debit,
+            "tt_credit": tt_credit,
+            "list_page_erros": [],
+            }
+
+
+    # ----
+    
     def read_xls_comprovante_grupo_DAB(file_suppliers, file_payments):
 
         print(f"\n\n ----- Arquivo informado comprovante Grupo DAB RN | file_suppliers: {file_suppliers} | file_payments: {file_payments}")
@@ -2636,3 +2795,5 @@ class ConvertToDataFrame:
             "list_page_erros": [],
         }
         # return {}
+    
+
