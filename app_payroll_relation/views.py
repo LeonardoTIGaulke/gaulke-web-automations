@@ -58,42 +58,6 @@ def error_404_view(request, exception):
 
 
 # -------------------------------------------- IMPORTAÇÃO DE ARQUIVOS --------------------------------------------
-@login_required(login_url="/automations/login/")
-def post_file_fastAPI_comprovante_banco_do_brasil(request):
-    if request.method == "GET":
-        context = {
-            "visible_form_file": True,
-        }
-        return render(request, "app_relations/relation_extrato_banco_do_brasil.html", context=context)
-        
-    elif request.method == "POST":
-        try:
-            username = request.POST.get("username")
-            file = request.FILES["file"]
-            print(file)
-
-            dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_do_brasil(file=file)
-            print(dataJson)
-            context = {
-                "code_process": True,
-                "data_table": dataJson["data_table"]["data"],
-                "list_page_erros": dataJson["list_page_erros"],
-
-                "tt_rows": dataJson["tt_rows"],
-                "tt_debit": dataJson["tt_debit"],
-                "tt_credit": dataJson["tt_credit"],
-                "host_port": HOST_REDIRECT,
-
-            }
-            print(f" ### PROCESSO FINALIZADO POR: {username}")
-            return render(request, "app_relations/relation_extrato_banco_do_brasil.html", context=context)
-        except Exception as e:
-            context = {
-                "error_code": True,
-                "visible_form_file": True
-            }
-            return render(request, "app_relations/relation_extrato_banco_do_brasil.html", context=context)
-
 # ------------------------
 @login_required(login_url="/automations/login/")
 def post_file_fastAPI_folha_por_empregado(request):
@@ -353,6 +317,92 @@ def post_file_fastAPI_relacao_arao_dos_santos(request):
 
 # ------------------------
 @login_required(login_url="/automations/login/")
+def post_file_fastAPI_relacao_grupo_DAB(request):
+    # print(request.user.username)
+    if request.method == "GET":
+        context = {
+            "visible_form_file": True,
+            "post_file": "/automations/relacao-grupo-DAB/",
+            "info_01": "Importação Grupo DAB",
+        }
+        return render(request, "app_relations/relation_grupo_DAB.html", context=context)
+        
+    elif request.method == "POST":
+        try:
+            username = request.POST.get("username")
+            file = request.FILES["file"]
+            file_2 = request.FILES["file_2"]
+
+            print(file)
+            print(file_2)
+
+            dataJson = ConvertToDataFrame.read_xls_comprovante_grupo_DAB(file_suppliers=file, file_payments=file_2)
+            # print(dataJson)
+            context = {
+                "code_process": True,
+                "data_table": dataJson["data_table"]["data"],
+                "list_page_erros": dataJson["list_page_erros"],
+
+                "tt_rows": dataJson["tt_rows"],
+                "tt_debit": dataJson["tt_debit"],
+                "tt_credit": dataJson["tt_credit"],
+                "host_port": HOST_REDIRECT,
+
+            }
+            print(f" ### PROCESSO FINALIZADO POR: {username}")
+            return render(request, "app_relations/relation_grupo_DAB.html", context=context)
+        except Exception as e:
+            context = {
+                "error_code": True,
+                "error": e,
+                "visible_form_file": True
+            }
+            return render(request, "app_relations/relation_grupo_DAB.html", context=context)
+
+
+
+
+# ----------------------------------------------------------------------------
+# ------------------------ COMPROVANTES DE PAGAMENTOS ------------------------
+# ----------------------------------------------------------------------------
+@login_required(login_url="/automations/login/")
+def post_file_fastAPI_comprovante_banco_do_brasil(request):
+    if request.method == "GET":
+        context = {
+            "visible_form_file": True,
+        }
+        return render(request, "app_relations/relation_extrato_banco_do_brasil.html", context=context)
+        
+    elif request.method == "POST":
+        try:
+            username = request.POST.get("username")
+            file = request.FILES["file"]
+            print(file)
+
+            dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_do_brasil(file=file)
+            print(dataJson)
+            context = {
+                "code_process": True,
+                "data_table": dataJson["data_table"]["data"],
+                "list_page_erros": dataJson["list_page_erros"],
+
+                "tt_rows": dataJson["tt_rows"],
+                "tt_debit": dataJson["tt_debit"],
+                "tt_credit": dataJson["tt_credit"],
+                "host_port": HOST_REDIRECT,
+
+            }
+            print(f" ### PROCESSO FINALIZADO POR: {username}")
+            return render(request, "app_relations/relation_extrato_banco_do_brasil.html", context=context)
+        except Exception as e:
+            context = {
+                "error_code": True,
+                "visible_form_file": True
+            }
+            return render(request, "app_relations/relation_extrato_banco_do_brasil.html", context=context)
+
+# ------------------------
+@login_required(login_url="/automations/login/")
 def post_file_fastAPI_comprovante_banco_bradesco(request):
     # print(request.user.username)
     if request.method == "GET":
@@ -432,26 +482,24 @@ def post_file_fastAPI_comprovante_banco_sicredi(request):
 
 # ------------------------
 @login_required(login_url="/automations/login/")
-def post_file_fastAPI_relacao_grupo_DAB(request):
+def post_file_fastAPI_comprovante_banco_sicoob(request):
     # print(request.user.username)
     if request.method == "GET":
         context = {
             "visible_form_file": True,
-            "post_file": "/automations/relacao-grupo-DAB/",
-            "info_01": "Importação Grupo DAB",
         }
-        return render(request, "app_relations/relation_grupo_DAB.html", context=context)
+        return render(request, "app_relations/relation_extrato_banco_sicoob.html", context=context)
         
     elif request.method == "POST":
         try:
             username = request.POST.get("username")
+            # modelo_empresa = request.POST.get("modelo_empresa")
+
             file = request.FILES["file"]
-            file_2 = request.FILES["file_2"]
-
             print(file)
-            print(file_2)
 
-            dataJson = ConvertToDataFrame.read_xls_comprovante_grupo_DAB(file_suppliers=file, file_payments=file_2)
+        
+            dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_sicoob(file=file)
             # print(dataJson)
             context = {
                 "code_process": True,
@@ -465,23 +513,33 @@ def post_file_fastAPI_relacao_grupo_DAB(request):
 
             }
             print(f" ### PROCESSO FINALIZADO POR: {username}")
-            return render(request, "app_relations/relation_grupo_DAB.html", context=context)
+            return render(request, "app_relations/relation_extrato_banco_sicoob.html", context=context)
         except Exception as e:
             context = {
                 "error_code": True,
-                "error": e,
                 "visible_form_file": True
             }
-            return render(request, "app_relations/relation_grupo_DAB.html", context=context)
+            return render(request, "app_relations/relation_extrato_banco_sicoob.html", context=context)
 
-# ------------------------
+
+
+
+# ------------------------------------------------------------
+# ------------------------ DASHBOARDS ------------------------
+# ------------------------------------------------------------
 @login_required(login_url="/automations/login/")
 def dashboard_visao_geral(request):
     if request.method == "GET":
         return render(request, "app_dashboard/dashboard_visao_geral.html")
     return render(request, "app/error_404.html")
 
-# ------------------------- TUTORIALS -------------------------
+
+
+
+
+# ------------------------------------------------------------
+# ------------------------ TUTORIALS -------------------------
+# ------------------------------------------------------------
 @login_required(login_url="/automations/login/")
 def use_mode(request):
     if request.method == "GET":
