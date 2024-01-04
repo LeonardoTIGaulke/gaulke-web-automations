@@ -21,20 +21,25 @@
             <img src="{% static 'logo-banco-itau.png' %}" alt="" style="object-fit: contain;">
         </div>
         <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_comprovante_banco_itau' %}" enctype="multipart/form-data">
+
             {% csrf_token %}
             <input type="hidden" value="{{user.username}}" name="username" id="username">
+            
+            <!-- ------------------------------------------------ SELECIONAR TIPO DE IMPORTAÇÃO .XLS || .PDF -->
+
+            <div class="mb-3">
+                <label for="type_file" class="form-label">Modelo do Arquivo: </label>
+                <select name="type_file" id="type_file" required onchange="typeFileOption();" style="padding: 2px 6px; border-radius: 5px; ">
+                    <option value="modelo_pdf"> PDF </option>
+                    <option value="modelo_xls"> XLS </option>
+                </select>
+            </div>
+            
             <div class="mb-3">
                 <label for="file" class="form-label">Importação Comp. de Pag. Banco Itaú</label>
-                <input class="form-control" type="file" id="file" name="file" accept=".xls">
+                <input class="form-control" type="file" id="file" name="file" accept=".pdf">
             </div>
-
-            <!-- <div class="mb-3">
-                <label for="modelo_empresa" class="form-label">Empresa Modelo</label>
-                <select name="modelo_empresa" id="modelo_empresa" required>
-                    <option value="modelo_decorise"> Decorise </option>
-                </select>
-            </div> -->
-                            
+            
             <input class="btn-send-file" type="submit" value="carregar arquivo" style="max-height: 45px; border: 1px solid;" onclick="animationLoadPostFile();">
         </form>
         
@@ -52,7 +57,7 @@
                 </span>
                 <span class="container block-error-read-file">
                     <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
-                    <p>Verifique se o arquivo enviado possui a extensão <b>.xls</b>.</p>
+                    <p>Verifique se o arquivo enviado possui a extensão <b>.pdf</b> ou <b>.xls</b>.</p>
                 </span>
             </div>
         {% endif %}
@@ -306,4 +311,19 @@
     }
 </script>
 
+<!-- ---------------------------------------- -->
+
+<script>
+    function typeFileOption (){
+        
+        const type_file = document.getElementById("type_file");
+        const btn_select_type_file = document.getElementById("file");
+        
+        if (type_file.value == "modelo_pdf") {
+            btn_select_type_file.setAttribute("accept", ".pdf");
+        } else {
+            btn_select_type_file.setAttribute("accept", ".xls");
+        }
+    }
+</script>
 {% endblock %}
