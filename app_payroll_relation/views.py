@@ -567,7 +567,48 @@ def post_file_fastAPI_comprovante_itau(request):
             }
             return render(request, "app_relations/relation_extrato_banco_itau.html", context=context)
 
+# ------------------------
+@login_required(login_url="/automations/login/")
+def post_file_fastAPI_comprovante_civia(request):
+    # print(request.user.username)
+    if request.method == "GET":
+        context = {
+            "visible_form_file": True,
+        }
+        return render(request, "app_relations/relation_extrato_banco_civia.html", context=context)
+        
+    elif request.method == "POST":
+        try:
+            username = request.POST.get("username")
 
+            file = request.FILES["file"]
+            print(file)
+
+            
+            dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_civia(file=file)
+
+
+            # print(dataJson)
+            context = {
+                "code_process": True,
+                "data_table": dataJson["data_table"]["data"],
+                "list_names": dataJson["list_names"],
+                "list_page_erros": dataJson["list_page_erros"],
+
+                "tt_rows": dataJson["tt_rows"],
+                "tt_debit": dataJson["tt_debit"],
+                "tt_credit": dataJson["tt_credit"],
+                "host_port": HOST_REDIRECT,
+
+            }
+            print(f" ### PROCESSO FINALIZADO POR: {username}")
+            return render(request, "app_relations/relation_extrato_banco_civia.html", context=context)
+        except Exception as e:
+            context = {
+                "error_code": True,
+                "visible_form_file": True
+            }
+            return render(request, "app_relations/relation_extrato_banco_civia.html", context=context)
 
 
 

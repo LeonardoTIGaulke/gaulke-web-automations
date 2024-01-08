@@ -156,7 +156,7 @@
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
-                        <th>FILIAL</th>
+                        <!-- <th>FILIAL</th>
                         <th>NUMERO_NF</th>
                         <th>DATA_EMISSAO</th>
                         <th>COD_CLIENTE</th>
@@ -166,7 +166,22 @@
                         <th>IRPJ</th>
                         <th>CSLL</th>
                         <th>COFINS</th>
-                        <th>PIS</th>
+                        <th>PIS</th> -->
+
+
+
+                        <th> DATA </th>
+                        <th> COMPET </th>
+                        <th> ORIGEM </th>
+                        <th> NOTA_FISCAL </th>
+                        <th> CLIENTE_FORNECEDOR </th>
+                        <th> DESCRICAO </th>
+                        <th> CLASSIFICACAO </th>
+                        <th> VALOR </th>
+                        <th> CENTRO_CUSTO </th>
+                        <th> N_PASTA </th>
+                        <th> CLIENTE_PASTA </th>
+                        
                     </tr>
                 </thead>
                 <tbody>
@@ -174,7 +189,7 @@
 
                     <tr class="data-row-pendencias-{{data.index}}">
 
-                            <td>{{data.FILIAL}}</td>
+                            <!-- <td>{{data.FILIAL}}</td>
                             <td>{{data.NUMERO_NF}}</td>
                             <td>{{data.DATA_EMISSAO}}</td>
                             <td>{{data.COD_CLIENTE}}</td>
@@ -185,7 +200,21 @@
                             <td>{{data.IRPJ}}</td>
                             <td>{{data.CSLL}}</td>
                             <td>{{data.COFINS}}</td>
-                            <td>{{data.PIS}}</td>
+                            <td>{{data.PIS}}</td> -->
+
+
+                            <td> {{data.DATA}} </td>
+                            <td> {{data.COMPET}} </td>
+                            <td> {{data.ORIGEM}} </td>
+                            <td> {{data.NOTA_FISCAL}} </td>
+                            <td> {{data.CLIENTE_FORNECEDOR}} </td>
+                            <td> {{data.DESCRICAO}} </td>
+                            <td> {{data.CLASSIFICACAO}} </td>
+                            <td> {{data.VALOR}} </td>
+                            <td> {{data.CENTRO_CUSTO}} </td>
+                            <td> {{data.N_PASTA}} </td>
+                            <td> {{data.CLIENTE_PASTA}} </td>
+
                         </tr>
                     
                     {% endfor %}

@@ -45,3 +45,22 @@ function checkSelectFile(number_check_files){
     });
  
 }
+
+
+// -------------------- ATUALIZA CPF/CNPJ --------------------
+function atualiza_ContasFornecedores(e) {
+    const id = "D-comum-CNPJ-" + e.id.replace(" ", ".");
+    const valor = e.value;
+
+    console.log(id)
+    console.log(valor)
+
+    const fields_to_update = document.querySelectorAll(`.${id}`);
+    if (fields_to_update) {
+        fields_to_update.forEach((field)=>{
+            field.textContent = valor;
+            console.log("NUM. CONTA: ", field.textContent);
+            console.log(valor)
+        });
+    }
+}
