@@ -3,7 +3,8 @@
 {% block title %} Preview de Importação {% endblock %}
 {% block content %}
 
-<div class="container-fluid  container-base-elements" id="form-file-payroll-relation"> 
+<div class="container-fluid  container-base-elements" id="form-file-payroll-relation">
+
     <div class="container-processing-data">
         <article>
             <!-- <p class="progress_table_update">Progresso (%)</p> -->
@@ -15,6 +16,7 @@
             </div>
         </article>
     </div>
+
     {% if visible_form_file %}
     <div class="d-flex justify-content-center align-content-center align-items-center gap-3 "  id="form-input-files" style="flex-wrap: wrap;">
         <div class="block-image-layout-client">
@@ -88,6 +90,43 @@
                 </div>
             </form>
         </div>
+
+        <!-- --------------------------------------------- MODAL CONFIGURAÇÕES AVANÇADAS --------------------------------------------- -->
+
+        <div class="container block-config-data-to-text modal-configuracoes-avancadas">
+
+            <div class="row mt-3">
+                <h3>Configurações Avançadas de Contas</h3>
+            </div>
+            <!-- ----------------------------------------------- -->
+            <div class="block-all-tags">
+                <ul class="content-filter-tags">
+                    <!-- <li onclick="selectTag(this);"> <span> Teste </span> - 100</li> -->
+                </ul>
+
+                <div style="border-top: 3px solid var(--color-principal-azul-claro); margin: 15px">
+                </div>
+                <ul class="content-all-tags">
+                    {% for data in df_tags_json %}
+                        <li onclick="selectTag(this);"> <span> {{data.tag}} </span> - {{data.Qte}}</li>
+                    {% endfor %}
+                </ul>
+                
+
+
+            </div>
+
+            <form action="">
+                
+                
+                <div class="row my-3 gap-3 block-btns-options-modal">
+                    <!-- <input type="button" value="gerar importação" onclick="generateImport();"> -->
+                    <input type="button" value="fechar" onclick="displayModal_ConfiguracoesAvancadas();">
+                </div>
+            </form>
+        </div>
+        
+
         <div class="container block-btns-config-accounts">
 
             <div class="row block-resume-data-table">
@@ -102,6 +141,8 @@
             </div>
 
             <input type="button" value="configurar contas" onclick="displayModalAccounts();">
+            <input type="button" value="configurações avançadas" onclick="displayModal_ConfiguracoesAvancadas();">
+
             <!-- <input type="text" id="input-serch" placeholder="Digite para filtrar" onkeydown="filtrarTabela();" style="background: #dcdcdc;"> -->
         </div>
         <div class="container container-table-preview">
@@ -171,6 +212,8 @@
 <script src="{% static 'animations.js' %}"></script>
 <script src="{% static 'controller_tables.js' %}"></script>
 <script src="{% static 'prepare_data.js' %}"></script>
+
+
 
 <script>
 

@@ -1663,6 +1663,8 @@ class ConvertToDataFrame:
 
         }
 
+        dict_tags_to_text = dict()
+
         for index_page in range(len(pdf_reader.pages)):
             try:
                 print(f"\n\n\n ---- INDEX PAGE: {index_page}")
@@ -1673,6 +1675,9 @@ class ConvertToDataFrame:
                 data_page = page.extract_text()
                 print("\n\n ----------------------- DATA EXTRACT ----------------------- ")
                 print(data_page)
+
+                dict_tags_to_text = ConvertToDataFrame.check_text_to_tag(data=data_page, dict_tags_to_text=dict_tags_to_text)
+                print(dict_tags_to_text)
                 
                 for i in range(len(data_page)):
                     
@@ -1760,6 +1765,19 @@ class ConvertToDataFrame:
                 print(f" ### ERROR EXTRACT DATA PDF | ERROR: {e}")
                 list_page_erros.append({index_page: e})
             
+
+
+        print("\n\n ------------------------------ dict_tags_to_text ------------------------------ ")
+        print(dict_tags_to_text)
+        df_tags = pd.DataFrame.from_dict(dict_tags_to_text, orient="index", columns=["Qte"])
+        df_tags.reset_index(inplace=True)
+        df_tags.rename(columns={'index': 'tag'}, inplace=True)
+        df_tags = df_tags.loc[~df_tags["tag"].isin(["", " "])]
+        df_tags.sort_values(by="Qte", inplace=True, ascending=False)
+        df_tags.index = list(range(0, len(df_tags.index)))
+        print(df_tags)
+        # return {}
+    
         print(data_to_table)
         df = pd.DataFrame.from_dict(data_to_table)
         df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_8", value_generic="Bradesco")
@@ -1831,6 +1849,7 @@ class ConvertToDataFrame:
         tt_credit   = len(df[df["TP"] == "D"])
 
         data_json = json.loads(df.to_json(orient="table"))
+        df_tags_json = json.loads(df_tags.to_json(orient="table"))
         # print(data_json)
 
         print(f"""
@@ -1846,7 +1865,8 @@ class ConvertToDataFrame:
         #     print(f"\n\n ### ERROR CONVERT DATAFRAME TO EXCEL | ERROR: {e} ### ")
 
         return {
-            "data_table": data_json ,
+            "data_table": data_json,
+            "df_tags_json": df_tags_json,
             "tt_rows": tt_rows,
             "tt_debit": tt_debit,
             "tt_credit": tt_credit,
@@ -2839,8 +2859,6 @@ class ConvertToDataFrame:
         # return {}
     
     # ----
-
-    # ----
     
     def read_xls_comprovante_grupo_DAB(file_suppliers, file_payments):
 
@@ -3237,3 +3255,30 @@ class ConvertToDataFrame:
         # return {}
     
 
+    def check_text_to_tag(data, dict_tags_to_text):
+        
+        data_split = data.split()
+        # dict_tags_to_text = dict()
+        for x in data_split:
+            # print(f" x ---------> {x}")
+            try:
+                data_temp = x.split(":")
+
+                print("\n ----------------------------- DATA TO TEXT ----------------------------- ")
+                print(x)
+
+                for j in data_temp:
+                    print(f" ---------> J: {j}")
+                    print(x)
+
+                    if dict_tags_to_text.get(j):
+                        dict_tags_to_text[j]  = dict_tags_to_text.get(j) + 1
+                    else:
+                        dict_tags_to_text.update({j: 1})
+                
+                print("\n ----------------------------- ")
+
+            except Exception as e:
+                print(f" ### ERROR CHECK TEXT TO TAG | ERROR: {e}")
+        
+        return dict_tags_to_text

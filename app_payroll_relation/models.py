@@ -1,6 +1,15 @@
 from django.db import models
 
 
+class Model_Config_Tags_By_USER(models.Model):
+    user = models.CharField(max_length=55)
+    activity_id = models.IntegerField()
+    tag = models.CharField(max_length=55)
+
+
+
+
+
 
 class Model_RelacaoContasFornecedores(models.Model):
     cnpj = models.CharField(max_length=25)

@@ -422,6 +422,7 @@ def post_file_fastAPI_comprovante_banco_bradesco(request):
             context = {
                 "code_process": True,
                 "data_table": dataJson["data_table"]["data"],
+                "df_tags_json": dataJson["df_tags_json"]["data"],
                 "list_page_erros": dataJson["list_page_erros"],
 
                 "tt_rows": dataJson["tt_rows"],
