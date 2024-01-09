@@ -392,16 +392,17 @@
 
 /* ---------------------------------------- CONFIGURAÇÕES AVANÇADAS ----------------------------------------  */
 .modal-configuracoes-avancadas > .block-all-tags {
-    max-height: 30vh !important;
+    max-height: 40vh;
     overflow-y: scroll;
     max-width: 600px;
 }
 .modal-configuracoes-avancadas > .block-all-tags ul {
     width: 100%;
+    height: 100%;
     max-width: 100%;
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     flex-wrap: wrap;
     list-style: none;
@@ -424,4 +425,84 @@
     border-radius: 4px;
     color: #FFF;
     background-color: #5d656b;
+}
+
+
+.block-search-all-tags,
+.block-btn-rules {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 4px;
+    margin: 8px 0px;
+}
+.block-search-all-tags input,
+.block-btn-rules input {
+    outline: none;
+    list-style: none;
+}
+.block-btn-rules input[type="button"] {
+    margin: 0;
+    border: 0;
+    padding: 2px 12px;
+    color: var(--color-principal-branco-puro);
+    background-color: var(--color-principal-azul-claro);
+    border-radius: 4px;
+}
+
+.content-config-new-rule {
+    display: none;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 25px;
+    transition: .6s ease-in-out;
+}
+.content-config-new-rule.visible {
+    display: flex;
+    animation: animation_block_new_rule 3s ease-in-out;
+}
+@keyframes animation_block_new_rule {
+    0% {
+        height: 0%;
+        transition: 2s ease-in-out;
+    }
+    25% {
+        height: 25%;
+        transition: 2s ease-in-out;
+    }
+    55% {
+        height: 85%;
+        transition: 2s ease-in-out;
+    }
+    100% {
+        height: 80%;
+        transition: 2s ease-in-out;
+    }
+}
+
+.content-config-new-rule form {
+    width: 600px;
+}
+.content-config-new-rule > .block-btn-rules {
+    justify-content: flex-start;
+}
+
+
+.block-config-data-to-text form div {
+    width: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    gap: 5px;
+}
+.block-config-data-to-text form div input {
+    width: 100%;
+    outline: none;
+    border-radius: 4px;
+    border: 1px solid var(--color-principal-laranja-claro);
 }

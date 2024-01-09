@@ -47,7 +47,7 @@ function checkSelectFile(number_check_files){
 }
 
 
-// -------------------- ATUALIZA CPF/CNPJ --------------------
+// -------------------- ATUALIZA CONTAS FORNECEDORES | UTILIZADO PARA CONFIGIRAR CONTAS DÉBITO NA IMPORTAÇÃO DO SICOOB --------------------
 function atualiza_ContasFornecedores(e) {
     const id = "D-comum-CNPJ-" + e.id.replace(" ", ".");
     const valor = e.value;

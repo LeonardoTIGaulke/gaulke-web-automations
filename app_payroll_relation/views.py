@@ -14,7 +14,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 
 
-from .models import ModelContasGNRE_Estados_x_Contas
+from .models import ModelContasGNRE_Estados_X_Contas, Model_DynamicTags_Username
 
 
 def home_page(request):
@@ -115,7 +115,7 @@ def post_file_fastAPI_relacao_GNRE(request):
             modelo_db = request.POST.get("modelo_db")
 
 
-            query_contas = ModelContasGNRE_Estados_x_Contas.objects.filter(modelo=modelo_db)
+            query_contas = ModelContasGNRE_Estados_X_Contas.objects.filter(modelo=modelo_db)
             
             data_contas = dict()
             for data in query_contas:
@@ -612,6 +612,44 @@ def post_file_fastAPI_comprovante_civia(request):
             return render(request, "app_relations/relation_extrato_banco_civia.html", context=context)
 
 
+# ------------------------------------------------------------
+# ------------------------ CRIAÇÃO DE REGRAS ------------------------
+# ------------------------------------------------------------
+@login_required(login_url="/automations/login/")
+def create_new_tag_rule(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            username = data["username"]
+            numero_conta_debito = data["numero_conta_debito"]
+            list_tags = " ".join(data["list_tags"])
+            decription_rule = data["decription_rule"]
+
+            print(data)
+            print(f"""
+                \n\n---------------------------------------------
+                >> username: {username}
+                >> numero_conta_debito: {numero_conta_debito}
+                >> list_tags: {list_tags}
+                >> decription_rule: {decription_rule}
+            """)
+            Model_DynamicTags_Username.username = username
+            Model_DynamicTags_Username.numero_conta_debito = str(numero_conta_debito)
+            Model_DynamicTags_Username.tags = list_tags
+            Model_DynamicTags_Username.decription_rule = decription_rule
+            Model_DynamicTags_Username.save()
+
+            print(" -")
+
+            return JsonResponse({"code": 200, "data": data})
+        
+        except Exception as e:
+            print(f" ### ERROR CREATE RULE TAG | ERROR: {e}")
+            return JsonResponse({"code": 400, "msg": "requisição inválida", "erro": "objeto enviado fora do padrão."})
+
+    else:
+        return JsonResponse({"code": 500, "msg": "método da requisição não suportado."})
+
 
 # ------------------------------------------------------------
 # ------------------------ DASHBOARDS ------------------------
@@ -643,7 +681,7 @@ def use_login_logout(request):
 @login_required(login_url="/automations/login/")
 def config_contas_gnre(request):
     if request.method == "GET":
-        conta = ModelContasGNRE_Estados_x_Contas.objects.all()
+        conta = ModelContasGNRE_Estados_X_Contas.objects.all()
         data = list()
         for i in conta:
             data.append({"uf": i.conta_uf, "conta": i.conta_numero, "conta_debito": i.conta_debito})
@@ -660,7 +698,7 @@ def config_contas_gnre(request):
             for data in body:
                 print(data)
             
-                conta  =  ModelContasGNRE_Estados_x_Contas.objects.filter(conta_uf=data["uf"]).first()
+                conta  =  ModelContasGNRE_Estados_X_Contas.objects.filter(conta_uf=data["uf"]).first()
                 
                 if conta is not None:
                     conta.conta_numero = data["conta_credito"]
@@ -668,7 +706,7 @@ def config_contas_gnre(request):
                     conta.save()
                     print(f" -----> update account: {conta}")
                 else:
-                    conta = ModelContasGNRE_Estados_x_Contas.objects.create(
+                    conta = ModelContasGNRE_Estados_X_Contas.objects.create(
                         conta_uf = data["uf"],
                         conta_numero = data["conta_credito"],
                         conta_debito = data["conta_debito"],

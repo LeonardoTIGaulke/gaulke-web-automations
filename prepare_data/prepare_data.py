@@ -1775,8 +1775,7 @@ class ConvertToDataFrame:
         df_tags = df_tags.loc[~df_tags["tag"].isin(["", " "])]
         df_tags.sort_values(by="Qte", inplace=True, ascending=False)
         df_tags.index = list(range(0, len(df_tags.index)))
-        print(df_tags)
-        # return {}
+        # print(df_tags)
     
         print(data_to_table)
         df = pd.DataFrame.from_dict(data_to_table)
@@ -1787,6 +1786,7 @@ class ConvertToDataFrame:
             "NOME": "nome_pagador",
             "VALOR": "valor",
         })
+        # print(df)
 
         # desconto
         # abatimento
@@ -1850,7 +1850,7 @@ class ConvertToDataFrame:
 
         data_json = json.loads(df.to_json(orient="table"))
         df_tags_json = json.loads(df_tags.to_json(orient="table"))
-        # print(data_json)
+        print(dict_tags_to_text)
 
         print(f"""
             --------- CONFIG CONTAS
@@ -3258,6 +3258,7 @@ class ConvertToDataFrame:
     def check_text_to_tag(data, dict_tags_to_text):
         
         data_split = data.split()
+        count_aux = len(data_split)
         # dict_tags_to_text = dict()
         for x in data_split:
             # print(f" x ---------> {x}")
@@ -3275,6 +3276,7 @@ class ConvertToDataFrame:
                         dict_tags_to_text[j]  = dict_tags_to_text.get(j) + 1
                     else:
                         dict_tags_to_text.update({j: 1})
+
                 
                 print("\n ----------------------------- ")
 

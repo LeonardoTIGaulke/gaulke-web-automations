@@ -32,6 +32,12 @@ urlpatterns = [
     path("relacao-comprovante-banco-civia/", views.post_file_fastAPI_comprovante_civia, name="post_file_fastAPI_comprovante_banco_civia"),
 
 
+    # -----------------------------------------------------------------
+    # ------------------- CRIAÇÃO DE REGRAS DINÂMICAS ------------------
+    # -----------------------------------------------------------------
+    path("create-new-tag-rule/", views.create_new_tag_rule, name="create_new_tag_rule"),
+
+
 
 
 

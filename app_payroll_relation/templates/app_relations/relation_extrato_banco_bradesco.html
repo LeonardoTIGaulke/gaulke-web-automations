@@ -100,20 +100,49 @@
             </div>
             <!-- ----------------------------------------------- -->
             <div class="block-all-tags">
-                <ul class="content-filter-tags">
-                    <!-- <li onclick="selectTag(this);"> <span> Teste </span> - 100</li> -->
-                </ul>
 
-                <div style="border-top: 3px solid var(--color-principal-azul-claro); margin: 15px">
+                <!-- BLOCO COM PRÉ-VISUALIZAÇÃO DAS TAGS SELECIONADAS PARA CRIAÇÃO DE NOVAS REGRAS -->
+                <ul class="content-filter-tags"></ul> <!-- style="max-height: 10vh;" -->
+                
+                <!-- BLOCO DE CRIAÇÃO DE NOVAS REGRAS -->
+                <div class="container content-config-new-rule">
+
+                    <form action="">
+                        <div class="row block-inputs-config-rules">
+                            <label for="">Conta Débito</label>
+                            <!-- <p>usuário: {{user.username}}</p> -->
+                            <input type="text" name="numero_conta_debito" id="numero_conta_debito" placeholder="conta débito">
+                            <div class="decription-rule">
+                                <input type="text" name="decription_rule" id="decription_rule" placeholder="insira uma descrição para essa regra">
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- BLOCO PARA BOTÕES DE CONFIGURAÇÃO DAS NOVAS REGRAS DE IMPORTAÇÃO -->
+                    <div class="container block-btn-rules"> <!-- style="display: none;"-->
+                        <input type="button" name="btn-add-new-rule" id="btn-add-new-rule" value="criar regra" onclick="crateRuleTag();">
+                    </div>
+
                 </div>
+
+
+                
+                <div style="border-top: 3px solid var(--color-principal-azul-claro); margin: 15px"></div>
+
+
+                <!-- filterAllTags ==> FILTRA APENAS AS TAGS DO BLOCO "CONTENT-ALL-TAGS" -->
+                <div class="container block-search-all-tags">
+                    <input type="search" placeholder="digite para filtrar" name="filter-content-all-tags" id="filter-content-all-tags" oninput="filterAllTags(this);">
+                </div>
+
+                <!-- BLOCO COM TAGS IDENTIFICADAS NA LEITURA DO DOCUMENTO DE IMPORTAÇÃO -->
                 <ul class="content-all-tags">
                     {% for data in df_tags_json %}
-                        <li onclick="selectTag(this);"> <span> {{data.tag}} </span> - {{data.Qte}}</li>
+                        <li onclick="selectTag(this);" data-status-filter="0" data-index-tag="{{forloop.counter}}" > <span> {{data.tag}} </span> {{data.Qte}} </li>
                     {% endfor %}
                 </ul>
+
                 
-
-
             </div>
 
             <form action="">
@@ -213,7 +242,13 @@
 <script src="{% static 'controller_tables.js' %}"></script>
 <script src="{% static 'prepare_data.js' %}"></script>
 
-
+<script>
+    function crateRuleTag(){
+        const csrf_token = "{{csrf_token}}";
+        const username = "{{user.username}}";
+        create_RuleTag(csrf_token, "{{host_port}}", "automations", "create-new-tag-rule", username);
+    }
+</script>
 
 <script>
 
