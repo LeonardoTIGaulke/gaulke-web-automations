@@ -455,7 +455,8 @@
 .content-config-new-rule {
     display: none;
     flex-direction: row;
-    justify-content: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
     align-items: center;
     gap: 25px;
     transition: .6s ease-in-out;
@@ -484,10 +485,13 @@
 }
 
 .content-config-new-rule form {
-    width: 600px;
+    width: 260px;
 }
 .content-config-new-rule > .block-btn-rules {
+    max-width: 250px;
+    flex-wrap: wrap;
     justify-content: flex-start;
+    gap: 8px;
 }
 
 
@@ -505,4 +509,60 @@
     outline: none;
     border-radius: 4px;
     border: 1px solid var(--color-principal-laranja-claro);
+}
+
+.block-btn-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    padding: 4px 6px;
+    gap: 5px;
+    cursor: pointer;
+    color: var(--color-principal-branco-puro);
+    background-color: var(--color-principal-azul-claro);
+}
+
+
+.block-btn-actions i {
+    min-height: 29px;
+    min-width: 29px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.message-status-process {
+    display: none;
+}
+.message-status-process p {
+    display: inline-block;
+    padding: 3px 12px;
+    text-align: start;
+    border-radius: 4px;
+}
+
+.message-status-process p.active-success {
+    color: #000000;
+    background: rgb(9, 184, 61);
+}
+.message-status-process p.active-error {
+    color: white;
+    background: red;
+}
+
+
+
+/* -------------------------------------------------- */
+.container.block-menu-actions ul li {
+    border-radius: 0px;
+    font-size: 19px;
+    padding: 3px 9px;
+    border-radius: 0px;
+}
+
+.container.block-menu-actions ul li.menu-active {
+    background: var(--color-principal-azul-claro);
+    color: var(--color-principal-branco-puro);
 }

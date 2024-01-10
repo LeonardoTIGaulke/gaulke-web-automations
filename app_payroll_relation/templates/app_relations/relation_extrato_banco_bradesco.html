@@ -106,41 +106,64 @@
                 
                 <!-- BLOCO DE CRIAÇÃO DE NOVAS REGRAS -->
                 <div class="container content-config-new-rule">
-
+                    
+                    
                     <form action="">
                         <div class="row block-inputs-config-rules">
                             <label for="">Conta Débito</label>
-                            <!-- <p>usuário: {{user.username}}</p> -->
-                            <input type="text" name="numero_conta_debito" id="numero_conta_debito" placeholder="conta débito">
-                            <div class="decription-rule">
-                                <input type="text" name="decription_rule" id="decription_rule" placeholder="insira uma descrição para essa regra">
-                            </div>
+                            <input type="text" name="numero_conta_debito" id="numero_conta_debito" placeholder="conta débito" >
+                        </div>
+                        <div class="decription-rule">
+                            <input type="text" name="decription_rule" id="decription_rule" placeholder="insira uma descrição para essa regra" >
                         </div>
                     </form>
 
                     <!-- BLOCO PARA BOTÕES DE CONFIGURAÇÃO DAS NOVAS REGRAS DE IMPORTAÇÃO -->
                     <div class="container block-btn-rules"> <!-- style="display: none;"-->
-                        <input type="button" name="btn-add-new-rule" id="btn-add-new-rule" value="criar regra" onclick="crateRuleTag();">
+
+                        <div class="block-btn-actions" onclick="crateRuleTag();">
+                            <input type="button" name="btn-add-new-rule" id="btn-add-new-rule" value="criar regra">
+                            <i class="fa-solid fa-plus"></i>
+                            <!-- <i class="fa-solid fa-triangle-exclamation"></i> -->
+                        </div>
+                        <div class="block-btn-actions" onclick="reloadPage();">
+
+                            <i class="fa-solid fa-rotate-right"></i>
+                            <!-- <i class="fa-solid fa-triangle-exclamation"></i> -->
+                        </div>
+                        
+                        
                     </div>
+                </div>
 
+                <div class="container message-status-process">
+                    <p></p>
                 </div>
 
 
-                
+                <div class="container block-menu-actions">
+                    <ul>
+                        <li data-action="1" class="menu-active" onclick="selectActionMenu(this);">Todas as tags</li>
+                        <li data-action="2" onclick="selectActionMenu(this);">Criar Tag auxiliar</li>
+                    </ul>
+                </div>
                 <div style="border-top: 3px solid var(--color-principal-azul-claro); margin: 15px"></div>
+                
 
+                <div class="container container-all-tags-rule">
 
-                <!-- filterAllTags ==> FILTRA APENAS AS TAGS DO BLOCO "CONTENT-ALL-TAGS" -->
-                <div class="container block-search-all-tags">
-                    <input type="search" placeholder="digite para filtrar" name="filter-content-all-tags" id="filter-content-all-tags" oninput="filterAllTags(this);">
+                    <!-- filterAllTags ==> FILTRA APENAS AS TAGS DO BLOCO "CONTENT-ALL-TAGS" -->
+                    <div class="container block-search-all-tags">
+                        <input type="search" placeholder="digite para filtrar" name="filter-content-all-tags" id="filter-content-all-tags" oninput="filterAllTags(this);">
+                    </div>
+    
+                    <!-- BLOCO COM TAGS IDENTIFICADAS NA LEITURA DO DOCUMENTO DE IMPORTAÇÃO -->
+                    <ul class="content-all-tags">
+                        {% for data in df_tags_json %}
+                            <li onclick="selectTag(this);" data-status-filter="0" data-index-tag="{{forloop.counter}}" > <span> {{data.tag}} </span> {{data.Qte}} </li>
+                        {% endfor %}
+                    </ul>
                 </div>
-
-                <!-- BLOCO COM TAGS IDENTIFICADAS NA LEITURA DO DOCUMENTO DE IMPORTAÇÃO -->
-                <ul class="content-all-tags">
-                    {% for data in df_tags_json %}
-                        <li onclick="selectTag(this);" data-status-filter="0" data-index-tag="{{forloop.counter}}" > <span> {{data.tag}} </span> {{data.Qte}} </li>
-                    {% endfor %}
-                </ul>
 
                 
             </div>
@@ -170,7 +193,7 @@
             </div>
 
             <input type="button" value="configurar contas" onclick="displayModalAccounts();">
-            <input type="button" value="configurações avançadas" onclick="displayModal_ConfiguracoesAvancadas();">
+            <!-- <input type="button" value="configurações avançadas" onclick="displayModal_ConfiguracoesAvancadas();"> -->
 
             <!-- <input type="text" id="input-serch" placeholder="Digite para filtrar" onkeydown="filtrarTabela();" style="background: #dcdcdc;"> -->
         </div>

@@ -633,15 +633,23 @@ def create_new_tag_rule(request):
                 >> list_tags: {list_tags}
                 >> decription_rule: {decription_rule}
             """)
-            Model_DynamicTags_Username.username = username
-            Model_DynamicTags_Username.numero_conta_debito = str(numero_conta_debito)
-            Model_DynamicTags_Username.tags = list_tags
-            Model_DynamicTags_Username.decription_rule = decription_rule
-            Model_DynamicTags_Username.save()
 
-            print(" -")
+            query = Model_DynamicTags_Username.objects.filter(username=username, tags=list_tags).values()
 
-            return JsonResponse({"code": 200, "data": data})
+            print(f" -----> QUERY: {query} | TT: {len(query)}")
+
+            status_process = False
+            if len(query) == 0:
+                db = Model_DynamicTags_Username()
+                db.username = username
+                db.numero_conta_debito = str(numero_conta_debito)
+                db.tags = list_tags
+                db.decription_rule = decription_rule
+                db.save()
+                status_process = True
+                print("\n\n >> SUCCESS UPDATE RULE")
+
+            return JsonResponse({"code": 200, "data": data, "status_process": status_process})
         
         except Exception as e:
             print(f" ### ERROR CREATE RULE TAG | ERROR: {e}")
