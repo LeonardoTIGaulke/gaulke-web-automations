@@ -1,0 +1,623 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Preview de Importação {% endblock %}
+{% block content %}
+
+<div class="container-fluid  container-create-new-rule">
+
+    <div class="block-menu-rules">
+        <ul>
+            <li data-option-rule="create_new_rule" class="active-option" onclick="actionTagRules(this);">Config. plano de contas</li>
+            <!-- <li data-option-rule="rules_created" onclick="actionTagRules(this);">Ver plano de contas</li> -->
+            <li data-option-rule="create_new_PC" onclick="actionTagRules(this);">Cadastrar novo plano</li>
+        </ul>
+    </div>
+
+
+    <div class="container block-rules block-create-tag-rule">
+        
+        <div class="row w-100">
+            <h5>De-Para: plano de contas antigo x novo</h5>
+        </div>
+        <article class="block-rules-03">
+            
+            <div class="block-form-table-PC">
+                <form action="{% url 'config_plano_de_contas' %}" method="POST" enctype="multipart/form-data" id="form-config-PC" onchange="checkInputsFormPC();">
+                    {% csrf_token %}
+                    <div class="block-horizontal-form">
+                        <h5 class="title-block-rules">Plano de Contas (Antigo)</h5>
+                        <select name="data-code-pc-old" id="data-code-pc-old" data-input-form="data-code-pc-old">
+                            {% for plano_conta in obj_plano_contas_old %}
+                                <option value="{{plano_conta.code_pc}}" data-code-pc-old="{{plano_conta.code_pc}}"
+                                    {% if plano_conta.code_pc == plano_contas_old %}
+                                        selected
+                                    {% endif %}>
+                                    {{plano_conta.code_pc}} - {{plano_conta.description_pc}}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="line-divisor-form">
+
+                    </div>
+                    
+                    <div class="block-horizontal-form">
+                        <h5 class="title-block-rules">Plano de Contas (Novo)</h5>
+                        <select name="data-code-pc-new" id="data-code-pc-new" data-input-form="data-code-pc-new">
+                            {% for plano_conta in obj_plano_contas_new %}
+                                <option value="{{plano_conta.code_pc}}" data-code-pc-new="{{plano_conta.code_pc}}"
+                                    {% if plano_conta.code_pc == plano_contas_new %}
+                                        selected
+                                    {% endif %}>
+                                    {{plano_conta.code_pc}} - {{plano_conta.description_pc}}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- ------------------------- -->
+
+                    <input type="hidden" name="company_code" id="company_code">
+
+                    <div class="container-btns-form-PC">
+                        <div class="mb-3 block-btns-form-control-PC">
+                            <input class="form-control" type="file" id="file" name="file" accept=".xls" data-input-form="file" value="{{file}}">
+                        </div>
+                        <input type="submit" value="enviar" id="btn-send-form-import-data-PC" disabled>
+                    </div>
+                </form>
+            </div>
+
+            
+        </article>
+        
+        
+        {% if show_table %}
+            <article class="block-rules-04">
+
+                <div class="block-actions-table-PC">
+                    <input type="search" name="search-PC" id="search-PC" placeholder="digite algo para filtrar" oninput="filterTablePC(this);">
+                    <input type="button" value="Salvar" id="SAVE-PC-TO-DATABASE" onclick="saveDataTablePC()">
+                </div>
+
+                <div class="block-table-PC">
+                    <table class="table table-striped table-PC">
+                        <thead>
+                            <tr>
+                                <th>Classificação</th>
+                                <th>Conta (antiga)</th>
+                                <th>Conta (nova)</th>
+                                <th>Nome da conta contábil/C. Custo</th>
+                                <th>Tipo conta</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in data_table %}
+                                <tr data-status-row="{{data.CONTA}}">
+                                    <td>{{data.CLASSIFICASSAO}}</td>
+                                    <td>{{data.CONTA}}</td>
+                                    <td>
+                                        <input
+                                            type="text"
+                                            value="{{data.NEW_CODE}}"
+                                            maxlength="8"
+                                            oninput="checkValueInput_INT(this);"
+                                            {% if data.CLASSE %}
+                                                readonly
+                                                ondblclick="enableEditInput(this);"
+                                                onblur="disableEditInput(this);"
+                                                class="readonly-data"
+                                            {% endif %}>
+                                    </td>
+                                    <td>{{data.NOME_CONTA_CENTRO_CUSTO}}</td>
+                                    <td>{{data.TTIPO_CONTA}}</td>
+                                    <td>
+                                        <span>
+                                            <i class="fa-solid fa-ban" data-icon-disable="{{data.CONTA}}" onclick="statusEditRow(this);"></i>
+                                            <i class="fa-solid fa-trash" data-icon-delete="{{data.CONTA}}" onclick="deleteRowPC(this);"></i>
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        {% endif %}
+
+    </div>
+    
+    {% if code %}
+        <div class="container block-rules block-create-all-rules">
+            <div class="row w-100">
+                <h5>Minhas Regras</h5>
+                <div class="container block-search-tag-rules">
+                    <label for="search">Consultar</label>
+                    <input type="search" placeholder="digite para filtrar">
+                </div>
+            </div>
+            <table class="table table-hover  table-striped" id="table-all-tag-rules">
+                <thead>
+                    <tr>
+                        <th>ID EMPRESA</th>
+                        <th>RAZÃO SOCIAL</th>
+                        <th>CONTA DÉBITO</th>
+                        <th>TAG</th>
+                        <th>CRIADO EM</th>
+                        <th>ATUALIZADO EM</th>
+                        <th>AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+    
+    <div class="container block-rules block-create-all-PC">
+        <div class="row w-100">
+            <h5>Nova regra (De-Para)</h5>
+        </div>
+
+        <article class="block-rules-05" style="flex-direction: column;">
+            <div class="block-select-options">
+                <ul>
+                    <li class="active" data-model-PC="old_PC" onclick="selectModelPC(this);">P.C Antigo</li>
+                    <li data-model-PC="new_PC" onclick="selectModelPC(this);">P.C Novo</li>
+                </ul>
+            </div>
+            <form action="">
+                <div class="block-cadastro-plano-antigo">
+                    <div>
+                        <input type="text" name="code_pc_antigo" id="code_pc_antigo" class="input-01" placeholder="cód. antigo">
+                    </div>
+                    <input type="text" name="descricao_pc_antigo" id="descricao_pc_antigo" placeholder="nome do plano de contas">
+                    <div class="container">
+                        <input type="button" name="btn-register-PC" id="btn-register-PC" value="Cadastrar" data-btn="old_PC" onclick="savePlanoConta(this);">
+                    </div>
+                </div>
+
+                <div class="block-cadastro-plano-novo" style="display: none;">
+                    <div>
+                        <input type="text" name="code_pc_novo" id="code_pc_novo" class="input-01" placeholder="cód. novo">
+                    </div>
+                    <input type="text" name="descricao_pc_novo" id="descricao_pc_novo" placeholder="nome do plano de contas">
+
+                    <div class="container">
+                        <input type="button" name="btn-register-PC" id="btn-register-PC" value="Cadastrar" data-btn="new_PC" onclick="savePlanoConta(this);">
+                    </div>
+                </div>
+                <div class="block-message-info">
+                    <p style="text-align: center;" ></p>
+                </div>           
+            </form>
+        </article>
+        
+    </div>
+
+
+
+    
+</div>
+
+<script src="{% static 'controller_rules.js' %}"></script>
+
+<script>
+    function crateRuleTag(){
+        const csrf_token = "{{csrf_token}}";
+        saveNewRule(csrf_token, "{{host_port}}", "automations", "create-new-tag");
+    }
+
+</script>
+
+<script>
+
+    var intervalIDs = [];
+    function actionTagRules(elem){
+        let url = "{% url 'get_all_tags_rules' %}";
+        const csrf_token = "{{csrf_token}}"; 
+        selectOptionRules(elem, csrf_token, url);
+    }
+
+    function selectModelPC(element){
+        var model_PC, list_options;
+        model_PC = element.getAttribute("data-model-PC");
+        console.log(model_PC)
+        
+        
+        list_options = document.querySelector(".block-select-options").querySelector("ul").querySelectorAll("li");
+        list_options.forEach((li)=>{
+            if(li.getAttribute("data-model-PC") === model_PC){
+                li.classList.add("active");
+            } else {
+                li.classList.remove("active");
+            }
+        });
+        
+        if (model_PC == "new_PC") {
+            document.querySelector(".block-cadastro-plano-novo").style.display = "flex";
+            document.querySelector(".block-cadastro-plano-antigo").style.display = "none";
+            element.classList.add("active");
+
+        } else if (model_PC == "old_PC") {
+            document.querySelector(".block-cadastro-plano-novo").style.display = "none";
+            document.querySelector(".block-cadastro-plano-antigo").style.display = "flex";
+        }
+    }
+
+    function savePlanoConta(element){
+        var type_PC, code_PC, description_PC, company_code;
+
+        type_PC = element.getAttribute("data-btn");
+        console.log(type_PC)
+
+        if (checkCode_JB()){
+            company_code = JSON.parse(window.localStorage.getItem("company_auth")["company_code"]);
+            console.log(`--------->>>>> company_code: ${company_code}`)
+            return;
+            if (type_PC == "new_PC"){
+                code_PC = document.getElementById("code_pc_novo");
+                description_PC = document.getElementById("descricao_pc_novo");
+                if (parseInt(code_PC.value)){
+                    code_PC.style.borderColor = "var(--color-principal-cinza)";
+                } else {
+                    code_PC.style.borderColor = "red";
+                }
+
+                if (description_PC.value.trim() != "" ){
+                    description_PC.style.borderColor = "var(--color-principal-cinza)";
+                } else {
+                    description_PC.style.borderColor = "red";
+                }
+
+            } else {
+                code_PC = document.getElementById("code_pc_antigo");
+                description_PC = document.getElementById("descricao_pc_antigo");
+
+                if (parseInt(code_PC.value)){
+                    code_PC.style.borderColor = "var(--color-principal-cinza)";
+                } else {
+                    code_PC.style.borderColor = "red";
+                }
+
+                if (description_PC.value.trim() != ""){
+                    description_PC.style.borderColor = "var(--color-principal-cinza)";
+                } else {
+                    description_PC.style.borderColor = "red";
+                }
+            }
+
+            code_PC = code_PC.value;
+            description_PC = description_PC.value.trim();
+
+            
+
+            if(parseInt(code_PC) && description_PC != ""){
+                console.log("send post")
+
+                let csrf_token = "{{csrf_token}}";
+                let url = "{% url 'post_plano_de_contas' %}";
+                let headers = {
+                    "X-CSRFToken": csrf_token,
+                }
+                let body = {
+                    "type_PC": type_PC,
+                    "code_PC": code_PC,
+                    "description_PC": description_PC,
+                    "company_code": company_code,
+                }
+                console.log(body)
+                console.log(headers)
+                fetch(url, {
+                    method: "POST",
+                    headers: headers,
+                    body: JSON.stringify(body)
+                }).then((data)=>{
+                    return data.json();
+                }).then((data)=>{
+                    console.log(data)
+                    
+                    try {
+                        document.querySelector(".block-message-info").querySelector("p").remove();
+                    } catch (error) {};
+
+                    if (data.status_process_db){
+                        document.querySelector(".block-message-info").innerHTML += `
+                            <p style="color: green;">registro salvo!</p>
+                        `;
+                        setInterval(()=>{
+                            if (data.status_process_db){
+                                window.location.reload();
+                            }
+                        }, 2000);
+                    } else {
+                        document.querySelector(".block-message-info").innerHTML += `
+                            <p style="color: red;">essa conta já existe!</p>
+                        `;
+                    }
+
+                    var intervalID2 = setInterval(function() {
+                        document.querySelector(".block-message-info").querySelector("p").remove();
+                    }, 2000);
+                    intervalIDs.push(intervalID2);
+
+                    // Cancela todos os intervalos de tempo
+                    function clearAllIntervals() {
+
+                        for (var i = 0; i < intervalIDs.length; i++) {
+                            clearInterval(intervalIDs[i]);
+                            try {
+                                document.querySelector(".block-message-info").querySelector("p").remove();
+                            } catch (error) {};
+                        }
+                    }
+                    setTimeout(clearAllIntervals, 5000);
+
+                });
+            }
+        }
+    }
+</script>
+
+
+<script>
+    function statusEditRow(element){
+        var element_icon, element_row;
+        element_icon = element.getAttribute("data-icon-disable");
+        element_row = document.querySelector(`[data-status-row="${element_icon}"]`).classList.toggle("text-decoration-disabled");
+        element_row = document.querySelector(`[data-status-row="${element_icon}"]`).classList.toggle("row-decoration-disabled");
+        element_row = document.querySelector(`[data-status-row="${element_icon}"]`).querySelector("input").classList.toggle("row-decoration-disabled");
+        document.querySelector(`[data-status-row="${element_icon}"]`).querySelectorAll("td").forEach((e)=>{
+            e.classList.toggle("text-decoration-disabled");
+        });
+        console.log(element_icon)
+        console.log(element_row)
+    }
+    function deleteRowPC(element){
+        var element_icon, element_row;
+        element_icon = element.getAttribute("data-icon-delete");
+        element_row = document.querySelector(`[data-status-row="${element_icon}"]`).classList.toggle("row-decoration-delete");
+    }
+
+    function enableEditInput(element){
+        console.log(element)
+        element.removeAttribute("readonly");
+    }
+    
+    function disableEditInput(element){
+        console.log(element)
+        element.setAttribute("readonly", "");
+    }
+
+    function regexINT(value){
+        try {
+            var numberPattern = /[0-9]+/g;
+            value = value.match( numberPattern ).join([]);
+            return value;
+        } catch (error) {
+            return "";
+        }
+    }
+    
+    function checkValueInput_INT(element){
+        var value = element.value.trim();
+        value = regexINT(value).trim();
+        console.log(value)
+        if (value != "") {
+            element.value = parseInt(value);
+            if (parseInt(value) > 0) {
+                element.style.border = "1px solid blue";
+            } else {
+                element.style.border = "1px solid red";
+            };
+        } else {
+            element.style.border = "1px solid var(--color-principal-cinza)";
+        }
+    }
+    
+    function checkInputsFormPC(){
+
+        var inputs, status_inputs, form, company_code, element_code_company;
+
+        form = document.getElementById("form-config-PC");
+        inputs = form.querySelectorAll("[data-input-form]");
+        company_code = JSON.parse(window.localStorage.getItem("company_auth"));
+        element_code_company = document.getElementById("search_company");
+        status_inputs = true;
+
+        if (parseInt(company_code["company_code"])){
+            console.log("--------------> validando company_code ok")
+            element_code_company.style.borderBottom = "1px solid var(--color-principal-cinza)";
+
+            inputs.forEach((input)=>{
+                if (input.value == ""){
+                    status_inputs = false;
+                };
+                console.log("----> valor: ", input.value, status_inputs)
+            });
+        } else {
+            element_code_company.style.borderBottom = "1px solid red";
+            status_inputs = false;
+        };
+
+        startus_btn_post(status_inputs);    
+
+    }
+
+    function startus_btn_post(status_inputs){
+        
+        document.documentElement.scrollTop = 0;
+        try {document.querySelector("body").classList.add("disable-scroll");} catch (error) {};
+
+        if (status_inputs){
+
+
+            document.getElementById("btn-send-form-import-data-PC").disabled = false;
+            try {
+                document.getElementById("SAVE-PC-TO-DATABASE").disabled = false;
+                document.getElementById("SAVE-PC-TO-DATABASE").style.background = "var(--color-principal-azul-claro)";
+            } catch (error) {};
+
+            document.getElementById("btn-send-form-import-data-PC").style.background = "var(--color-principal-azul-claro)";
+                
+            company_code = JSON.parse( window.localStorage.getItem("company_auth"))["company_code"];
+            document.getElementById("company_code").value = company_code;
+            
+            return true;
+                
+            } else {
+                // document.querySelector(".block-rules-04").style.display = "none";
+                document.getElementById("file").value = "";
+                document.getElementById("company_code").value = "";
+                document.querySelector("body").classList.remove("disable-scroll");
+
+                document.getElementById("btn-send-form-import-data-PC").disabled = true;
+                document.getElementById("btn-send-form-import-data-PC").style.background = "#CCC";
+                
+                try {
+                    document.getElementById("SAVE-PC-TO-DATABASE").disabled = true;
+                    document.getElementById("SAVE-PC-TO-DATABASE").style.background = "#CCC";
+                } catch (error) {};
+
+                return false;
+            }
+    }
+    
+    function saveDataTablePC(){
+
+        var table, thead, tbody, rows, td, code_old, code_new, select_code_old, select_code_new, url, code_company;
+        var data_post = new Array();
+
+        const company_auth = JSON.parse(window.localStorage.getItem("company_auth"));
+        console.log(company_auth)
+        console.log(`---> company_code: ${company_auth["company_code"]} | ${typeof(company_code)}`)
+
+        if (parseInt(company_auth["company_code"]) < 1 || company_auth["company_code"] == "-") {
+
+            // document.querySelector(".block-rules-04").style.display = "none";
+            // console.log("não processar...")
+            alert("Selecione uma empresa para atribuir ao plano de contas.");
+            return;
+        } else {
+
+            // document.querySelector(".block-rules-04").style.display = "flex";
+            select_code_old = document.getElementById("data-code-pc-old").value;
+            select_code_new = document.getElementById("data-code-pc-new").value;
+            
+            table = document.querySelector(".table-PC");
+            thead = table.querySelector("thead");
+            tbody = table.querySelector("tbody");
+            rows = tbody.querySelectorAll("tr");
+
+            
+            rows.forEach((row)=>{
+
+                if (!row.classList.contains("row-decoration-disabled") && !row.classList.contains("row-decoration-delete") ){
+                    td = row.querySelectorAll("td");
+                    code_old = td[1].innerText;
+                    code_new = td[2].querySelector("input").value;
+                    console.log(`
+                        ------------------------
+                        code_old: ${code_old}
+                        code_new: ${code_new}
+                    `);
+                    checkValueInput_INT(td[2].querySelector("input"));
+                    if (code_new.trim() != "cdcfdcfd"){
+                        data_post.push({
+                            "code_old": code_old,
+                            "code_new": code_new.trim(),
+                        });
+                        console.log("de-para inserido no POST")
+                    } else {
+                        console.log("de-para NÃO inserido no POST")
+                    };
+                } else {
+                    console.log(">>>> não incluido no body post...")
+                    console.log(row)
+                }
+            });
+            
+            url = "{% url 'post_update_plano_de_contas' %}";
+            headers = {
+                "X-CSRFToken": "{{csrf_token}}",
+            };
+            data_post = {
+                "code_old": select_code_old,
+                "code_new": select_code_new.trim(),
+                "data": data_post,
+                "company_code": company_code,
+            };
+            console.log(data_post)
+            // return;
+            fetch(url, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(data_post)
+            }).then((data)=>{
+                return data.json();
+            }).then((data)=>{
+    
+                console.log(data)
+                let list_update_errors_simply = data["list_update_errors_simply"];
+                let list_update_success = data["list_update_success"];
+                let list_update_delete = data["list_update_delete"];
+                let list_update_add = data["list_update_add"];
+
+                console.log(" ------------- list_update_errors_simply ------------- ")
+                console.log(list_update_errors_simply)
+
+                rows.forEach((row)=>{
+
+                    td = row.querySelectorAll("td")[1].innerText;
+                    if (list_update_add.includes(td) || list_update_success.includes(td)){
+                        
+                        row.querySelectorAll("td")[2].querySelector("input").style.background = "#f9e4a1";
+                        row.querySelectorAll("td")[2].querySelector("input").style.borderColor = "var(--color-principal-cinza)";
+                        row.querySelectorAll("td")[2].querySelector("input").setAttribute("readonly", "");
+
+                    } else {
+                        if (list_update_delete.includes(td)){
+
+                            row.querySelectorAll("td")[2].querySelector("input").style.background = "white";
+                            row.querySelectorAll("td")[2].querySelector("input").style.borderColor = "var(--color-principal-cinza)";
+                            row.querySelectorAll("td")[2].querySelector("input").removeAttribute("readonly");
+
+                        } else {
+                     
+                            if (list_update_errors_simply.includes(td)){
+                                row.querySelectorAll("td")[2].querySelector("input").style.border = "1px solid red";
+                            } else {
+                                row.querySelectorAll("td")[2].querySelector("input").style.border = "1px solid var(--color-principal-cinza)";
+                            };
+                        };
+                    };
+                });
+    
+            });
+        }
+
+    }
+
+    function filterTablePC(element){
+        var table, td, value_filter, value_td;
+        value_filter = element.value.toUpperCase();
+        table = document.querySelector(".table-PC");
+        table.querySelector("tbody").querySelectorAll("tr").forEach((row)=>{
+            td = row.querySelectorAll("td");
+            td.forEach((value)=>{
+                value_td = td.innerText.toUpperCase();
+                console.log(`
+                    value_td: ${value_td}
+                    value_filter: ${value_filter}
+                `)
+            })
+        })
+        console.log(element.value);
+
+    }
+
+</script>
+{% endblock %}

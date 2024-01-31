@@ -3,6 +3,7 @@ test.py
 config.py
 config_project.py
 *.xls
+*.txt
 *.csv
 *.xlsx
 *.pdf

@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Preview de Importação {% endblock %}
+{% block content %}
+
+<div class="container-fluid  container-create-new-rule">
+
+    <div class="block-menu-rules">
+        <ul>
+            <li data-option-rule="create_new_rule" class="active-option" onclick="actionTagRules(this);">Criar nova regra</li>
+            <li data-option-rule="rules_created" onclick="actionTagRules(this);">Minhas regras</li>
+        </ul>
+    </div>
+
+
+    <div class="container block-rules block-create-tag-rule">
+        <div class="row w-100">
+            <h5>Criar Regras</h5>
+        </div>
+
+        <article class="block-rules-02">
+            <p class="title-block-rules">Data</p>
+            <div class="block-option-add-new-tag">
+                <input type="date" name="add-new-date" id="add-tag-new-date" placeholder="nova tag data" maxlength="10" oninput="validValueDate(this);">
+                <i class="fa-solid fa-plus" data-add-tag-dinamic="tag-new-date" onclick="addNewTagBoxDate(this);"></i>
+            </div>
+
+            <div class="block-tags-rule block-tag-new-date"></div>
+        </article>
+
+
+
+        <article class="block-rules-02">
+            <p class="title-block-rules">Valor</p>
+            <div class="block-option-add-new-tag">
+                <input type="text" name="add-new-value" id="add-tag-new-value" placeholder="nova tag valor" oninput="validValue(this);">
+                <i class="fa-solid fa-plus" data-add-tag-dinamic="tag-new-value" onclick="addNewTagBoxValue(this);"></i>
+            </div>
+            <div class="block-tags-rule block-tag-new-value">
+            </div>
+        </article>
+
+        
+
+        <article class="block-rules-03">
+            <p class="title-block-rules">CNPJ/CPF</p>
+            <div class="content-block-rules-03">
+
+                <!-- <div class="block-option-add-new-tag">
+                    <input type="text" name="add-new-tag" id="add-new-tag" placeholder="nova tag nome">
+                    <i class="fa-solid fa-plus"></i>
+                </div> -->
+
+                <div class="block-option-add-new-tag">
+                    <select name="data-cnpj-cpf" id="data-cnpj-cpf" >
+
+                        <option value="select_company">selecione um cnpj/cpf</option>
+                        {% for company in all_companies %}
+                            <option value="{{company.id_acessorias}}" data-id-acessorias-data-cnpj-cpf="{{company.id_acessorias}}">{{company.cnpj}}</option>
+                        {% endfor %}
+                        
+                    </select>
+
+                    <i class="fa-solid fa-plus" data-add-element="data-cnpj-cpf" onclick="addNewTagBox(this)"></i>
+                </div>
+            </div>
+
+            <div class="block-tags-rule block-tag-data-cnpj-cpf"></div>
+
+        </article>
+
+
+        <article class="block-rules-03">
+            <p class="title-block-rules">NOME</p>
+            <div class="content-block-rules-03">
+
+                <!-- <div class="block-option-add-new-tag">
+                    <input type="text" name="add-new-tag" id="add-new-tag" placeholder="nova tag nome">
+                    <i class="fa-solid fa-plus"></i>
+                </div> -->
+
+                <div class="block-option-add-new-tag">
+                    <select name="data-companies" id="data-companies" >
+
+                        <option value="select_company">selecione uma empresa</option>
+                        {% for company in all_companies %}
+                            <option value="{{company.id_acessorias}}" data-id-acessorias-data-companies="{{company.id_acessorias}}">{{company.razao_social}}</option>
+                        {% endfor %}
+
+                    </select>
+
+                    <i class="fa-solid fa-plus" data-add-element="data-companies" onclick="addNewTagBox(this)"></i>
+                </div>
+            </div>
+
+            <div class="block-tags-rule block-tag-data-companies"></div>
+
+        </article>
+
+        <article class="block-rules-04">
+                <div>
+                    <input type="text" name="numero_conta_debito" id="numero_conta_debito" placeholder="conta débito">
+                </div>
+                
+                <div>
+                    <button onclick="crateRuleTag();">Salvar</button>
+                </div>
+            
+        </article>
+
+        
+    </div>
+    
+
+    <div class="container block-rules block-create-all-rules">
+        <div class="row w-100">
+            <h5>Minhas Regras</h5>
+            <div class="container block-search-tag-rules">
+                <label for="search">Consultar</label>
+                <input type="search" placeholder="digite para filtrar">
+            </div>
+        </div>
+        <table class="table table-hover  table-striped" id="table-all-tag-rules">
+            <thead>
+                <tr>
+                    <th>ID EMPRESA</th>
+                    <th>RAZÃO SOCIAL</th>
+                    <th>CONTA DÉBITO</th>
+                    <th>TAG</th>
+                    <th>CRIADO EM</th>
+                    <th>ATUALIZADO EM</th>
+                    <th>AÇÕES</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            </tbody>
+        </table>
+    </div>
+    
+</div>
+
+<script src="{% static 'controller_rules.js' %}"></script>
+
+<script>
+    function crateRuleTag(){
+        const csrf_token = "{{csrf_token}}";
+        saveNewRule(csrf_token, "{{host_port}}", "automations", "create-new-tag");
+    }
+
+</script>
+
+<script>
+    
+    function actionTagRules(elem){
+        let url = "{% url 'get_all_tags_rules' %}";
+        const csrf_token = "{{csrf_token}}"; 
+        selectOptionRules(elem, csrf_token, url);
+    }
+
+</script>
+
+{% endblock %}

@@ -19,6 +19,8 @@ DEBUG = DEBUG
 ALLOWED_HOSTS = ALLOWED_HOSTS
 CSRF_TRUSTED_ORIGINS = CSRF_TRUSTED_ORIGINS
 SECURE_CROSS_ORIGIN_OPENER_POLICY = SECURE_CROSS_ORIGIN_OPENER_POLICY
+DB_DATABASE_ALL_COMPANIES = DB_DATABASE_GAULKE_CONTABIL
+DB_DATABASE_TABLE_NAME_PLANO_CONTAS = DB_DATABASE_TABLE_NAME_PLANO_CONTAS
 
 
 # Application definition
@@ -77,7 +79,23 @@ DATABASES = {
         "PASSWORD": DB_PASSWORD,
         "HOST": DB_HOST,
         "PORT": DB_PORT,
-    }
+    },
+    'db_gaulke_contabil': {
+        'ENGINE': 'django.db.backends.mysql',
+        "NAME": DB_DATABASE_GAULKE_CONTABIL,
+        "USER": DB_USERNAME,
+        "PASSWORD": DB_PASSWORD,
+        "HOST": DB_HOST,
+        "PORT": DB_PORT,
+    },
+    # 'db_gaulke_contabil': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     "NAME": DB_DATABASE_GAULKE_CONTABIL,
+    #     "USER": DB_USERNAME,
+    #     "PASSWORD": DB_PASSWORD,
+    #     "HOST": DB_HOST,
+    #     "PORT": DB_PORT,
+    # },
 }
 
 

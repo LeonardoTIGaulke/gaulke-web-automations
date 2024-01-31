@@ -19,18 +19,23 @@
         <h3 style="text-align: center; padding: 8px 0px;">Importação Arão dos Santos</h3>
     </div>
     <div class="d-flex justify-content-center align-content-center"  id="form-input-files">
-        <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_relacao_arao_dos_santos' %}" id="form-select-file-01" enctype="multipart/form-data" style="max-width: 85vh;">
+        <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_relacao_arao_dos_santos' %}" id="form-select-file-01" enctype="multipart/form-data" style="max-width: 85vh;" id="form-post-file" onchange="autoComplete_CompanySession(this);">
             {% csrf_token %}
 
             <input type="hidden" value="{{user.username}}" name="username" id="username">
             
             <div class="mb-3">
+                <input class="form-control" type="hidden" id="company_session" name="company_session">
                 <label for="file" class="form-label"><b>Base Cliente</b></label>
-                <input class="form-control" type="file" id="file" name="file"  accept=".xlsx">
+                <span class="block-border-dotted">
+                    <input class="form-control" type="file" id="file" name="file" accept=".xlsx" data-input-file="input-post-file">
+                </span>
             </div>
             <div class="mb-3">
                 <label for="file_2" class="form-label"> <b>Base Contábil</b></label>
-                <input class="form-control" type="file" id="file_2" name="file_2"  accept=".xlsx">
+                <span class="block-border-dotted">
+                    <input class="form-control" type="file" id="file_2" name="file_2" accept=".xlsx" data-input-file="input-post-file">
+                </span>
             </div>
 
             <div class="mb-3 block-info-erros-input-file">
@@ -46,7 +51,7 @@
             </div>
 
 
-            <input class="btn-send-file" type="submit" value="carregar arquivos" style="max-height: 45px; border: 1px solid;" onclick="animationLoadPostFile();">
+            <input class="btn-send-file" id="btn-send-file" type="submit" value="carregar arquivos" style="max-height: 45px; border: 1px solid;" onclick="animationLoadPostFile_AND_CHECK_INPUT(this);">
         </form>
         
     </div>
@@ -78,9 +83,9 @@
     
     {% else %}
 
-        <script>
+        <!-- <script>
             animationLoadPostFile();
-        </script>
+        </script> -->
 
         <div class="container block-config-data-to-text">
 
@@ -91,7 +96,7 @@
                 
                 <div class="row">
                     <label for="">*Cod. Empresa</label>
-                    <input type="text" name="cod_empresa" id="cod_empresa" placeholder="código da empresa">
+                    <input type="text" name="cod_empresa" id="cod_empresa" placeholder="código da empresa" value="{{company_session}}" readonly>
                 </div>
                 <div class="row">
                     <label for="">*Cod. Banco (Débito)</label>
@@ -134,7 +139,8 @@
         <div class="container d-flex align-content-center block-btns-config-accounts">
 
             <input type="button" value="configurar contas" onclick="displayModalAccounts();">
-            
+            <!-- <input type="button" value="configurações avançadas" onclick="displayModal_ConfiguracoesAvancadas();" data-btn-action="open-model-config" disabled> -->
+                        
             {% if btn_pendencias %}
                 <article class="container d-flex align-content-center block-resume-pendencias" onclick="generatePendenciasDownload()">
                     <span style="font-weight: 600;">Pendências: {{tt_pendencias}}</span>

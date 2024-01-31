@@ -1,0 +1,18 @@
+[data-btn-action="open-model-config"] {
+    color: white;
+    background: #b7b7b9 !important;
+}
+[data-btn-action="open-model-config"].active {
+    background: var(--color-principal-azul-claro) !important;
+}
+
+#btn-send-file {
+    background: #ccc;
+}
+#btn-send-file:hover {
+    color: var(--color-principal-azul-escuro);
+}
+#btn-send-file.active {
+    color: white !important;
+    background: var(--color-principal-azul-claro) !important;
+}

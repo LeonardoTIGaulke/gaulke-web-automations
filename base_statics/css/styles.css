@@ -1,6 +1,7 @@
 :root {
     --color-principal-laranja-claro: #F49D37;
     --color-principal-preto: #434241;
+    --color-principal-cinza: #889197;
     --color-principal-azul-claro: #0D6DAC;
     --color-principal-azul-escuro: #343881;
     --color-principal-branco-puro: #FFFFFF;
@@ -9,6 +10,14 @@
         to right bottom,
         var(--color-principal-azul-escuro), var(--color-principal-azul-claro)
     );
+}
+/* body {
+    font-family: 'Lucida Sans', Verdana, sans-serif;
+    font-style: normal;
+} */
+
+.dropdown-menu {
+    padding: 5px;
 }
 nav {
     display: none;
@@ -203,3 +212,45 @@ nav {
 .container-steps-form {
     border-top: 2px solid var(--color-principal-laranja-claro);
 }
+
+
+
+/* ----------------------------------------- OUTROS BTNS; INPUTS  ----------------------------------------- */
+.btn-options-config {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.btn-reload {
+    width: 34px;
+    height: 34px;
+    max-width: 45px;
+    max-height: 45px;
+    border-radius: 4px;
+    background: var(--color-principal-azul-claro);
+    color: var(--color-principal-branco-puro);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.btn-reload.active {
+    transition: .5s;
+    animation: 3s animation_icon_reload_page ease-in-out;
+}
+@keyframes animation_icon_reload_page {
+    0% {
+        transform: rotate(45deg);
+    }
+    25% {
+        transform: rotate(90deg);
+    }
+    50% {
+        transform: rotate(120deg);
+    }
+    100% {
+        transform: rotate(45deg);
+    }
+  }

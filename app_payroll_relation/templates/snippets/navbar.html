@@ -29,12 +29,15 @@
               <span class="nav-link dropdown-toggle"  role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Contas a pargar/receber
               </span>
-              <ul class="dropdown-menu" style="min-width: 305px;">
+              <ul class="dropdown-menu" style="min-width: 335px;">
                 
                 <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_cobrancas_pagas' %}"> Relação Cobranças Pagas (WB telecom) </a>
                 <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_decorise' %}"> Relação Decorise </a>
                 <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_arao_dos_santos' %}"> Relação Arão dos Santos </a>
                 <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_grupo_DAB' %}"> Relação Grupo DAB </a>
+                <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_contas_a_receber_inova' %}"> Relação Contas a Receber - INOVA </a>
+                <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_contas_a_pagar_ponto_certo' %}"> Relação Contas a Pagar - PONTO CERTO </a>
+                <a class="nav-link" href="{% url 'post_file_fastAPI_relacao_contas_a_pagar_garra' %}"> Relação Contas a Pagar - GARRA </a>
                 
               </ul>
             </li>
@@ -60,6 +63,9 @@
               </span>
               <ul class="dropdown-menu">
                 <a class="nav-link" href="{% url 'config_contas_gnre' %}">Config. Contas GNRE</a>
+                <a class="nav-link" href="{% url 'all_companies_clients' %}">Base de Clientes</a>
+                <a class="nav-link" href="{% url 'config_plano_de_contas' %}">Plano de Contas</a>
+                <!-- <a class="nav-link" href="{% url 'create_new_tag' %}"> Regras de Importação </a> -->
               </ul>
             </li>
 

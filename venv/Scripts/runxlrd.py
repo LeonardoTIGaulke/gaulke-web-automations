@@ -1,4 +1,4 @@
-#!C:\Users\leonardo\Desktop\0 - AUTOMACOES\AUTOMACOES_DOMINIO\venv\Scripts\python.exe
+#!C:\Users\leonardo\Desktop\0 - AUTOMACOES\AUTOMACOES_GAULKE_JB\venv\Scripts\python.exe
 # Copyright (c) 2005-2012 Stephen John Machin, Lingfo Pty Ltd
 # This script is part of the xlrd package, which is released under a
 # BSD-style licence.

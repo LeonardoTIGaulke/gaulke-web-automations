@@ -20,7 +20,7 @@
         <div class="block-image-layout-client">
             <img src="{% static 'logo-banco-itau.png' %}" alt="" style="object-fit: contain;">
         </div>
-        <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_comprovante_banco_itau' %}" enctype="multipart/form-data">
+        <form class="row g-3" method="POST" action="{% url 'post_file_fastAPI_comprovante_banco_itau' %}" enctype="multipart/form-data" id="form-post-file" onchange="autoComplete_CompanySession(this);">
 
             {% csrf_token %}
             <input type="hidden" value="{{user.username}}" name="username" id="username">
@@ -37,10 +37,13 @@
             
             <div class="mb-3">
                 <label for="file" class="form-label">Importação Comp. de Pag. Banco Itaú</label>
-                <input class="form-control" type="file" id="file" name="file" accept=".pdf">
+                <span class="block-border-dotted">
+                    <input class="form-control" type="hidden" id="company_session" name="company_session">
+                    <input class="form-control" type="file" id="file" name="file" accept=".pdf" data-input-file="input-post-file">
+                </span>
             </div>
             
-            <input class="btn-send-file" type="submit" value="carregar arquivo" style="max-height: 45px; border: 1px solid;" onclick="animationLoadPostFile();">
+            <input class="btn-send-file" id="btn-send-file" type="submit" value="carregar arquivo" style="max-height: 45px; border: 1px solid;" onclick="animationLoadPostFile_AND_CHECK_INPUT(this);">
         </form>
         
     </div>
@@ -64,9 +67,9 @@
     
     {% else %}
 
-        <script>
-            animationLoadPostFile();
-        </script>
+        <!-- <script>
+            animationLoadPostFile_AND_CHECK_INPUT(this);
+        </script> -->
 
         <div class="container block-config-data-to-text">
 
@@ -80,7 +83,7 @@
                 <!-- ----------------------------------------------- -->
                 <div class="row">
                     <label for="">*Cod. Empresa</label>
-                    <input type="text" name="cod_empresa" id="cod_empresa" placeholder="código da empresa">
+                    <input type="text" name="cod_empresa" id="cod_empresa" placeholder="código da empresa" value="{{company_session}}" readonly>
                 </div>
                 <div class="row">
                     <label for="">*Filial</label>
@@ -112,14 +115,22 @@
                 <p>{{tt_credit}}</p>
             </div>
 
-            <input type="button" value="configurar contas" onclick="displayModalAccounts();">
+            
+            <div class="container btn-options-config">
+                <div class="btn-reload" onclick="reloadPage();" title="recarregar">
+                    <i class="fa-solid fa-rotate-right" id="icon-reload"></i>
+                </div>
+    
+                <input type="button" value="configurar contas" onclick="displayModalAccounts();" data-btn-action="open-model-config" disabled>
+                <!-- <input type="button" value="configurações avançadas" onclick="displayModal_ConfiguracoesAvancadas();" data-btn-action="open-model-config" disabled> -->
+            </div>
             <!-- <input type="text" id="input-serch" placeholder="Digite para filtrar" onkeydown="filtrarTabela();" style="background: #dcdcdc;"> -->
         </div>
         <div class="container container-table-preview">
             <table class="table table-striped table-hover" id="table-data-01">
                 <thead>
                     <tr>
-                        <th class="align-text-center  col-fixed-2" id="select-all-rows">SELEÇÃO<input type="checkbox" class="btn-select-all-rows" onclick="SelectAllDataTemp(this);"></th>
+                        <th class="align-text-center  col-fixed-2" id="select-all-rows">SELEÇÃO<input type="checkbox" class="btn-select-all-rows" onclick="selectAllCheckboxes(this);"></th>
                         <th>TP_REGISTRO</th>
                         <th>NOME</th>
                         <th>COD_EMPRESA</th>
@@ -147,7 +158,7 @@
                 <tbody>
                     {% for data in data_table %}
                         <tr class="data-row-{{data.index}}">
-                            <td class="align-text-center  col-fixed-2"><input type="checkbox" name="data-row-{{data.index}}" onclick="calculateValues(this)"></td>
+                            <td class="align-text-center  col-fixed-2"><input type="checkbox" name="data-row-{{data.index}}" onclick="selectCheckbox(this)"></td>
                             <td>{{data.TP_REGISTRO}}</td>
                             <td>{{data.NOME}}</td>
                             <td>{{data.COD_EMPRESA}}</td>

@@ -1,0 +1,425 @@
+{% if user.is_authenticated %}
+    {% load static %}
+
+    
+    <!-- --------------- ANIMATION LOAD DATA/PROCESS DATA --------------- -->
+    <div class="container-processing-data">
+        <article>
+            <!-- <p class="progress_table_update">Progresso (%)</p> -->
+            <div class="lds-ellipsis">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </article>
+    </div>
+    
+    <!-- --------------- DROPDOWN ALL COMPANIES --------------- -->
+    <div class="container container-all-companies-to-auth">
+        <div class="container container-search-company">
+            <input type="text" name="search_company" id="search_company" placeholder="busque uma empresa pelo nome ou cnpj"
+                oninput="filerCompanyToAuth(this);"
+                onclick="expandListCompanies();"
+            >
+        </div>
+        <div class="block-all-companies-to-auth">
+            <ul style="display: none;"></ul>
+        </div>
+    </div>
+
+
+    <!-- --------------- MODAL SAVE CODE ACCOUNT --------------- -->
+    <div class="block-fixed-background">
+        
+        <div class="container container-modal-config-company" > <!-- style="display: flex;" -->
+            <div class="row">
+                <h5 class="title-modal">Editar empresa</h5>
+            </div>
+            
+            <div class="block-inputs-config-company">
+                <label for="code_company">Código Cliente</label>
+                <input type="text" name="code_company" id="code_company" value="" readonly>
+            </div>
+            <div class="block-inputs-config-company">
+                <label for="company">Razão social</label>
+                <input type="text" name="company" id="company" value="" readonly>
+            </div>
+            <div class="block-inputs-config-company">
+                <label for="cnpj_company">CNPJ/CPF</label>
+                <input type="text" name="cnpj_company" id="cnpj_company" value="" readonly>
+            </div>
+            <div class="block-inputs-config-company">
+                <label for="code_account">Código da conta</label>
+                <input type="text" name="code_account" id="code_account" value="" maxlength="8">
+            </div>
+        
+        
+            <div class="container container-btns-config">
+                <div class="block-btns-action-config btn-close-modal">
+                    <button onclick="closeModalConfiAccountsCompany_V2();">fechar</button>
+                </div>
+                <div class="block-btns-action-config" onclick="saveCodeAccount();">
+                    <button>salvar</button>
+                    <i class="fa-solid fa-floppy-disk"></i>
+                </div>
+            </div>
+    
+        </div>
+    </div>
+
+
+
+    <script src="{% static 'controller_rules_companies.js' %}"></script>
+
+    <script>
+        window.onload = function() {
+            animationLoadPostFile();
+            const animationPromisse = new Promise((resolve, reject)=>{
+                resolve(true);
+            }).then((x)=>{
+                getAllCompanies();
+            });
+            function getAllCompanies(){
+                var company_code, company_auth;
+
+                try {
+                    // -------------- obtém a empresa selecionada para utilização na sessão atual. --------------
+                    company_code = JSON.parse(window.localStorage.getItem("company_auth")).company_code.trim();
+                    company_auth = JSON.parse(window.localStorage.getItem("company_auth")).company_name.trim();
+                    document.getElementById("search_company").value = `[${company_code}] - ${company_auth}`;
+                    
+                } catch (error) {};
+
+                let url = "{% url 'get_all_companies_clients' %}";
+                let csrf_token = "{{csrf_token}}";
+                
+                let body = {};
+                let headers = {
+                    "X-CSRFToken": csrf_token,
+                };
+                fetch(url, {
+                    method: "GET",
+                    headers: headers
+                }).then((data)=>{
+                    return data.json();
+                }).then((data)=>{
+                    console.log(data)
+                    let block_all_companies = document.querySelector(".block-all-companies-to-auth").querySelector("ul");
+                    let count_aux = 0;
+                    data.data.forEach((x)=>{
+
+                        let display_mode = "none";
+                        
+                        block_all_companies.innerHTML += `
+                        <li style="display: ${display_mode};" onclick="selectCompanyToAuth(this);">
+                            <span>
+                                <p data-code-client="${x.id_client}">${x.razao_social}</p>
+                                <p>${x.cnpj}</p>
+                            </span>
+                            <span>
+                                <p data-id-account="${x.id_client}">${x.company_code}</p>
+                            </span>
+                        </li>`;
+                        count_aux += 1;
+                    });
+                                
+                    animationLoadPostFile();
+                    checkCode_JB();
+                });
+            }
+        }
+    </script>
+
+
+    <script>
+
+        // ----------------------------------------------------------------------
+        // salva o código JB para a empresa da sessão atual.
+        function saveCodeAccount(){
+
+            let code_account = document.getElementById("code_account");
+            let id_company = document.getElementById("code_company").value;
+            console.log("---------------------- ", id_company, "           ---------------")
+            
+            if (parseInt(code_account.value)){
+                document.querySelector(`[data-id-account="${id_company}"]`).textContent = code_account.value;
+                code_account.style.borderColor = "var(--color-principal-cinza)";
+                const url = "{% url 'all_companies_clients' %}";
+                const csrf_token = "{{csrf_token}}";
+                saveCodeAccountCompany( url, csrf_token );
+                updateCompanyCodeLocalStorage_By_ID();
+                checkCode_JB();
+                // location.reload();
+            } else {
+                code_account.style.borderColor = "red";
+            }
+        }
+
+        // ----------------------------------------------------------------------
+        // salva os dados da empresa selecionada para sessão no LocalStorage.
+        function updateCompanyCodeLocalStorage_By_ID(){
+            var code_company, company, cnpj_company, code_account;
+            code_company = document.getElementById("code_company").value;
+            company = document.getElementById("company").value;
+            cnpj_company = document.getElementById("cnpj_company").value;
+            code_account = document.getElementById("code_account").value;
+            
+            // atualiza valor do input de empresa padrão da sessão.
+            document.getElementById("search_company").value = `[${code_account}] - ${company}`;
+            document.querySelector(".block-all-companies-to-auth").querySelector("ul").style.display = "none";
+
+            // armazena os dados da empresa selecionada na sessão LocalStorage.
+            company_auth = JSON.stringify({"company_code": code_account, "company_name": company, "id_client": code_company, "company_cnpj": cnpj_company})
+            window.localStorage.setItem("company_auth", company_auth);
+        }
+
+        // ----------------------------------------------------------------------
+        // filtra elementos da lista de empresas (dropdown) para utilizar na sessão.
+        function filerCompanyToAuth(element){
+            
+            var value_to_filter, rows, company_name, company_cnpj;
+
+
+            window.localStorage.setItem("company_auth", JSON.stringify({"company_code": "-"}));
+
+            rows = document.querySelector(".block-all-companies-to-auth").querySelector("ul").querySelectorAll("li");
+            value_to_filter = element.value; //.toUpperCase();
+
+            if (value_to_filter.indexOf("] -") > -1){
+                value_to_filter = element.value.split("] - ")[1].toUpperCase();
+            } else {
+                value_to_filter = element.value.toUpperCase();
+            }
+            document.getElementById("search_company").value = value_to_filter;
+            
+            rows.forEach((row)=>{
+
+                company_name = row.querySelectorAll("span")[0].innerText.toUpperCase();
+                company_cnpj = row.querySelectorAll("span")[1].innerText.toUpperCase();
+                
+                if (value_to_filter.length > 0){
+                    document.querySelector(".block-all-companies-to-auth").querySelector("ul").style.display = "flex";
+                    if(company_name.indexOf(value_to_filter)> -1 || company_cnpj.indexOf(value_to_filter)> -1) {
+                        row.style.display = "flex";
+                        
+                    } else {
+                        row.style.display = "none";
+                    }
+                } else {
+                    document.querySelector(".block-all-companies-to-auth").querySelector("ul").style.display = "none";
+                    row.style.display = "none";
+                }
+                
+            });
+
+            checkInputsFormPC();
+        }
+
+        // ----------------------------------------------------------------------
+        // definição de empresa padrão da sessão.
+        function selectCompanyToAuth(element){
+            var company_name, company_cnpj, company_code, company_auth, id_client, checkCode, checkinputs;
+
+            // element.style.border = "2px solid blue";
+            // element.style.borderRadius = "5px";
+            
+            company_name = element.querySelectorAll("span")[0].querySelectorAll("p")[0].innerText;
+            id_client = element.querySelectorAll("span")[0].querySelectorAll("p")[0].getAttribute("data-code-client");
+            company_cnpj = element.querySelectorAll("span")[0].querySelectorAll("p")[1].innerText;
+            company_code = element.querySelectorAll("span")[1].querySelectorAll("p")[0].innerText;
+
+            document.getElementById("search_company").value = `[${company_code}] - ${company_name}`;
+            document.querySelector(".block-all-companies-to-auth").querySelector("ul").style.display = "none";
+
+            // armazena os dados da empresa selecionada na sessão LocalStorage.
+            company_auth = JSON.stringify({"company_code": company_code, "company_name": company_name, "id_client": id_client, "company_cnpj": company_cnpj})
+            window.localStorage.setItem("company_auth", company_auth);
+
+            checkCode = checkCode_JB();
+            checkinputs = checkInputsFiles();
+
+            if (checkCode && checkinputs){
+
+                document.getElementById("btn-send-file").disabled = false;
+                document.getElementById("btn-send-file").classList.add("active");
+
+            } else {
+
+                document.getElementById("btn-send-file").disabled = true;
+                document.getElementById("btn-send-file").classList.remove("active");
+
+            }
+        }
+        
+        function closeModalConfiAccountsCompany_V2(){
+            document.querySelector("body").classList.toggle("disable-scroll");
+            document.querySelector(".block-fixed-background").classList.remove("activate-modal");
+            document.querySelector(".container-modal-config-company").classList.remove("activate-modal");
+
+            document.getElementById("code_account").value = "";
+            var search_company = document.getElementById("search_company");
+            search_company.value = search_company.value;
+        }
+
+        // ----------------------------------------------------------------------
+        // aciona dropdown para selecionar uma empresa (empresa utilizada na sessão atual).
+        function expandListCompanies(){
+
+            let cnpj_company = "";
+            try {
+                cnpj_company = JSON.parse(window.localStorage.getItem("company_auth")).company_cnpj.trim();
+            } catch (error) {};
+
+            let rows = document.querySelector(".block-all-companies-to-auth").querySelector("ul").querySelectorAll("li");
+            document.querySelector(".block-all-companies-to-auth").querySelector("ul").style.display = "flex";
+
+            rows.forEach((row)=>{
+                let cnpj_tag = row.querySelectorAll("span")[0].querySelectorAll("p")[1].innerText;
+                if (cnpj_company != ""){
+                    if ( cnpj_company == cnpj_tag){
+    
+                        row.style.color = "#ffda17";
+                        row.style.background = "var(--color-principal-azul-claro)";
+                        
+                    } else {
+    
+                        row.style.border = "0px";
+                        row.style.color = "var(--color-principal-preto)";
+                        row.style.background = "var(--color-principal-branco-puro)";
+    
+                    }
+                };
+                row.style.display = "flex";
+            });
+        }
+        
+        // ----------------------------------------------------------------------
+        // rerreagar página atual com reenvio de formulário.
+        function reloadPage() {
+
+            location.reload();
+            const icon = document.querySelector('#icon-reload');
+            let rotation = 0;
+            const intervalId = setInterval(() => {
+            rotation += 10;
+            icon.style.transform = `rotate(${rotation}deg)`;
+            }, 20);
+
+        }
+        
+        // ----------------------------------------------------------------------
+        // animação de carregamento ou processamento de dados.
+        function animationLoadPostFile(){
+            try {
+                document.documentElement.scrollTop = 0;
+                try {document.querySelector("body").classList.add("disable-scroll");} catch (error) {};
+
+                document.querySelector(".container-processing-data").classList.toggle("displayflexAnimationProcessingData");
+            } catch (error) {
+                document.documentElement.scrollTop = 0;
+                try {document.querySelector("body").classList.remove("disable-scroll");} catch (error) {};
+            };
+        }
+        
+        function animationLoadPostFile_AND_CHECK_INPUT(){
+            
+            form = document.getElementById("form-post-file");
+            form.addEventListener("submit", (event) => {
+                form.preventDefault();
+            });
+            
+            form.submit();
+            animationLoadPostFile();
+            
+        }
+        
+        function checkInputsFiles(){
+            var inputs_post_files, status_inputs_file;
+            status_inputs_file = true;
+
+            inputs_post_files = document.querySelectorAll(`[data-input-file="input-post-file"]`);
+            inputs_post_files.forEach((input)=>{
+                if(input.value == ""){
+                    status_inputs_file = false;
+                }
+            });
+            return status_inputs_file;
+        }
+
+
+        function autoComplete_CompanySession(){
+            var checkCode, status_inputs_file;
+            
+            checkCode = checkCode_JB();
+            status_inputs_file = checkInputsFiles();
+
+            if (checkCode && status_inputs_file){
+
+                document.getElementById("btn-send-file").disabled = false;
+                document.getElementById("btn-send-file").classList.add("active");
+
+            } else {
+
+                document.getElementById("btn-send-file").disabled = true;
+                document.getElementById("btn-send-file").classList.remove("active");
+
+            }
+
+        }
+
+        // ----------------------------------------------------------------------
+        // checagem de códido JB cadastrado.
+        function checkCode_JB(){
+            console.log("\n\n -------------- check company --------------")
+            try {
+                // -------------- obtém a empresa selecionada para utilização na sessão atual. --------------
+                company_code = JSON.parse(window.localStorage.getItem("company_auth")).company_code.trim();
+                company_auth = JSON.parse(window.localStorage.getItem("company_auth")).company_name.trim();
+                id_client = JSON.parse(window.localStorage.getItem("company_auth")).id_client.trim();
+                cnpj_company = JSON.parse(window.localStorage.getItem("company_auth")).company_cnpj.trim();
+
+                console.log(`
+                    >> company_code: ${company_code}
+                    >> company_auth: ${company_auth}
+                    >> id_client: ${id_client}
+                    >> cnpj_company: ${cnpj_company}
+                `)
+
+                if (company_code == "-") {
+                    
+                    document.querySelector("body").classList.toggle("disable-scroll");
+                    document.querySelector(".block-fixed-background").classList.add("activate-modal");
+                    document.querySelector(".container-modal-config-company").classList.add("activate-modal");
+                    document.querySelector(".title-modal").innerText = "Cadastrar código JB";
+                    
+                    document.getElementById("code_company").value = id_client;
+                    document.getElementById("company").value = company_auth;
+                    document.getElementById("cnpj_company").value = cnpj_company;
+
+                    console.log(" ------------------ activate modal ------------------ ")
+                    checkInputsFormPC();
+
+                    return false;
+                    
+                } else {
+                    document.querySelector("body").classList.toggle("disable-scroll");
+                    document.querySelector(".block-fixed-background").classList.remove("activate-modal");
+                    document.querySelector(".container-modal-config-company").classList.remove("activate-modal");
+                    return true;
+
+                }
+            } catch (error) {
+                console.warn(" ----------------- ERROR ----------------- ")
+                // console.log(error)
+                return false;
+            };
+        }
+        
+
+
+
+    </script>
+
+
+{% endif %}

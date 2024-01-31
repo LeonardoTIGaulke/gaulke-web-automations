@@ -2,55 +2,84 @@
 {% load static %}
 {% block title %}Home{% endblock %}
 {% block content %}
-
-    <div class="container" style="min-height: 5vh; display: flex; flex-direction: column; align-items: center; justify-content:center;">
-        <h5>Sistema para uso interno dos funcionários Gaulke Contábil.</h5>
-    </div>
-
-    <div class="container" style="min-height: 25vh; display: flex; flex-direction: column; align-items: center; justify-content:center;">
+    
+    <div class="container base-elements" style="min-height: 25vh; display: flex; flex-direction: column; align-items: center; justify-content:center;">
         
         <div class="line-separete-container">
 
         </div>
 
+
+        <div class="block-btn-search">
+            <input type="text" name="input-search-02" id="input-search-02" placeholder="digite para filtrar" oninput="filtroOpcoes(this);">
+        </div>
+
         <div class="container container-menu-functions-img">
-            <h5> Comprovantes de Pagamentos </h5>
-            <ul>
-
-                <li> <a href="{% url 'post_file_fastAPI_comprovante_banco_do_brasil' %}"> <img src="{% static 'logo-banco-do-brasil.png' %}" alt=""> </a> </li>
-                <li> <a href="{% url 'post_file_fastAPI_comprovante_banco_bradesco' %}"> <img src="{% static 'logo-banco-bradesco.png' %}" alt=""> </a> </li>
-                <li> <a href="{% url 'post_file_fastAPI_comprovante_banco_sicredi' %}"> <img src="{% static 'logo-banco-sicredi.png' %}" alt=""> </a> </li>
-                <li> <a href="{% url 'post_file_fastAPI_comprovante_banco_sicoob' %}"> <img src="{% static 'logo-sicoob.png' %}" alt=""> </a> </li>
-                <li> <a href="{% url 'post_file_fastAPI_comprovante_banco_itau' %}"> <img src="{% static 'logo-banco-itau.png' %}" alt=""> </a> </li>
-                <li> <a href="{% url 'post_file_fastAPI_comprovante_banco_civia' %}"> <img src="{% static 'logo-banco-civia.jpg' %}" alt=""> </a> </li>
-                <li> <a href="{% url 'post_file_fastAPI_comprovante_banco_civia' %}"> <img src="{% static 'logo-civia.svg' %}" alt=""> </a> </li>
+            <h5 class="title-block-list-options"> Comprovantes de Pagamentos </h5>
+            <ul class="list-options-01">
+                
+                <li> <a href="{% url 'post_file_fastAPI_comprovante_banco_do_brasil' %}" data-logo="banco do brasil"> <img src="{% static 'logo-banco-do-brasil.png' %}" alt=""> </a> </li>
+                <li> <a href="{% url 'post_file_fastAPI_comprovante_banco_bradesco' %}" data-logo="bradesco"> <img src="{% static 'logo-banco-bradesco.png' %}" alt=""> </a> </li>
+                <li> <a href="{% url 'post_file_fastAPI_comprovante_banco_sicredi' %}" data-logo="sicredi"> <img src="{% static 'logo-banco-sicredi.png' %}" alt=""> </a> </li>
+                <li> <a href="{% url 'post_file_fastAPI_comprovante_banco_sicoob' %}" data-logo="sicoob"> <img src="{% static 'logo-sicoob.png' %}" alt=""> </a> </li>
+                <li> <a href="{% url 'post_file_fastAPI_comprovante_banco_itau' %}" data-logo="itau"> <img src="{% static 'logo-banco-itau.png' %}" alt=""> </a> </li>
+                <li> <a href="{% url 'post_file_fastAPI_comprovante_banco_civia' %}" data-logo="civia"> <img src="{% static 'logo-civia.svg' %}" alt=""> </a> </li>
 
             </ul>
         </div>
 
-        <input type="text" name="input-serch-02" id="input-serch-02" placeholder="digite para filtrar" onkeydown="filtroOpcoes(this);">
-
+        
         <div class="container container-menu-functions-link">
-            <h5> Gerais/Utilitários </h5>
+            <h5 class="title-block-list-options"> Gerais/Utilitários </h5>
             <ul class="list-options-02">
-                <li> <a href="{% url 'post_file_fastAPI_folha_por_empregado' %}"> Folha de Pagamento </a> </li>
-                <li> <a href="{% url 'post_file_fastAPI_relacao_GNRE' %}"> Relação GNRE </a> </li>
-                <li> <a href="{% url 'post_file_entrada_titulos_desc_sicoob' %}"> Entrada Títulos Desc. Sicoob </a> </li>
+                <li>
+                    <a href="{% url 'post_file_fastAPI_folha_por_empregado' %}"> Folha de Pagamento </a>
+                    <i class="fa-regular fa-file-pdf"></i>
+                </li>
+                <li>
+                    <a href="{% url 'post_file_fastAPI_relacao_GNRE' %}"> Relação GNRE </a>
+                    <i class="fa-regular fa-file-excel"></i>
+                </li>
+                <li>
+                    <a href="{% url 'post_file_entrada_titulos_desc_sicoob' %}"> Entrada Títulos Desc. Sicoob </a>
+                    <i class="fa-regular fa-file-pdf"></i>
+                </li>
             </ul>
         </div>
 
         <div class="container container-menu-functions-link">
-            <h5> Conta a pagar/receber </h5>
+            <h5 class="title-block-list-options"> Conta a pagar/receber </h5>
             <ul class="list-options-03">
-                <li> <a href="{% url 'post_file_fastAPI_relacao_cobrancas_pagas' %}"> Relação Cobranças Pagas (WB telecom) </a> </li>
-                <li> <a href="{% url 'post_file_fastAPI_relacao_decorise' %}"> Relação Decorise </a> </li>
-                <li> <a href="{% url 'post_file_fastAPI_relacao_arao_dos_santos' %}"> Relação Arão dos Santos </a> </li>
-                <li> <a href="{% url 'post_file_fastAPI_relacao_grupo_DAB' %}" > Relação Grupo DAB </a> </li>
+                <li>
+                    <a href="{% url 'post_file_fastAPI_relacao_cobrancas_pagas' %}"> Relação Cobranças Pagas (WB telecom) </a>
+                    <i class="fa-regular fa-file-excel"></i>
+                </li>
+                <li>
+                    <a href="{% url 'post_file_fastAPI_relacao_decorise' %}"> Relação Decorise </a>
+                    <i class="fa-regular fa-file-excel"></i>
+                </li>
+                <li>
+                    <a href="{% url 'post_file_fastAPI_relacao_arao_dos_santos' %}"> Relação Arão dos Santos </a>
+                    <i class="fa-regular fa-file-excel"></i>
+                </li>
+                <li>
+                    <a href="{% url 'post_file_fastAPI_relacao_grupo_DAB' %}" > Relação Grupo DAB </a>
+                    <i class="fa-regular fa-file-excel"></i>
+                </li>
+                <li>
+                    <a href="{% url 'post_file_fastAPI_relacao_contas_a_receber_inova' %}" > Relação Contas a Receber - Inova </a>
+                    <i class="fa-regular fa-file-excel"></i>
+                </li>
+                <li>
+                    <a href="{% url 'post_file_fastAPI_relacao_contas_a_pagar_ponto_certo' %}" > Relação Contas a Pagar - Ponto Certo </a>
+                    <i class="fa-regular fa-file-excel"></i>
+                </li>
+                <li>
+                    <a href="{% url 'post_file_fastAPI_relacao_contas_a_pagar_garra' %}" > Relação Contas a Pagar - Garra </a>
+                    <i class="fa-regular fa-file-excel"></i>
+                </li>
             </ul>
         </div>
-
-
-
 
     </div>
 
@@ -64,11 +93,12 @@
         function filtroOpcoes(e){
             filtroOpcoes_02();
             filtroOpcoes_03();
+            filtroOpcoes_04();
         }
 
         function filtroOpcoes_02() {
             var input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("input-serch-02");
+            input = document.getElementById("input-search-02");
             filter = input.value.toUpperCase();
             list_options = document.querySelector(".list-options-02");
             li = list_options.getElementsByTagName("li");
@@ -90,9 +120,10 @@
                 }
             }
         }
+        
         function filtroOpcoes_03() {
             var input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("input-serch-02");
+            input = document.getElementById("input-search-02");
             filter = input.value.toUpperCase();
             list_options = document.querySelector(".list-options-03");
             li = list_options.getElementsByTagName("li");
@@ -105,6 +136,34 @@
                     // console.log(x.textContent);
 
                     txtValue = x.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        li[i].style.display = "flex";
+                    } else {
+                        li[i].style.display = "none";
+                    }
+
+                }
+            }
+        }
+        
+        // ------------------- FILTRO DE LOGO -------------------
+        
+        function filtroOpcoes_04() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("input-search-02");
+            filter = input.value.toUpperCase();
+            list_options = document.querySelector(".list-options-01");
+            li = list_options.getElementsByTagName("li");
+            // console.log(li);
+            for (i = 0; i < li.length; i++) {
+                x = li[i].querySelector("a");
+                // console.log(x);
+                if (x) {
+                    
+                    // console.log(x.textContent);
+
+                    txtValue = x.getAttribute("data-logo");
+                    console.log(`----> data-logo: ${txtValue}`)
                     if (txtValue.toUpperCase().indexOf(filter) > -1) {
                         li[i].style.display = "flex";
                     } else {

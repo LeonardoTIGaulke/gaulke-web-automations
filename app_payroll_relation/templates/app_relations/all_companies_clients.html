@@ -1,0 +1,101 @@
+{% extends 'base_v2.html' %}
+{% load static %}
+{% block title %} Preview de Importação {% endblock %}
+{% block content %}
+
+
+<div class="container container-modal-config-company">
+    <div class="row">
+        <h5>Editar empresa</h5>
+    </div>
+
+
+    <div class="block-inputs-config-company">
+        <label for="code_company">Código Cliente</label>
+        <input type="text" name="code_company" id="code_company" value="" readonly>
+    </div>
+    <div class="block-inputs-config-company">
+        <label for="company">Razão social</label>
+        <input type="text" name="company" id="company" value="" readonly>
+    </div>
+    <div class="block-inputs-config-company">
+        <label for="cnpj_company">CNPJ/CPF</label>
+        <input type="text" name="cnpj_company" id="cnpj_company" value="" readonly>
+    </div>
+    <div class="block-inputs-config-company">
+        <label for="code_account">Código da conta</label>
+        <input type="text" name="code_account" id="code_account" value="" maxlength="8">
+    </div>
+
+
+    <div class="container container-btns-config">
+        <div class="block-btns-action-config btn-close-modal">
+            <button onclick="closeModalConfiAccountsCompany();">fechar</button>
+        </div>
+        <div class="block-btns-action-config" onclick="saveCodeAccount();">
+            <button>salvar</button>
+            <i class="fa-solid fa-floppy-disk"></i>
+        </div>
+    </div>
+
+</div>
+
+
+<div class="base-elements">
+    <div class="container">
+        <div class="block-filters">
+            <input type="search" name="company" id="company" placeholder="digite algo para filtrar" oninput="filterTableAllCompanies(this);">
+        </div>
+    </div>
+    
+    <div class="container-fluid  container-all-companies-clients">
+        {% if status_get_all_companies %}
+            <div class="container">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID Cliente</th>
+                            <th>Razão Social</th>
+                            <th>CNPJ/CPF</th>
+                            <th>AÇÕES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for client in all_companies_clients %}
+                            <tr data-row-company="company-{{client.id_client}}">
+                                <td>{{client.id_client}}</td>
+                                <td>{{client.razao_social}}</td>
+                                <td>{{client.cnpj}}</td>
+                                <td>
+                                    <span>
+                                        <i class="fa-solid fa-pen-to-square" data-id-client="{{client.id_client}}" onclick="editCompany(this)"></i>
+                                    </span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div>nenhum cliente cadastrado.</div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="{% static 'controller_rules_companies.js' %}"></script>
+
+<script>
+    function saveCodeAccount(){
+        const url = "{% url 'all_companies_clients' %}";
+        const csrf_token = "{{csrf_token}}";
+        saveCodeAccountCompany( url, csrf_token );
+    }
+
+    function editCompany(element){
+        let url = "{% url 'query_account_all_companies_clients' %}";
+        let csrf_token = "{{csrf_token}}";
+        openModalEditCompany(element, url, csrf_token);
+    }
+</script>
+
+{% endblock %}

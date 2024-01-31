@@ -1,0 +1,9 @@
+drop table app_payroll_relation_model_nome_plano_contas;
+create table app_payroll_relation_model_nome_plano_contas (
+id int auto_increment primary key ,
+type_PC varchar(55),
+code_pc varchar(8),
+description_pc varchar(125),
+createed_at datetime,
+update_at datetime
+);

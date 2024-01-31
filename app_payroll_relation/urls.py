@@ -18,8 +18,10 @@ urlpatterns = [
     path("config-contas-grne/",  views.config_contas_gnre, name="config_contas_gnre"),
     path("relacao-decorise/", views.post_file_fastAPI_relacao_decorise, name="post_file_fastAPI_relacao_decorise"),
     path("relacao-arao-dos-santos/", views.post_file_fastAPI_relacao_arao_dos_santos, name="post_file_fastAPI_relacao_arao_dos_santos"),
-    
     path("relacao-grupo-DAB/", views.post_file_fastAPI_relacao_grupo_DAB, name="post_file_fastAPI_relacao_grupo_DAB"),
+    path("relacao-contas-a-receber-inova/", views.post_file_fastAPI_relacao_contas_a_receber_inova, name="post_file_fastAPI_relacao_contas_a_receber_inova"),
+    path("relacao-contas-a-pagar-ponto-certo/", views.post_file_fastAPI_relacao_contas_a_pagar_ponto_certo, name="post_file_fastAPI_relacao_contas_a_pagar_ponto_certo"),
+    path("relacao-contas-a-pagar-garra/", views.post_file_fastAPI_relacao_contas_a_pagar_garra, name="post_file_fastAPI_relacao_contas_a_pagar_garra"),
 
     # -----------------------------------------------------------------
     # ------------------- COMPROVANTES DE PAGAMENTOS ------------------
@@ -32,10 +34,28 @@ urlpatterns = [
     path("relacao-comprovante-banco-civia/", views.post_file_fastAPI_comprovante_civia, name="post_file_fastAPI_comprovante_banco_civia"),
 
 
-    # -----------------------------------------------------------------
+    # ------------------------------------------------------------------
     # ------------------- CRIAÇÃO DE REGRAS DINÂMICAS ------------------
-    # -----------------------------------------------------------------
+    # ------------------------------------------------------------------
+    path("all-comnpanies-clients/", views.all_companies_clients, name="all_companies_clients"),
+    path("get-all-comnpanies-clients/", views.get_all_companies_clients, name="get_all_companies_clients"),
+    path("query-all-comnpanies-clients/", views.query_account_all_companies_clients, name="query_account_all_companies_clients"),
+
     path("create-new-tag-rule/", views.create_new_tag_rule, name="create_new_tag_rule"),
+
+    path("create-new-tag/", views.create_new_tag, name="create_new_tag"),
+    path("get-all-tags-rules/", views.get_all_tags_rules, name="get_all_tags_rules"),
+
+
+
+    # -----------------------------------------------------------------------------------
+    # ------------------ CONFIGURAÇÃO DE PLANO DE CONTAS ANTIXO x NOVO ------------------
+    # -----------------------------------------------------------------------------------
+    path("config-plano-de-contas/", views.config_plano_de_contas, name="config_plano_de_contas"),
+    path("post-plano-de-contas/", views.post_plano_de_contas, name="post_plano_de_contas"),
+    path("post-update-plano-de-contas/", views.post_update_plano_de_contas, name="post_update_plano_de_contas"),
+
+
 
 
 
