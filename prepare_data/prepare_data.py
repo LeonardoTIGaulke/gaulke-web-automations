@@ -148,7 +148,7 @@ class ConvertToDataFrame:
                 if model == "model_1":
                     # modelo: ?
                     value_primeiro_hist_cta = "2"
-                    dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["beneficiario_final", "data_vencimento"], index=i)
+                    dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["nome_beneficiario", "data_de_vencimento"], index=i)
                     text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace)
 
                 elif model == "model_2":
@@ -472,7 +472,7 @@ class ConvertToDataFrame:
             df_fees.loc[:, 'TYPE_PROCESS'] = 'process_fess'
             dataframe = pd.concat([dataframe, df_fees])    
         return dataframe
-    
+
     # ----
     
     def convert_dataframe_to_excel(dataframe, file_name):
@@ -606,7 +606,7 @@ class ConvertToDataFrame:
         return dataframe
     
     # ----
-    
+    # versão descontinuada 01/02/2024 ---> desenvolvido novo modelo (V2). Mais otimizado.
     def read_pdf_comprovante_banco_do_brasil(file, company_session):
         
         contents = file.read()
@@ -617,6 +617,7 @@ class ConvertToDataFrame:
         list_page_erros = list()
         index_page = 0
         print(f" TT PAGES: {len(pdf_reader.pages)}")
+
         for index_page in range(len(pdf_reader.pages)):
             try:
                 print(f"\n\n\n ---- INDEX PAGE: {index_page}")
@@ -657,7 +658,7 @@ class ConvertToDataFrame:
                             index_aux = i+21
                             data_extract["beneficiario_final"]["data_init"] = index_aux
                             data_temp = data_page[i:]
-
+                            
                             for j in range(len(data_temp)):
                                 if "CPF" in data_temp[j:j+5]:
                                     index_aux = j-1
@@ -738,6 +739,10 @@ class ConvertToDataFrame:
             })
         df = ConvertToDataFrame.drop_columns_dataframe(dataframe=df, list_columns=["cnpj", "beneficiario_final", "data_pagamento"])
         df = ConvertToDataFrame.duplicate_dataframe_rows(dataframe=df)
+
+        df.to_excel("comprovante_banco_do_brasil.xlsx")
+
+
         df = ConvertToDataFrame.create_dataframe_discount_and_fees(dataframe=df)
 
         print(df)
@@ -766,6 +771,203 @@ class ConvertToDataFrame:
             "list_page_erros": [],
              }
     
+
+    # ----
+    # nova versão --> mais otimizada.
+    def read_pdf_comprovante_banco_do_brasil_v2(file, company_session):
+
+        print(f"\n\n ----- Arquivo informado comprovante Bradesco V2 | arquivo: {file}")
+
+        contents = file.read()
+        pdf_bytes = io.BytesIO(contents)
+        pdf_reader = PdfReader(pdf_bytes)
+
+        list_data_pages = list()
+        list_page_erros = list()
+        index_page = 0
+        print(f" TT PAGES: {len(pdf_reader.pages)}")
+
+
+        data_to_table = {
+            # # ---------- IDENTIFICADORES
+            "nome_beneficiario": list(),
+            "cnpj_beneficiario": list(),
+
+            # "nome_pagador": list(),
+            # "cnpj_pagador": list(),
+
+            # # # ---------- DATAS
+            "data_de_debito": list(),
+            "data_de_vencimento": list(),
+
+            # # ---------- VALORES
+            "valor": list(),
+            # "desconto": list(),
+            # "abatimento": list(),
+            # "bonificacao": list(),
+            # "multa": list(),
+            # "juros": list(),
+            "valor_total": list(),
+
+        }
+
+        dict_tags_to_text = dict()
+
+        for index_page in range(len(pdf_reader.pages)):
+            try:
+                print(f"\n\n\n ---- INDEX PAGE: {index_page}")
+                
+                page = pdf_reader.pages[index_page]
+                
+                
+                data_page = page.extract_text()
+                print("\n\n ----------------------- DATA EXTRACT ----------------------- ")
+                print(data_page)
+
+                # dict_tags_to_text = ConvertToDataFrame.check_text_to_tag(data=data_page, dict_tags_to_text=dict_tags_to_text)
+                # print(dict_tags_to_text)
+
+                check_cnpj = True
+                if "COMPROVANTE DE PAGAMENTO DE TITULOS" in data_page:
+                    for i in range(len(data_page)):
+                        
+                        # -------------------------- NOME PAGADOR --------------------------
+                        if "BENEFICIARIO:" == data_page[i:i+13]:
+                            data_temp = data_page[i+15:i+90].split("\n")[1].strip()
+                            print(f"\n\n ---------->> NOME BENEFICIARIO")
+                            data_to_table["nome_beneficiario"].append( data_temp[0:] )
+
+                        if "CNPJ:" == data_page[i:i+5]:
+                            if check_cnpj:
+                                data_temp = data_page[i+5:i+40].strip()
+                                print(f"\n\n ---------->> CNPJ BENEFICIARIO")
+                                data_to_table["cnpj_beneficiario"].append( data_temp[0:] )
+                                check_cnpj = False
+
+                        if "DATA DE VENCIMENTO" == data_page[i:i+18]:
+                            data_temp = data_page[i+19:i+48].strip()
+                            print(f"\n\n ---------->> DATA DE VENCIMENTO")
+                            data_to_table["data_de_vencimento"].append( data_temp[0:] )
+
+                        if "DATA DO PAGAMENTO" == data_page[i:i+17]:
+                            data_temp = data_page[i+18:i+48].strip()
+                            print(f"\n\n ---------->> DATA DO PAGAMENTO")
+                            data_to_table["data_de_debito"].append( data_temp )
+
+                        if "VALOR DO DOCUMENTO" == data_page[i:i+18]:
+                            data_temp = data_page[i+19:i+48].strip()
+                            print(f"\n\n ---------->> VALOR DO DOCUMENTO")
+                            data_to_table["valor"].append( data_temp[0:].replace(".", "").replace(",", ".") )
+
+                        if "VALOR COBRADO" == data_page[i:i+13]:
+                            data_temp = data_page[i+13:i+48].strip()
+                            print(f"\n\n ---------->> VALOR COBRADO")
+                            data_to_table["valor_total"].append( data_temp[0:].replace(".", "").replace(",", ".") )
+
+            except Exception as e:
+                print(f" ### ERROR EXTRACT DATA PDF | ERROR: {e}")
+                list_page_erros.append({index_page: e})
+
+        df = pd.DataFrame.from_dict(data_to_table)
+        df["valor_doc_decimal"] = df['valor'].astype(float)
+        df["valor_pago_decimal"] = df['valor_total'].astype(float)
+        print(df)
+        print(df.info())
+        df["juros"] = "0.00"
+        df["desconto"] = "0.00"
+
+        for i in df.index:
+            try:
+                if df["valor_pago_decimal"][i] > df["valor_doc_decimal"][i]:
+                    calc = df["valor_pago_decimal"][i] - df["valor_doc_decimal"][i]
+                    df["juros"][i] = str(round(calc, 2))
+                                    
+                elif df["valor_pago_decimal"][i] < df["valor_doc_decimal"][i]:
+                    calc = df["valor_doc_decimal"][i] - df["valor_pago_decimal"][i]
+                    df["desconto"][i] = str(round(calc, 2))
+
+            except Exception as e:
+                print(f" ### ERROR CALC JUROS/DESCONTO: {e}")
+
+        
+        print(df)
+        print(df.info())
+
+        df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_8", value_generic="Bradesco", cod_empresa=company_session)
+        df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
+            "DATA": "data_de_debito",
+            "CNPJ": "cnpj_beneficiario",
+            "NOME": "nome_beneficiario",
+            "VALOR": "valor",
+        })
+        # print(df)
+
+        # desconto
+        # juros
+        
+        df = ConvertToDataFrame.duplicate_dataframe_rows_lote(dataframe=df, list_update_cols=[
+            {"TP": "C", "TYPE_PROCESS": "comum"},
+            {"TP": "C", "TYPE_PROCESS": "desconto"},
+            {"TP": "D", "TYPE_PROCESS": "juros"},
+        ])
+
+        df.sort_values(by=["nome_beneficiario", "GRUPO_LCTO", "TP"], inplace=True)
+        df.index = list(range(0, len(df.index)))
+
+        count_aux = 0
+        for i in df.index:
+
+            if count_aux == 0:
+                df["VALOR"][i] = df["valor_total"][i]
+                count_aux += 1
+            elif count_aux == 1:
+                df["VALOR"][i] = df["desconto"][i]
+                df["CONTA"][i] = "936"
+                count_aux += 1
+            elif count_aux == 2:
+                df["VALOR"][i] = df["juros"][i]
+                df["CONTA"][i] = "947"
+                count_aux += 1
+            elif count_aux == 3:
+                df["VALOR"][i] = df["valor"][i]
+                df["CONTA"][i] = ""
+                count_aux = 0
+
+        df = ConvertToDataFrame.adjust_value_to_decimal_string(dataframe=df, column_name="VALOR", replace_caract=True)
+        df = ConvertToDataFrame.filter_data_dataframe(daraframe=df, name_column="VALOR", list_remove_values=["0.00"])
+
+        df = ConvertToDataFrame.create_cod_erp_to_dataframe(dataframe=df)
+
+        print("\n\n\n ------------ DF LAYOUT JB ------------ ")
+        print(df)
+        print(df.info())
+
+        tt_rows = len(df)
+        tt_debit    = len(df[df["TP"] == "D"])
+        tt_credit   = len(df[df["TP"] == "C"])
+
+        data_json = json.loads(df.to_json(orient="table"))
+        print(dict_tags_to_text)
+
+        print(f"""
+            --------- CONFIG CONTAS
+            --> tt_rows: {tt_rows}
+            --> tt_debit: {tt_debit}
+            --> tt_credit: {tt_credit}
+        """)
+
+
+        return {
+            "data_table": data_json,
+            "tt_rows": tt_rows,
+            "tt_debit": tt_debit,
+            "tt_credit": tt_credit,
+            "list_page_erros": [],
+        }
+
+
+
+
     # ----
     
     def read_pdf_relacao_folha_por_empregado(file, grupo_lancamento, company_session):
@@ -3579,6 +3781,62 @@ class ConvertToDataFrame:
     # ----
 
     def read_file_plano_de_contas(file, data_query):
+        try:
+            print(f"\n\n ----- Arquivo informado PLANO DE CONTAS: {file}")
+
+            contents = file.read()
+            xlsx_bytes = io.BytesIO(contents)
+            file = pd.ExcelFile(xlsx_bytes)
+            sheet_name = file.sheet_names[0]
+
+            df = file.parse(sheet_name=sheet_name, dtype='str')
+            df = df[df["Saldo atual"] != "0,00"]
+
+            df = df[ df["Cta. título"].isin(["2-Não"]) ][ ["Classificação", "Conta", "Nome da conta contábil/C. Custo", "Tipo conta"] ]
+            df["NEW_CODE"] = ""
+            df = ConvertToDataFrame.rename_columns_dataframe(dataframe=df, dict_replace_names={
+                "Classificação": "CLASSIFICASSAO",
+                "Conta": "CONTA",
+                "Nome da conta contábil/C. Custo": "NOME_CONTA_CENTRO_CUSTO",
+                "Tipo conta": "TTIPO_CONTA",
+            })
+            
+
+            # list_remove = ["        Socio - A", "        Socio - B", "        Socio - C"]
+            # df = df[ ~ df["NOME_CONTA_CENTRO_CUSTO"].isin(list_remove) ]
+            list_remove = ["Socio - A", "Socio - B", "Socio - C"]
+            df = df[~df['NOME_CONTA_CENTRO_CUSTO'].str.contains('|'.join(list_remove))]
+
+            # list_remove = ["3-DRE"]
+            # df = df[~df['TTIPO_CONTA'].str.contains('|'.join(list_remove))]
+            
+            df.index = list(range(0, len(df.index)))
+
+            for i in df.index:
+                code_old = data_query.get(df["CONTA"][i])
+                if code_old:
+                    df["NEW_CODE"][i] = code_old
+
+            df["CLASSE"] = True
+            df.loc[df['NEW_CODE'] == '', 'CLASSE'] = False
+
+            tt_rows = len(df)
+            df_json = json.loads(df.to_json(orient="table"))["data"]
+            
+            print(df)
+            return {
+                "df_json": df_json,
+                "tt_rows": tt_rows,
+            }
+        except Exception as e:
+            return {
+                    "code": 400,
+                    "msg": "erro ao ler arquivo plano de contas",
+                }
+
+    # ----
+
+    def read_file_plano_de_contas_v2(file, data_query):
 
         print(f"\n\n ----- Arquivo informado PLANO DE CONTAS: {file}")
 
@@ -3588,26 +3846,21 @@ class ConvertToDataFrame:
         sheet_name = file.sheet_names[0]
 
         df = file.parse(sheet_name=sheet_name, dtype='str')
-        df = df[df["Saldo atual"] != "0,00"]
+        # df = df[df["Saldo atual"] != "0,00"]
 
-        df = df[ df["Cta. título"].isin(["2-Não"]) ][ ["Classificação", "Conta", "Nome da conta contábil/C. Custo", "Tipo conta"] ]
+        df = df[ df["TITULO"].isin(["1-Sintética "]) ][ ["CODIGO", "DESCRICAO", "CLASSIFICACAO", "TITULO", "TIPO", "NATUREZA"] ]
         df["NEW_CODE"] = ""
-        df = ConvertToDataFrame.rename_columns_dataframe(dataframe=df, dict_replace_names={
-            "Classificação": "CLASSIFICASSAO",
-            "Conta": "CONTA",
-            "Nome da conta contábil/C. Custo": "NOME_CONTA_CENTRO_CUSTO",
-            "Tipo conta": "TTIPO_CONTA",
-        })
-        
 
-        # list_remove = ["        Socio - A", "        Socio - B", "        Socio - C"]
-        # df = df[ ~ df["NOME_CONTA_CENTRO_CUSTO"].isin(list_remove) ]
-        list_remove = ["Socio - A", "Socio - B", "Socio - C"]
-        df = df[~df['NOME_CONTA_CENTRO_CUSTO'].str.contains('|'.join(list_remove))]
-
-        # list_remove = ["3-DRE"]
-        # df = df[~df['TTIPO_CONTA'].str.contains('|'.join(list_remove))]
+        # df = ConvertToDataFrame.rename_columns_dataframe(dataframe=df, dict_replace_names={
+        #     "Classificação": "CLASSIFICASSAO",
+        #     "Conta": "CONTA",
+        #     "Nome da conta contábil/C. Custo": "NOME_CONTA_CENTRO_CUSTO",
+        #     "Tipo conta": "TTIPO_CONTA",
+        # })
         
+        # list_remove = ["Socio - A", "Socio - B", "Socio - C"]
+        # df = df[~df['NOME_CONTA_CENTRO_CUSTO'].str.contains('|'.join(list_remove))]
+
         df.index = list(range(0, len(df.index)))
 
         for i in df.index:
@@ -3621,12 +3874,12 @@ class ConvertToDataFrame:
         tt_rows = len(df)
         df_json = json.loads(df.to_json(orient="table"))["data"]
         
+        print("\n\n ----------------- PLANO DE CONTAS V2 ----------------- ")
         print(df)
         return {
             "df_json": df_json,
             "tt_rows": tt_rows,
         }
-
     
     def check_text_to_tag(data, dict_tags_to_text):
         

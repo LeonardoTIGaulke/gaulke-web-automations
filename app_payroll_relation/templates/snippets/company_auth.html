@@ -235,8 +235,8 @@
             // armazena os dados da empresa selecionada na sessão LocalStorage.
             company_auth = JSON.stringify({"company_code": company_code, "company_name": company_name, "id_client": id_client, "company_cnpj": company_cnpj})
             window.localStorage.setItem("company_auth", company_auth);
-
-            document.getElementById("company_session").value = company_code;
+            
+            try {document.getElementById("company_session").value = company_code;} catch (error) {};
 
             checkCode = checkCode_JB();
             checkinputs = checkInputsFiles();
@@ -388,7 +388,7 @@
                     >> cnpj_company: ${cnpj_company}
                 `)
 
-                if (company_code == "-") {
+                if (company_code == "-" || company_code == undefined) {
                     
                     document.querySelector("body").classList.toggle("disable-scroll");
                     document.querySelector(".block-fixed-background").classList.add("activate-modal");

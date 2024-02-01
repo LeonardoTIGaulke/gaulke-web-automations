@@ -515,8 +515,9 @@ def post_file_fastAPI_comprovante_banco_do_brasil(request):
             file = request.FILES["file"]
             print(file)
 
-            dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_do_brasil(file=file, company_session=company_session)
-            print(dataJson)
+            # dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_do_brasil(file=file, company_session=company_session)
+            dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_do_brasil_v2(file=file, company_session=company_session)
+            # print(dataJson)
             context = {
                 "code_process": True,
                 "company_session": company_session,
