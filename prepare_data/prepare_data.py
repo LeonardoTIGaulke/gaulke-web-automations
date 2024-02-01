@@ -966,8 +966,6 @@ class ConvertToDataFrame:
         }
 
 
-
-
     # ----
     
     def read_pdf_relacao_folha_por_empregado(file, grupo_lancamento, company_session):
@@ -3476,6 +3474,8 @@ class ConvertToDataFrame:
             "Multa": "multa",
         })
         print(df)
+
+        df = ConvertToDataFrame.filter_data_dataframe(daraframe=df, name_column="Filial", list_remove_values=["1"])
 
         df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_13", cod_empresa=company_session)
         df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
