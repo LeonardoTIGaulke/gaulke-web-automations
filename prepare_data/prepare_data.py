@@ -3627,9 +3627,7 @@ class ConvertToDataFrame:
             "tt_rows": tt_rows,
         }
 
-
-
-
+    
     def check_text_to_tag(data, dict_tags_to_text):
         
         data_split = data.split()

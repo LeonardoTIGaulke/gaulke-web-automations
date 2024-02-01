@@ -236,6 +236,8 @@
             company_auth = JSON.stringify({"company_code": company_code, "company_name": company_name, "id_client": id_client, "company_cnpj": company_cnpj})
             window.localStorage.setItem("company_auth", company_auth);
 
+            document.getElementById("company_session").value = company_code;
+
             checkCode = checkCode_JB();
             checkinputs = checkInputsFiles();
 
