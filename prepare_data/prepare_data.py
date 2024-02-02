@@ -811,38 +811,60 @@ class ConvertToDataFrame:
 
         }
 
+        list_errors = list()
         dict_tags_to_text = dict()
 
         for index_page in range(len(pdf_reader.pages)):
             try:
                 print(f"\n\n\n ---- INDEX PAGE: {index_page}")
                 
-                page = pdf_reader.pages[index_page]
-                
-                
-                data_page = page.extract_text()
-                print("\n\n ----------------------- DATA EXTRACT ----------------------- ")
-                print(data_page)
 
                 # dict_tags_to_text = ConvertToDataFrame.check_text_to_tag(data=data_page, dict_tags_to_text=dict_tags_to_text)
                 # print(dict_tags_to_text)
 
-                check_cnpj = True
-                if "COMPROVANTE DE PAGAMENTO DE TITULOS" in data_page:
+                check_cnpj = 1
+                comprovante_pagador = False
+                page = pdf_reader.pages[index_page]
+                data_page = page.extract_text()
+
+                if "COMPROVANTE DE PAGAMENTO DE TITULOS" in data_page and "CPF:" not in data_page:
+
+                    print("\n\n ----------------------- DATA EXTRACT ----------------------- ")
+                    print(data_page)
+                    
                     for i in range(len(data_page)):
                         
                         # -------------------------- NOME PAGADOR --------------------------
                         if "BENEFICIARIO:" == data_page[i:i+13]:
-                            data_temp = data_page[i+15:i+90].split("\n")[1].strip()
+                            data_temp = data_page[i+14:i+90].split("\n")[1].strip()
                             print(f"\n\n ---------->> NOME BENEFICIARIO")
                             data_to_table["nome_beneficiario"].append( data_temp[0:] )
 
+                        if "PAGADOR.:" == data_page[i:i+9]:
+                            comprovante_pagador = True
+                            data_temp = data_page[i+10:i+90].split("\n")[1].strip()
+                            print(f"\n\n ---------->> NOME PAGADOR")
+                            data_to_table["nome_beneficiario"].append( data_temp[0:] )
+
+                            
+
                         if "CNPJ:" == data_page[i:i+5]:
-                            if check_cnpj:
+                
+                            if check_cnpj == 1 and "PAGADOR.:" not in data_page:
                                 data_temp = data_page[i+5:i+40].strip()
                                 print(f"\n\n ---------->> CNPJ BENEFICIARIO")
-                                data_to_table["cnpj_beneficiario"].append( data_temp[0:] )
-                                check_cnpj = False
+                                data_to_table["cnpj_beneficiario"].append( data_temp )
+                                check_cnpj += 1
+                            
+                            if check_cnpj == 2:
+                                data_cnpj = data_page[i+5:i+40].strip()
+                                print(f"\n\n\n ------------------------------------ data_cnpj")
+                                print(data_cnpj)
+                                data_to_table["cnpj_beneficiario"].append( data_cnpj )
+                                check_cnpj += 1
+
+                            check_cnpj += 1
+                       
 
                         if "DATA DE VENCIMENTO" == data_page[i:i+18]:
                             data_temp = data_page[i+19:i+48].strip()
@@ -853,6 +875,7 @@ class ConvertToDataFrame:
                             data_temp = data_page[i+18:i+48].strip()
                             print(f"\n\n ---------->> DATA DO PAGAMENTO")
                             data_to_table["data_de_debito"].append( data_temp )
+                            data_to_table["data_de_vencimento"].append( data_temp )
 
                         if "VALOR DO DOCUMENTO" == data_page[i:i+18]:
                             data_temp = data_page[i+19:i+48].strip()
@@ -868,6 +891,16 @@ class ConvertToDataFrame:
                 print(f" ### ERROR EXTRACT DATA PDF | ERROR: {e}")
                 list_page_erros.append({index_page: e})
 
+        print(data_to_table)
+        print(f' >>>> nome_beneficiario: {len(data_to_table["nome_beneficiario"])}')
+        print(f' >>>> cnpj_beneficiario: {len(data_to_table["cnpj_beneficiario"])}')
+        print(f' >>>> data_de_debito: {len(data_to_table["data_de_debito"])}')
+        print(f' >>>> data_de_vencimento: {len(data_to_table["data_de_vencimento"])}')
+        print(f' >>>> valor: {len(data_to_table["valor"])}')
+        print(f' >>>> valor_total: {len(data_to_table["valor_total"])}')
+        print(f"\n\n >>>>>>>>>>>>> list_errors: {list_errors}\n\n")
+        # return {}
+    
         df = pd.DataFrame.from_dict(data_to_table)
         df["valor_doc_decimal"] = df['valor'].astype(float)
         df["valor_pago_decimal"] = df['valor_total'].astype(float)
