@@ -101,6 +101,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 10px;
   gap: 5px;
 }
 .block-resume-data-table p {
@@ -108,6 +109,8 @@
   text-align: center;
   border-radius: 4px;
   background-color: #e3d5d5;
+  margin: 0;
+  padding: 0;
 }
 .container-table-preview,
 .container-table-preview-extra-02 {
@@ -320,4 +323,37 @@
 .block-inputs-column label {
   padding: 6px 4px;
   font-weight: 600;
+}
+
+.block-ignore-CPF {
+  max-width: 85%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 8px 14px;
+  margin: 20px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+.block-ignore-CPF article {
+  width: 50%;
+}
+.block-ignore-CPF ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  margin: 0px;
+  border-top: 1px solid #ccc;
+  padding: 7px 0px 0px 0px;
+}
+
+.info-file-name {
+  padding: 3px 9px;
+  border-radius: 4px;
+  background: #f2f3c1;
 }

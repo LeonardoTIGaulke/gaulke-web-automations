@@ -88,6 +88,11 @@
                     company_code = JSON.parse(window.localStorage.getItem("company_auth")).company_code.trim();
                     company_auth = JSON.parse(window.localStorage.getItem("company_auth")).company_name.trim();
                     document.getElementById("search_company").value = `[${company_code}] - ${company_auth}`;
+
+                    try {
+                        // utilizado em páginas que existam formulário de envio de arquivos para geração de .txt de importação JB.
+                        document.getElementById("company_session").value = company_code;
+                    } catch (error) {};
                     
                 } catch (error) {};
 
@@ -398,6 +403,8 @@
                     document.getElementById("code_company").value = id_client;
                     document.getElementById("company").value = company_auth;
                     document.getElementById("cnpj_company").value = cnpj_company;
+
+                    // try {document.getElementById("company_session").value = "-----";} catch (error) {}
 
                     console.log(" ------------------ activate modal ------------------ ")
                     checkInputsFormPC();

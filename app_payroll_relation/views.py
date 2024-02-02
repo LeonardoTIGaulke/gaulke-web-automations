@@ -436,13 +436,12 @@ def post_file_fastAPI_relacao_contas_a_pagar_ponto_certo(request):
             file = request.FILES["file"]
             file_2 = request.FILES["file_2"]
             dataJson = ConvertToDataFrame.read_xlsx_contas_a_pagar_PONTO_CERTO(file=file, file_2=file_2, company_session=company_session)
-            
             context = {
                 "code_process": True,
                 "company_session": company_session,
                 "data_table": dataJson["data_table"]["data"],
                 "list_page_erros": dataJson["list_page_erros"],
-
+                
                 "tt_rows": dataJson["tt_rows"],
                 "tt_debit": dataJson["tt_debit"],
                 "tt_credit": dataJson["tt_credit"],
@@ -517,11 +516,15 @@ def post_file_fastAPI_comprovante_banco_do_brasil(request):
 
             # dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_do_brasil(file=file, company_session=company_session)
             dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_do_brasil_v2(file=file, company_session=company_session)
-            # print(dataJson)
             context = {
                 "code_process": True,
                 "company_session": company_session,
                 "data_table": dataJson["data_table"]["data"],
+                "file": file,
+
+                "show_ignore_CPF": dataJson["show_ignore_CPF"],
+                "list_ignore_CPF": dataJson["list_ignore_CPF"],
+
                 "list_page_erros": dataJson["list_page_erros"],
 
                 "tt_rows": dataJson["tt_rows"],
@@ -531,6 +534,7 @@ def post_file_fastAPI_comprovante_banco_do_brasil(request):
 
             }
             print(f" ### PROCESSO FINALIZADO POR: {username}")
+            print(f">>>>> file: {file}")
             return render(request, "app_relations/relation_extrato_banco_do_brasil.html", context=context)
         except Exception as e:
             context = {

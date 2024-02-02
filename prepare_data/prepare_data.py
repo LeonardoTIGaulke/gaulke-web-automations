@@ -812,6 +812,7 @@ class ConvertToDataFrame:
         }
 
         list_errors = list()
+        list_ignore_CPF = list()
         dict_tags_to_text = dict()
 
         for index_page in range(len(pdf_reader.pages)):
@@ -827,6 +828,9 @@ class ConvertToDataFrame:
                 page = pdf_reader.pages[index_page]
                 data_page = page.extract_text()
 
+                if "CPF:" in data_page:
+                    list_ignore_CPF.append(index_page+1)
+
                 if "COMPROVANTE DE PAGAMENTO DE TITULOS" in data_page and "CPF:" not in data_page:
 
                     print("\n\n ----------------------- DATA EXTRACT ----------------------- ")
@@ -834,20 +838,19 @@ class ConvertToDataFrame:
                     
                     for i in range(len(data_page)):
                         
-                        # -------------------------- NOME PAGADOR --------------------------
+                        # -------------------------- NOME BENEFICIARIO --------------------------
                         if "BENEFICIARIO:" == data_page[i:i+13]:
                             data_temp = data_page[i+14:i+90].split("\n")[1].strip()
                             print(f"\n\n ---------->> NOME BENEFICIARIO")
-                            data_to_table["nome_beneficiario"].append( data_temp[0:] )
+                            data_to_table["nome_beneficiario"].append( data_temp )
 
-                        if "PAGADOR.:" == data_page[i:i+9]:
+                        if "BENEFICIARIO.:" == data_page[i:i+14]:
                             comprovante_pagador = True
-                            data_temp = data_page[i+10:i+90].split("\n")[1].strip()
+                            data_temp = data_page[i+15:i+90].split("\n")[1].strip()
                             print(f"\n\n ---------->> NOME PAGADOR")
-                            data_to_table["nome_beneficiario"].append( data_temp[0:] )
+                            data_to_table["nome_beneficiario"].append( data_temp )
 
-                            
-
+                        
                         if "CNPJ:" == data_page[i:i+5]:
                 
                             if check_cnpj == 1 and "PAGADOR.:" not in data_page:
@@ -856,7 +859,7 @@ class ConvertToDataFrame:
                                 data_to_table["cnpj_beneficiario"].append( data_temp )
                                 check_cnpj += 1
                             
-                            if check_cnpj == 2:
+                            elif check_cnpj == 1:
                                 data_cnpj = data_page[i+5:i+40].strip()
                                 print(f"\n\n\n ------------------------------------ data_cnpj")
                                 print(data_cnpj)
@@ -875,7 +878,8 @@ class ConvertToDataFrame:
                             data_temp = data_page[i+18:i+48].strip()
                             print(f"\n\n ---------->> DATA DO PAGAMENTO")
                             data_to_table["data_de_debito"].append( data_temp )
-                            data_to_table["data_de_vencimento"].append( data_temp )
+                            if comprovante_pagador:
+                                data_to_table["data_de_vencimento"].append( data_temp )
 
                         if "VALOR DO DOCUMENTO" == data_page[i:i+18]:
                             data_temp = data_page[i+19:i+48].strip()
@@ -899,16 +903,16 @@ class ConvertToDataFrame:
         print(f' >>>> valor: {len(data_to_table["valor"])}')
         print(f' >>>> valor_total: {len(data_to_table["valor_total"])}')
         print(f"\n\n >>>>>>>>>>>>> list_errors: {list_errors}\n\n")
-        # return {}
     
         df = pd.DataFrame.from_dict(data_to_table)
         df["valor_doc_decimal"] = df['valor'].astype(float)
         df["valor_pago_decimal"] = df['valor_total'].astype(float)
-        print(df)
-        print(df.info())
         df["juros"] = "0.00"
         df["desconto"] = "0.00"
-
+        print(df)
+        print(df.info())
+        # return {}
+        
         for i in df.index:
             try:
                 if df["valor_pago_decimal"][i] > df["valor_doc_decimal"][i]:
@@ -989,12 +993,19 @@ class ConvertToDataFrame:
             --> tt_credit: {tt_credit}
         """)
 
-
+        print(f"\n\n ---------- list_ignore_CPF ---------- ")
+        print(f">> list_ignore_CPF: {list_ignore_CPF}")
+        show_ignore_CPF = False
+        if len(list_ignore_CPF) > 0:
+            show_ignore_CPF = True
+        
         return {
             "data_table": data_json,
             "tt_rows": tt_rows,
             "tt_debit": tt_debit,
             "tt_credit": tt_credit,
+            "list_ignore_CPF": list_ignore_CPF,
+            "show_ignore_CPF": show_ignore_CPF,
             "list_page_erros": [],
         }
 
