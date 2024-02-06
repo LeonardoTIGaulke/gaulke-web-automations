@@ -3895,7 +3895,7 @@ class ConvertToDataFrame:
         print("\n\n ------------------ DF PARSE ------------------ ")
         print(df)
 
-        df = df[ df["TITULO"].isin(["1-Sintética "]) ][ ["CODIGO", "DESCRICAO", "CLASSIFICACAO", "TITULO", "TIPO", "NATUREZA"] ]
+        df = df[~ df["TITULO"].isin(["1-Sintética "]) ][ ["CODIGO", "DESCRICAO", "CLASSIFICACAO", "TITULO", "TIPO", "NATUREZA"] ]
         df["NEW_CODE"] = ""
 
         df = ConvertToDataFrame.rename_columns_dataframe(dataframe=df, dict_replace_names={
