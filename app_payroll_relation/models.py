@@ -62,6 +62,10 @@ class Model_Plano_Contas_De_Para_Antigo_x_Novo(models.Model):
     created_at = models.DateTimeField(default=datetime.now(tz=tz.gettz("America/Sao Paulo")))
     update_at = models.DateTimeField(default=datetime.now(tz=tz.gettz("America/Sao Paulo")))
 
+    insert_JB = models.CharField(max_length=2, default="0")
+    update_at_JB = models.DateTimeField(null=True, blank=True)
+
+
 # class Model_Nomes_Plano_de_Contas_Antigo:
 #     code_pc = models.CharField(max_length=8)
 #     description_pc = models.CharField(max_length=8)

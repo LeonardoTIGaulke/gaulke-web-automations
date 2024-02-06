@@ -3839,7 +3839,7 @@ class ConvertToDataFrame:
             df = df[ df["Cta. título"].isin(["2-Não"]) ][ ["Classificação", "Conta", "Nome da conta contábil/C. Custo", "Tipo conta"] ]
             df["NEW_CODE"] = ""
             df = ConvertToDataFrame.rename_columns_dataframe(dataframe=df, dict_replace_names={
-                "Classificação": "CLASSIFICASSAO",
+                "Classificação": "CLASSIFICACAO",
                 "Conta": "CONTA",
                 "Nome da conta contábil/C. Custo": "NOME_CONTA_CENTRO_CUSTO",
                 "Tipo conta": "TTIPO_CONTA",
@@ -3892,16 +3892,22 @@ class ConvertToDataFrame:
         df = file.parse(sheet_name=sheet_name, dtype='str')
         # df = df[df["Saldo atual"] != "0,00"]
 
+        print("\n\n ------------------ DF PARSE ------------------ ")
+        print(df)
+
         df = df[ df["TITULO"].isin(["1-Sintética "]) ][ ["CODIGO", "DESCRICAO", "CLASSIFICACAO", "TITULO", "TIPO", "NATUREZA"] ]
         df["NEW_CODE"] = ""
 
-        # df = ConvertToDataFrame.rename_columns_dataframe(dataframe=df, dict_replace_names={
-        #     "Classificação": "CLASSIFICASSAO",
-        #     "Conta": "CONTA",
-        #     "Nome da conta contábil/C. Custo": "NOME_CONTA_CENTRO_CUSTO",
-        #     "Tipo conta": "TTIPO_CONTA",
-        # })
+        df = ConvertToDataFrame.rename_columns_dataframe(dataframe=df, dict_replace_names={
+            "CLASSIFICACAO": "CLASSIFICACAO",
+            "CODIGO": "CONTA",
+            "DESCRICAO": "NOME_CONTA_CENTRO_CUSTO",
+            "TIPO": "TTIPO_CONTA",
+        })
         
+        print(" ---------------- DF RENOMEADO ---------------- ")
+        print(df)
+
         # list_remove = ["Socio - A", "Socio - B", "Socio - C"]
         # df = df[~df['NOME_CONTA_CENTRO_CUSTO'].str.contains('|'.join(list_remove))]
 
@@ -3914,6 +3920,8 @@ class ConvertToDataFrame:
 
         df["CLASSE"] = True
         df.loc[df['NEW_CODE'] == '', 'CLASSE'] = False
+
+        
 
         tt_rows = len(df)
         df_json = json.loads(df.to_json(orient="table"))["data"]

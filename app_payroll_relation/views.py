@@ -1187,55 +1187,73 @@ def config_plano_de_contas(request):
         
 
         elif request.method == "POST":
-            file = request.FILES["file"]
-            company_code = request.POST.get("company_code")
-            obj_plano_contas_old = request.POST.get("data-code-pc-old")
-            obj_plano_contas_new = request.POST.get("data-code-pc-new")
-
-            print(f"""
-                --------------------------- POST CONFIG P.C ---------------------------
-                company_code: {company_code}
-                obj_plano_contas_old: {obj_plano_contas_old}
-                obj_plano_contas_new: {obj_plano_contas_new}
-            """)
-
-            query = Model_Plano_Contas_De_Para_Antigo_x_Novo.objects.all().filter(
-                # company_code=company_code,
-                pc_old=obj_plano_contas_old,
-                pc_new=obj_plano_contas_new,
-            )
-            data_query = dict()
-
-            for pc in query:
-                print("\n\n ------------------ ")
-                data_query.update({
-                    pc.code_old: pc.code_new,
-                })
-                print(f">> company_code: {pc.company_code}")
-                print(f">> pc_old: {pc.pc_old}")
-                print(f">> pc_new: {pc.pc_new}")
-                print(f">> code_old: {pc.code_old}")
-                print(f">> code_new: {pc.code_new}")
-
-
-            print(f"\n\n ------------- DATA POST ------------- ")
-            print(f"data_query: {data_query}")
-            data_table = ConvertToDataFrame.read_file_plano_de_contas(file=file, data_query=data_query)
-            show_table = True
-            # print(data_table)
             
-            base_plano_de_contas = get_all_plano_de_contas_generic()
-            context = {
-                "code": 200,
-                "plano_contas_old": obj_plano_contas_old,
-                "plano_contas_new": obj_plano_contas_new,
-                "obj_plano_contas_old": base_plano_de_contas[0],
-                "obj_plano_contas_new": base_plano_de_contas[1],
-                "data_table": data_table["df_json"],
-                "tt_rows": data_table["tt_rows"],
-                "show_table": show_table,
-            }
-            return render(request, "app_automations/config_plano_de_contas.html", context=context)
+            try:
+                file = request.FILES["file"]
+                company_code = request.POST.get("company_code")
+                obj_plano_contas_old = request.POST.get("data-code-pc-old")
+                obj_plano_contas_new = request.POST.get("data-code-pc-new")
+
+                print(f"""
+                    --------------------------- POST CONFIG P.C ---------------------------
+                    file: {file}
+                    company_code: {company_code}
+                    obj_plano_contas_old: {obj_plano_contas_old}
+                    obj_plano_contas_new: {obj_plano_contas_new}
+                """)
+
+                query = Model_Plano_Contas_De_Para_Antigo_x_Novo.objects.all().filter(
+                    # company_code=company_code,
+                    pc_old=obj_plano_contas_old,
+                    pc_new=obj_plano_contas_new,
+                )
+                data_query = dict()
+
+                for pc in query:
+                    print("\n\n ------------------ ")
+                    data_query.update({
+                        pc.code_old: pc.code_new,
+                    })
+                    print(f">> company_code: {pc.company_code}")
+                    print(f">> pc_old: {pc.pc_old}")
+                    print(f">> pc_new: {pc.pc_new}")
+                    print(f">> code_old: {pc.code_old}")
+                    print(f">> code_new: {pc.code_new}")
+
+
+                print(f"\n\n ------------- DATA POST ------------- ")
+                print(f"data_query: {data_query}")
+                # data_table = ConvertToDataFrame.read_file_plano_de_contas(file=file, data_query=data_query)
+                data_table = ConvertToDataFrame.read_file_plano_de_contas_v2(file=file, data_query=data_query)
+                show_table = True
+                # print(data_table)
+                
+                base_plano_de_contas = get_all_plano_de_contas_generic()
+                context = {
+                    "code": 200,
+                    "plano_contas_old": obj_plano_contas_old,
+                    "plano_contas_new": obj_plano_contas_new,
+                    "obj_plano_contas_old": base_plano_de_contas[0],
+                    "obj_plano_contas_new": base_plano_de_contas[1],
+                    "data_table": data_table["df_json"],
+                    "tt_rows": data_table["tt_rows"],
+                    "show_table": show_table,
+                }
+                return render(request, "app_automations/config_plano_de_contas.html", context=context)
+            
+            except Exception as e:
+                show_table = False
+                context = {
+                    "code": 400,
+                    "file": file,
+                    "error": e,
+                    "msg": f"erro ao ler o arquivo {file}",
+                    "show_table": show_table,
+                }
+                print(f" ### ERRO AO LER ARQUIVO PC | ERROR: {e}")
+                print(context)
+                return render(request, "app_automations/config_plano_de_contas.html", context=context)
+
         else:
             context = {
                 "code": 400,
