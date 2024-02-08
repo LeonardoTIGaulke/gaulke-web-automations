@@ -3582,7 +3582,7 @@ class ConvertToDataFrame:
                 
                 
                 df["CONTA"][i] = "-"
-                df["TP"][i] = "D"
+                df["TP"][i] = "C"
                 count_aux += 1
 
             elif count_aux == 1:
@@ -3611,7 +3611,7 @@ class ConvertToDataFrame:
 
             elif count_aux == 3:
                 try:
-                    df["TP"][i] = "C"
+                    df["TP"][i] = "D"
                     v_pag = float(df["VALOR_PAGAMENTO"][i].replace(",", "."))
                     # v_multa = float(df["multa"][i])
                     v_desc = float(df["desconto"][i])
