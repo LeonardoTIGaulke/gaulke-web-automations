@@ -605,6 +605,32 @@ class ConvertToDataFrame:
 
         return dataframe
     
+    def calculate_discount_or_fees(dataframe, col_name_valor_pago, col_name_valor_doc):
+        try:
+            dataframe["juros"] = "0.00"
+            dataframe["desconto"] = "0.00"
+            print(dataframe)
+            print(dataframe.info())
+            for i in dataframe.index:
+                valor_pago  = float(dataframe[col_name_valor_pago][i])
+                valor_doc   = float(dataframe[col_name_valor_doc][i])
+
+                print(f"""
+                    -------------------------------
+                    >>> valor_pago: {valor_pago}
+                    >>> valor_doc: {valor_doc}
+                """)
+
+                if valor_pago > valor_doc:
+                    dataframe["juros"][i] = round(valor_pago - valor_doc, 2)
+                elif valor_pago < valor_doc:
+                    dataframe["desconto"][i] = round(valor_doc - valor_pago, 2)
+            return dataframe
+        except Exception as e:
+            print(f"\n\n ### ERRO AO CALCULAR JUTOS E DESCONTO | ERROR: {e}")
+            return e
+
+
     # ----
     # versão descontinuada 01/02/2024 ---> desenvolvido novo modelo (V2). Mais otimizado.
     def read_pdf_comprovante_banco_do_brasil(file, company_session):
@@ -3478,11 +3504,11 @@ class ConvertToDataFrame:
        
         contents = file.read()
         contents_2 = file_2.read()
-        csv_bytes = io.BytesIO(contents)
-        csv_bytes_2 = io.BytesIO(contents_2)
+        xlsx_bytes = io.BytesIO(contents)
+        xlsx_bytes_2 = io.BytesIO(contents_2)
 
-        df = pd.read_csv(csv_bytes, encoding='ISO-8859-1', delimiter=";")
-        df_2 = pd.read_csv(csv_bytes_2, encoding='ISO-8859-1', delimiter=";")
+        df = pd.read_excel(xlsx_bytes, dtype="str")
+        df_2 = pd.read_excel(xlsx_bytes_2, dtype="str")
 
         print("\n\n -------------------- DF 01 -------------------- ")
         df["CNPJ"] = ""
@@ -3491,8 +3517,9 @@ class ConvertToDataFrame:
         print(df_2)
 
         for i in df.index:
-            id_parceiro = df["ID Parc"][i]
-            cnpj_df_2 = df_2[df_2["Sequência"] == id_parceiro]["CNPJ/CPF"]
+            id_parceiro = df["IDFORNECEDOR"][i]
+            cnpj_df_2 = df_2[df_2["CODIGO"] == id_parceiro]["CNPJ/CPF"]
+
             if len(cnpj_df_2) > 0:
                 df["CNPJ"][i] = cnpj_df_2.values[0]
                 print(f"\n >>> Index: {i} | id_parceiro: {id_parceiro} | CNPJ_2: {cnpj_df_2.values[0]}")
@@ -3510,16 +3537,17 @@ class ConvertToDataFrame:
 
         df = ConvertToDataFrame.rename_columns_dataframe(dataframe=df, dict_replace_names={
             "CNPJ": "CNPJ_ORIGIN",
-            "Parceiro": "nome_pagador",
-            "Valor": "VALOR_PAGAMENTO",
-            "Pagamento": "DATA_PAGAMENTO",
-            "Juros": "juros",
-            "Dsto": "desconto",
-            "Multa": "multa",
+            "FORNECEDOR": "nome_pagador",
+            "VALOR PGTO": "VALOR_PAGAMENTO",
+            "DATA PGTO": "DATA_PAGAMENTO",
         })
-        print(df)
+        df = ConvertToDataFrame.calculate_discount_or_fees(dataframe=df, col_name_valor_pago="VALOR_PAGAMENTO", col_name_valor_doc="VALOR")
 
-        df = ConvertToDataFrame.filter_data_dataframe(daraframe=df, name_column="Filial", list_remove_values=["1"])
+        print("\n\n -------------------------- df - rename columns | calculate values fees and discount -------------------------- ")
+        print(df)
+        # df.to_excel("contas_a_pagar_ponto_certo.xlsx")
+        
+        # df = ConvertToDataFrame.filter_data_dataframe(daraframe=df, name_column="Filial", list_remove_values=["1"])
 
         df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_13", cod_empresa=company_session)
         df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
@@ -3534,12 +3562,14 @@ class ConvertToDataFrame:
 
         # desconto
         # juros
+
+
         
         df = ConvertToDataFrame.duplicate_dataframe_rows_lote(dataframe=df, list_update_cols=[
             {"TP": "C", "TYPE_PROCESS": "comum"},
             {"TP": "D", "TYPE_PROCESS": "desconto"},
             {"TP": "D", "TYPE_PROCESS": "juros"},
-            {"TP": "D", "TYPE_PROCESS": "multa"},
+            # {"TP": "D", "TYPE_PROCESS": "multa"},
         ])
         
         df.sort_values(by=["nome_pagador", "GRUPO_LCTO", "TP"], inplace=True)
@@ -3552,7 +3582,7 @@ class ConvertToDataFrame:
                 try:
                     
                     v_pag = float(df["VALOR_PAGAMENTO"][i].replace(",", "."))
-                    v_multa = float(df["multa"][i])
+                    # v_multa = float(df["multa"][i])
                     v_desc = float(df["desconto"][i])
                     v_juros = float(df["juros"][i])
                     valor = None
@@ -3567,9 +3597,9 @@ class ConvertToDataFrame:
                         valor = str(round((v_pag + v_juros) + v_desc, 2))
                         df["VALOR"][i] = valor
 
-                    elif float(df["multa"][i]) > 0:
-                        valor =  str(round(v_pag + v_multa, 2))
-                        df["VALOR"][i] = valor
+                    # elif float(df["multa"][i]) > 0:
+                    #     valor =  str(round(v_pag + v_multa, 2))
+                    #     df["VALOR"][i] = valor
                         
                 except Exception as e:
                     print(f">>>>>>> ERROR CALCULATE/CONVERT | ERROR: {e}")
@@ -3593,15 +3623,15 @@ class ConvertToDataFrame:
                 df["TP"][i] = "D"
                 count_aux += 1
 
+            # elif count_aux == 3:
+            #     df["COMPL_HISTORICO"][i] = df["COMPL_HISTORICO"][i].replace("PAGAM.", "PAGAM. MULTA ")
+
+            #     df["VALOR"][i] = df["multa"][i]
+            #     df["CONTA"][i] = "1725"
+            #     df["TP"][i] = "D"
+            #     count_aux += 1
+
             elif count_aux == 3:
-                df["COMPL_HISTORICO"][i] = df["COMPL_HISTORICO"][i].replace("PAGAM.", "PAGAM. MULTA ")
-
-                df["VALOR"][i] = df["multa"][i]
-                df["CONTA"][i] = "1725"
-                df["TP"][i] = "D"
-                count_aux += 1
-
-            elif count_aux == 4:
                 # df["VALOR"][i] = df["VALOR_PAGAMENTO"][i]
                 df["CONTA"][i] = ""
                 count_aux = 0

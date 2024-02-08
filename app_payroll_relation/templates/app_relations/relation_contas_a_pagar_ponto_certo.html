@@ -16,19 +16,23 @@
             {% csrf_token %}
             <input type="hidden" value="{{user.username}}" name="username" id="username">
             <div class="mb-3">
+
                 <!-- <label for="file" class="form-label">Importação contas a pagar - PONTO CERTO</label> -->
                 <h5>Importação contas a pagar - PONTO CERTO</h5>
-
+                
                 <span class="block-border-dotted fd-column">
+
                     <div class="block-inputs-column mt-2">
                         <input class="form-control" type="hidden" id="company_session" name="company_session">
                         <label for="file">Relatório contas a pagar</label>
-                        <input class="form-control" type="file" id="file" name="file" accept=".csv" data-input-file="input-post-file">
+                        <input class="form-control" type="file" id="file" name="file" accept=".xlsx" data-input-file="input-post-file">
                     </div>
+
                     <div class="block-inputs-column">
                         <label for="file">Relatório fornecedores</label>
-                        <input class="form-control" type="file" id="file_2" name="file_2" accept=".csv" data-input-file="input-post-file">
+                        <input class="form-control" type="file" id="file_2" name="file_2" accept=".xlsx" data-input-file="input-post-file">
                     </div>
+
                 </span>
                 
             </div>
@@ -52,7 +56,7 @@
                     </span>
                     <span class="container block-error-read-file">
                         <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
-                        <p>Verifique se os arquivos enviado possuem a extensão <b>.csv</b>.</p>
+                        <p>Verifique se os arquivos enviado possuem a extensão <b>.xlsx</b>.</p>
                         <!-- <p>I:\1. Gaulke Contábil\Administrativo\9. TI\1. Projetos\13. Importação Ponto Certo</p> -->
                     </span>
                 </div>
