@@ -3579,32 +3579,10 @@ class ConvertToDataFrame:
         for i in df.index:
             
             if count_aux == 0:
-                try:
-                    
-                    v_pag = float(df["VALOR_PAGAMENTO"][i].replace(",", "."))
-                    # v_multa = float(df["multa"][i])
-                    v_desc = float(df["desconto"][i])
-                    v_juros = float(df["juros"][i])
-                    valor = None
-
-                    # ------------
-
-                    if float(df["juros"][i]) > 0:
-                        valor = str(round((v_pag + v_desc) - v_juros, 2))
-                        df["VALOR"][i] = valor
-                    
-                    elif float(df["desconto"][i]) > 0:
-                        valor = str(round((v_pag + v_juros) + v_desc, 2))
-                        df["VALOR"][i] = valor
-
-                    # elif float(df["multa"][i]) > 0:
-                    #     valor =  str(round(v_pag + v_multa, 2))
-                    #     df["VALOR"][i] = valor
-                        
-                except Exception as e:
-                    print(f">>>>>>> ERROR CALCULATE/CONVERT | ERROR: {e}")
+                
                 
                 df["CONTA"][i] = "-"
+                df["TP"][i] = "D"
                 count_aux += 1
 
             elif count_aux == 1:
@@ -3632,8 +3610,27 @@ class ConvertToDataFrame:
             #     count_aux += 1
 
             elif count_aux == 3:
-                # df["VALOR"][i] = df["VALOR_PAGAMENTO"][i]
-                df["CONTA"][i] = ""
+                try:
+                    df["TP"][i] = "C"
+                    v_pag = float(df["VALOR_PAGAMENTO"][i].replace(",", "."))
+                    # v_multa = float(df["multa"][i])
+                    v_desc = float(df["desconto"][i])
+                    v_juros = float(df["juros"][i])
+                    valor = None
+
+                    # ------------
+
+                    if float(df["juros"][i]) > 0:
+                        valor = str(round((v_pag + v_desc) - v_juros, 2))
+                        df["VALOR"][i] = valor
+                    
+                    elif float(df["desconto"][i]) > 0:
+                        valor = str(round((v_pag + v_juros) + v_desc, 2))
+                        df["VALOR"][i] = valor
+                        
+                except Exception as e:
+                    print(f">>>>>>> ERROR CALCULATE/CONVERT | ERROR: {e}")
+                # df["CONTA"][i] = ""
                 count_aux = 0
             
         print("\n\n DF IMPORTAÇÃO COM DE-PARA DE CONTAS ")
