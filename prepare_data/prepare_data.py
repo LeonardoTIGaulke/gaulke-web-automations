@@ -3516,6 +3516,15 @@ class ConvertToDataFrame:
         print("\n\n -------------------- DF 02 -------------------- ")
         print(df_2)
 
+        df['DATA VCTO'] = pd.to_datetime(df['DATA VCTO'])
+        df['DATA PGTO'] = pd.to_datetime(df['DATA PGTO'])
+        df['DATA LCTO'] = pd.to_datetime(df['DATA LCTO'])
+        df['DATA VCTO'] = df['DATA VCTO'].dt.strftime('%d/%m/%Y')
+        df['DATA PGTO'] = df['DATA PGTO'].dt.strftime('%d/%m/%Y')
+        df['DATA LCTO'] = df['DATA LCTO'].dt.strftime('%d/%m/%Y')
+        # df['DATA PGTO'] = df['DATA PGTO'].dt.strftime('%d/%m/%Y')
+        # df['DATA LCTO'] = df['DATA LCTO'].dt.strftime('%d/%m/%Y')
+
         for i in df.index:
             id_parceiro = df["IDFORNECEDOR"][i]
             cnpj_df_2 = df_2[df_2["CODIGO"] == id_parceiro]["CNPJ/CPF"]
