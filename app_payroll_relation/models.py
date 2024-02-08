@@ -41,7 +41,7 @@ class ModelContasGNRE_Estados_X_Contas(models.Model):
 
 
     
-
+    
 # --------------------------------------- MODELOS PARA PLANO DE CONTAS --> ANTIGO X NOVO ---------------------------------------
 class Model_Plano_Contas_Antigo_x_Novo(models.Model):
     type_accounts = models.CharField(max_length=8)

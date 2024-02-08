@@ -1193,6 +1193,7 @@ def config_plano_de_contas(request):
                 company_code = request.POST.get("company_code")
                 obj_plano_contas_old = request.POST.get("data-code-pc-old")
                 obj_plano_contas_new = request.POST.get("data-code-pc-new")
+                obj_modelo_importacao = request.POST.get("data-modelo-importacao")
 
                 print(f"""
                     --------------------------- POST CONFIG P.C ---------------------------
@@ -1200,6 +1201,7 @@ def config_plano_de_contas(request):
                     company_code: {company_code}
                     obj_plano_contas_old: {obj_plano_contas_old}
                     obj_plano_contas_new: {obj_plano_contas_new}
+                    obj_modelo_importacao: {obj_modelo_importacao}
                 """)
 
                 query = Model_Plano_Contas_De_Para_Antigo_x_Novo.objects.all().filter(
@@ -1223,14 +1225,19 @@ def config_plano_de_contas(request):
 
                 print(f"\n\n ------------- DATA POST ------------- ")
                 print(f"data_query: {data_query}")
-                # data_table = ConvertToDataFrame.read_file_plano_de_contas(file=file, data_query=data_query)
-                data_table = ConvertToDataFrame.read_file_plano_de_contas_v2(file=file, data_query=data_query)
+                
+                if obj_modelo_importacao == "modelo-balancete":
+                    data_table = ConvertToDataFrame.read_file_plano_de_contas(file=file, data_query=data_query)
+                elif obj_modelo_importacao == "modelo-plano-de-contas":
+                    data_table = ConvertToDataFrame.read_file_plano_de_contas_v2(file=file, data_query=data_query)
+
                 show_table = True
                 # print(data_table)
                 
                 base_plano_de_contas = get_all_plano_de_contas_generic()
                 context = {
                     "code": 200,
+                    "obj_modelo_importacao": obj_modelo_importacao,
                     "plano_contas_old": obj_plano_contas_old,
                     "plano_contas_new": obj_plano_contas_new,
                     "obj_plano_contas_old": base_plano_de_contas[0],

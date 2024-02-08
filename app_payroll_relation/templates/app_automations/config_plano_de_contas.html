@@ -24,6 +24,21 @@
             <div class="block-form-table-PC">
                 <form action="{% url 'config_plano_de_contas' %}" method="POST" enctype="multipart/form-data" accept=".xlsx,.xls" id="form-config-PC" onchange="checkInputsFormPC();">
                     {% csrf_token %}
+                    
+                    <div class="block-horizontal-form">
+                        <h5 class="title-block-rules">Modelo de Importação</h5>
+                        <select name="data-modelo-importacao" id="data-modelo-importacao" data-input-form="data-modelo-importacao">
+                            <option value="modelo-balancete">Balancete</option>
+                            <option value="modelo-plano-de-contas">Plano de contas</option>
+                        </select>
+                    </div>
+                    
+                    <div class="line-divisor-form">
+
+                    </div>
+
+
+
                     <div class="block-horizontal-form">
                         <h5 class="title-block-rules">Plano de Contas (Antigo)</h5>
                         <select name="data-code-pc-old" id="data-code-pc-old" data-input-form="data-code-pc-old">
@@ -56,6 +71,9 @@
                         </select>
                     </div>
 
+                   
+                    
+                    
                     <!-- ------------------------- -->
 
                     <input type="hidden" name="company_code" id="company_code">
