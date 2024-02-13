@@ -86,7 +86,7 @@
 #form-input-files-02 {
     width: 100%;
     max-width: 95vh;
-    min-height: 40vh;
+    min-height: 36vh;
     max-height: 420px;
     margin: 30px;
     border-radius: 14px;
@@ -98,12 +98,12 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 15px 0px;
+    padding: 22px 0px;
     border: 1px solid #ccc;
     background: white;
 }
 #form-input-files-02 form {
-    width: 45vh ;
+    width: 55vh ;
     max-width: 100% !important;
 }
 .block-input-dotted span {
