@@ -1,0 +1,142 @@
+{% extends 'base_v2.html' %}
+{% load static %}
+{% block title %} Preview de Importação {% endblock %}
+
+{% block content %}
+
+<div class="container-fluid  container-base-elements" id="form-file-payroll-relation"> 
+    <div class="container-processing-data">
+        <article>
+            <div class="lds-ellipsis">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </article>
+    </div>
+    {% if visible_form_file %}
+        <div class="d-flex justify-content-center align-content-center"  id="form-input-files-02">
+            <div class="container">
+                <h3 style="text-align: center; padding: 8px 0px;">Módulo H020</h3>
+            </div>
+            <form class="row g-3" method="POST" action="{% url 'calculate_stock_H020' %}" id="form-select-file-01" enctype="multipart/form-data" style="max-width: 85vh;" id="form-post-file" onchange="autoComplete_CompanySession(this);">
+                {% csrf_token %}
+
+                <input type="hidden" value="{{user.username}}" name="username" id="username">
+                
+                <div class="mb-3">
+                    <label for="file_2" class="form-label"> <b>Valor cálculo (%)</b></label>
+                    <input class="form-control" type="number" id="percentage" name="percentage" data-input-file="input-post-file">
+                </div>
+                <div class="mb-3 block-input-dotted">
+                    <label for="file" class="form-label"><b>Arquivo estoque</b></label>
+                    <span class="block-border-dotted">
+                        <input class="form-control" type="file" id="file" name="file" accept=".txt" data-input-file="input-post-file">
+                    </span>
+                </div>
+
+                
+                <input class="btn-send-file" id="btn-send-file" type="submit" value="carregar arquivo" style="max-height: 45px; border: 1px solid;" onclick="animationLoadPostFile_AND_CHECK_INPUT(this);">
+            </form>
+        </div>
+    {% endif %}
+    
+    {% if code_process %}
+        <ul class="data-rows-new-file">
+            {% for data in data_new_file %}
+            <li>{{data}}</li>
+            {% endfor %}
+        </ul>
+        <article class="block-download-new-file">
+            <span>
+                <!-- <span>Arquivo:</span> -->
+                <span id="file_name">{{file_name}}</span>
+            </span>
+            <button onclick="downloadNewFile();">Download</button>
+        </article>
+    {% endif %}
+
+</div>
+
+<script>
+
+    function checkInputsFiles(){
+        var inputs_post_files, status_inputs_file;
+        status_inputs_file = true;
+
+        inputs_post_files = document.querySelectorAll(`[data-input-file="input-post-file"]`);
+        inputs_post_files.forEach((input)=>{
+            if(input.value == ""){
+                status_inputs_file = false;
+            }
+        });
+        return status_inputs_file;
+    }
+    function autoComplete_CompanySession(){
+        var checkCode, status_inputs_file;
+
+        status_inputs_file = checkInputsFiles();
+
+        if (status_inputs_file){
+
+            document.getElementById("btn-send-file").disabled = false;
+            document.getElementById("btn-send-file").classList.add("active");
+
+        } else {
+
+            document.getElementById("btn-send-file").disabled = true;
+            document.getElementById("btn-send-file").classList.remove("active");
+
+        }
+    }
+    
+    function animationLoadPostFile_AND_CHECK_INPUT(element){
+            
+            document.querySelector(".container-processing-data").style.display = "flex";
+            form = document.getElementById("form-post-file");
+            form.addEventListener("submit", (event) => {
+                form.preventDefault();
+            });
+            
+            form.submit();
+            
+        }
+</script>
+
+<script>
+    function downloadNewFile(){
+        var rows;
+        var data_table_rows = new Array();
+        rows = document.querySelector(".data-rows-new-file").querySelectorAll("li");
+        rows.forEach((row)=>{
+            data_table_rows.push(row.innerText)
+        });
+
+        var csv = '';
+        for(var i=0; i<data_table_rows.length; i++){
+            // var values = Object.values(data_table_rows[i]);
+            var values = data_table_rows[i];
+            if (values.includes("|H020|")){
+                values = `${values}\n`;
+            }
+            csv += values
+            // .join(';') + '\n';
+        }
+        
+        var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement("a");
+        link.setAttribute("href", url);
+
+        var file_name = document.getElementById("file_name").textContent;
+        link.setAttribute("download", `Estoque H020 - ${file_name}`);
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        window.location = "{{host_port}}" + "/automations/calculate-stock-H020/";
+    }
+</script>
+{% endblock %}

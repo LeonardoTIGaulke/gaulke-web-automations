@@ -46,6 +46,7 @@ urlpatterns = [
     path("create-new-tag/", views.create_new_tag, name="create_new_tag"),
     path("get-all-tags-rules/", views.get_all_tags_rules, name="get_all_tags_rules"),
 
+    path("calculate-stock-H020/", views.calculate_stock_H020, name="calculate_stock_H020"),
 
 
     # -----------------------------------------------------------------------------------

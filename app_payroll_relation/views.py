@@ -1490,7 +1490,52 @@ def dashboard_visao_geral(request):
     return render(request, "app/error_404.html")
 
 
+# ------------------------------------------------------------------------------------------------
+# -------------------------------- CALCULO ARQUIVO ESTOQUE FISCAL --------------------------------
+# ------------------------------------------------------------------------------------------------
+@login_required(login_url="/automations/login/")
+def calculate_stock_H020(request):
+    # print(request.user.username)
+    if request.method == "GET":
+        context = {
+            "visible_form_file": True,
+        }
+        return render(request, "app_automations/process_data_stock_H020.html", context=context)
+        
+    elif request.method == "POST":
+        try:
+            username = request.POST.get("username")
+            file = request.FILES["file"]
+            percentage = request.POST.get("percentage")
+            print(f"""
+                ------------------------------------
+                username: {username}
+                file: {file}
+                file_type: {type(file)}
+                percentage: ${percentage}
+            """)
 
+            data = ConvertToDataFrame.calculate_file_stock_H020(file_dir=file, percentage=percentage)
+            
+            context = {
+                "code_process": True,
+                "visible_form_file": False,
+                "data_new_file": data["data_new_file"],
+                "file_name": data["file_name"],
+                "host_port": HOST_REDIRECT,
+            }
+            # print(context)
+            print(f" ### PROCESSO FINALIZADO POR: {username}")
+            return render(request, "app_automations/process_data_stock_H020.html", context=context)
+        except Exception as e:
+            print(f"\n\n ### ERRO AO LER ARQUIVO DE ESTOQUE | ERROR: {e}")
+            context = {
+                "error": e,
+                "error_code": True,
+                "visible_form_file": True
+            }
+            print(context)
+            return render(request, "app_automations/process_data_stock_H020.html", context=context)
 
 
 # ------------------------------------------------------------

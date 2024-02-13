@@ -82,7 +82,8 @@
     align-items: center;
 
 }
-#form-input-files {
+#form-input-files,
+#form-input-files-02 {
     width: 100%;
     max-width: 95vh;
     min-height: 40vh;
@@ -92,6 +93,30 @@
     background: linear-gradient(170deg, #def5f4, #fdf6ee);
     /* background: linear-gradient(170deg, #dbfffd, #f9efe4); */
 }
+#form-input-files-02 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 0px;
+    border: 1px solid #ccc;
+    background: white;
+}
+#form-input-files-02 form {
+    width: 45vh ;
+    max-width: 100% !important;
+}
+.block-input-dotted span {
+    padding: 9px;
+    border: 1px dashed var(--color-principal-azul-claro);
+    /* background-color: yellow; */
+}
+
+#percentage {
+    color: #000000;
+    background-color: white;
+}
+
 
 .filter-blur-20 > * {
     filter: blur(26px);
@@ -106,7 +131,8 @@
     border-radius: 5px;
 } */
 
-#form-input-files form {
+#form-input-files form,
+#form-input-files-02 form{
     max-width: 480px;
     display: flex;
     flex-direction: column;
@@ -119,7 +145,8 @@
 }
 
 
-#form-input-files form .btn-send-file {
+#form-input-files form .btn-send-file,
+#form-input-files-02 form .btn-send-file {
     max-width: 94.5%;
     max-height: 45px;
     margin: 0 auto;
@@ -604,4 +631,33 @@
 .container.block-menu-actions ul li.menu-active {
     background: var(--color-principal-azul-claro);
     color: var(--color-principal-branco-puro);
+}
+
+.block-download-new-file {
+    width: 65vh;
+    min-height: 35vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 90px 5px;
+    border: 1px solid #ccc;
+    border-radius: 9px;
+    gap: 20px;
+}
+.block-download-new-file button {
+    width: 80%;
+    height: 45px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    color: white;
+    background: var(--color-principal-azul-claro);
+    transition: .5s ease-in-out;
+}
+.block-download-new-file button:hover {
+    background: var(--color-principal-azul-escuro);
+}
+.data-rows-new-file {
+    list-style: none;
+    display: none;
 }

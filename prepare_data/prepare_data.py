@@ -3999,3 +3999,76 @@ class ConvertToDataFrame:
                 print(f" ### ERROR CHECK TEXT TO TAG | ERROR: {e}")
         
         return dict_tags_to_text
+
+
+    def calculate_file_stock_H020(file_dir, percentage):
+        
+        # file_dir = io.BytesIO(file_dir)
+        file = file_dir.readlines()
+        print(">>>>>>>>>> ", file, type(file))
+
+        
+        data_new_file = list()
+        for row in file:
+            try:
+                row = row.decode("utf-8")
+            except:
+                row = row.decode("latin-1")
+
+            print(">>>> ", row)
+            data_new_file.append(row)
+            if "|H010|" == row[0:6]:
+                values_temp = row.split("|")
+                value_origin = values_temp[6]
+
+                value_calc = float(value_origin.replace(",", ".").strip())
+                value_calc = round( (value_calc * float(percentage)) / 100, 3)
+                value_calc = round( value_calc, 2)
+                value_calc = str(value_calc).replace(".", ",")
+
+                
+                
+
+
+                if value_calc[len(value_calc)-2] == ",":
+                    value_calc = value_calc + "0"
+
+                value_H020 = f"|H020|000|{value_origin}|{value_calc}|"
+                data_new_file.append(value_H020)
+
+                print(f"""
+                    ---------------------
+                    row: {row}
+                    values_temp: {values_temp}
+                    value_origin: {value_origin}
+                    value_calc: {value_calc}
+                    value_H020: {value_H020}
+                """)
+        
+        print(data_new_file)
+        # list_errors = list()
+        # with open("process_data_fiscal/dataTest - 02.txt", "w", encoding='utf-8-sig') as f:
+
+        #     for item in data_new_file:
+        #         print("--> ", item)
+        #         try:
+
+        #             if "H020" in item:
+        #                 f.write(f"{item}")
+        #             else:
+        #                 f.write(f"{item}")
+
+        #         except Exception as e:
+        #             print("\n -------------------------------------")
+        #             print(f" ### ERROR POPULATE FILE | ERROR: {e}")
+        #             print(f">> data row: {item}")
+        #             list_errors.append(item)
+        
+        # print(f" --------------------- list_errors --------------------- ")
+        # print(list_errors)
+        return {
+            "data_new_file": data_new_file,
+            "file_name": file_dir,
+        }
+
+
