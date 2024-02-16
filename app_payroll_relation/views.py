@@ -689,17 +689,19 @@ def post_file_fastAPI_comprovante_itau(request):
             username = request.POST.get("username")
             company_session = request.POST.get("company_session")
             type_file = request.POST.get("type_file")
-            print(f"\n\n ---------> type_file: {type_file}")
-
             file = request.FILES["file"]
-            print(file)
+            print(f"""
+                ---------> username: {username}
+                ---------> company_session: {company_session}
+                ---------> file: {file}
+                ---------> type_file: {type_file}
+            """)
 
             if type_file == "modelo_xls":
                 dataJson = ConvertToDataFrame.read_xls_comprovante_banco_itau(file=file, company_session=company_session)
             else:
                 dataJson = ConvertToDataFrame.read_pdf_comprovante_banco_itau(file=file, company_session=company_session)
-
-
+            
             # print(dataJson)
             context = {
                 "code_process": True,

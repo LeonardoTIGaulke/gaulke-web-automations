@@ -56,12 +56,7 @@ urlpatterns = [
     path("post-plano-de-contas/", views.post_plano_de_contas, name="post_plano_de_contas"),
     path("post-update-plano-de-contas/", views.post_update_plano_de_contas, name="post_update_plano_de_contas"),
 
-
-
-
-
-
-
+    
     # -------------  DASHBOARDS -------------
     path("dashboard-visao-geral/", views.dashboard_visao_geral, name="dashboard_visao_geral"),
 

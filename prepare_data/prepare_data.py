@@ -60,6 +60,9 @@ class ConvertToDataFrame:
                     # exemplo 10: [Nome] - Data Venc. [dd/mm/yyyy]
                     "model_10": "Pgto. [v1] - Data Venc. [v2]",
                     # ----
+                    # exemplo 10: [Nome] - Data Venc. [dd/mm/yyyy]
+                    "model_10.2": "Pgto. [v1] - Data Pagam. [v2]",
+                    # ----
                     # exemplo 11: [Nome] - Data Venc. [dd/mm/yyyy]
                     "model_11": "Pgto. Dupl. [v1]",
                     # ----
@@ -225,6 +228,16 @@ class ConvertToDataFrame:
                     value_tp_cnpj = "2"
 
                     dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["nome_beneficiario", "data_de_vencimento"], index=i)
+                    text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, value_generic=value_generic)
+                    print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
+                    print(f">>>>>>>>>>>>>>>> TEXT: {text}")
+                
+                elif model == "model_10.2":
+                    # modelo: Comprov. Pag. Tit. Itaú
+                    value_primeiro_hist_cta = "2"
+                    value_tp_cnpj = "2"
+
+                    dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["nome_pagador", "data_de_pagamento"], index=i)
                     text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, value_generic=value_generic)
                     print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
                     print(f">>>>>>>>>>>>>>>> TEXT: {text}")
@@ -2910,7 +2923,7 @@ class ConvertToDataFrame:
             "Unnamed: 1": "CNPJ_ORIGIN",
             "Unnamed: 2": "TIPO_PAGAMENTO",
             "Unnamed: 3": "REFERENCIA_EMPRESA",
-            "Unnamed: 4": "data_de_vencimento",
+            "Unnamed: 4": "data_de_pagamento",
             "Unnamed: 5": "VALOR_PAGO",
             "Unnamed: 6": "STATUS_PAGAMENTO",
         })
@@ -2927,15 +2940,15 @@ class ConvertToDataFrame:
         print("\n ----------------------------------------------------- \n")
 
 
-
-        df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_10", cod_empresa=company_session)
+        df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_10.2", cod_empresa=company_session)
         df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
-            "DATA": "data_de_vencimento",
+            "DATA": "data_de_pagamento",
             "CNPJ": "CNPJ_ORIGIN",
             "NOME": "nome_pagador",
             "VALOR": "VALOR_PAGO",
         })
 
+        
         # # desconto    | neste caso não possui
         # # abatimento  | neste caso não possui
         # # bonificacao | neste caso não possui
@@ -2977,7 +2990,7 @@ class ConvertToDataFrame:
         df = ConvertToDataFrame.create_cod_erp_to_dataframe(dataframe=df)
         
         print(df)
-        df.to_excel("data_itau.xlsx")
+        # df.to_excel("data_itau.xlsx")
 
         tt_rows = len(df)
         tt_debit    = len(df[df["TP"] == "D"])
