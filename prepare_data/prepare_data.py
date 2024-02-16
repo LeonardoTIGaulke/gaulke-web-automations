@@ -74,7 +74,12 @@ class ConvertToDataFrame:
                     # ----
                     # exemplo 14: [NOME_PAGADOR]
                     "model_14": "Pagamento Dupl [v1] - [v2]",
-                    
+                    # ----
+                    # exemplo 15: [NFº] [NOME_PAGADOR] [BANCO]
+                    "model_15": "Recebimento Dupl [v1] - [v2] - [v3]",
+                    # ----
+                    # exemplo 16: [NFº] [NOME_PAGADOR] [BANCO]
+                    "model_16": "Pagamento Dupl [v1] - [v2] - [v3]",
                 }
                 text = data_model_text.get(model)
                 for k,v in dict_data_replace.items():
@@ -278,6 +283,26 @@ class ConvertToDataFrame:
                     value_tp_cnpj = "2"
 
                     dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["NF-e", "nome_pagador"], index=i)
+                    text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, value_generic=value_generic)
+                    print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
+                    print(f">>>>>>>>>>>>>>>> TEXT: {text}")
+                
+                elif model == "model_15":
+                    # modelo: Importação contas a receber - TELL
+                    value_primeiro_hist_cta = "2"
+                    value_tp_cnpj = "1"
+
+                    dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["Número", "nome_pagador", "Descrição"], index=i)
+                    text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, value_generic=value_generic)
+                    print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
+                    print(f">>>>>>>>>>>>>>>> TEXT: {text}")
+
+                elif model == "model_16":
+                    # modelo: Importação contas a pagar - TELL
+                    value_primeiro_hist_cta = "2"
+                    value_tp_cnpj = "2"
+
+                    dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["Número", "nome_pagador", "Descrição"], index=i)
                     text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, value_generic=value_generic)
                     print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
                     print(f">>>>>>>>>>>>>>>> TEXT: {text}")
@@ -3850,6 +3875,361 @@ class ConvertToDataFrame:
             df.to_excel("contas a pagar - GARRA.xlsx")
         except:
             pass
+
+        tt_rows = len(df)
+        tt_debit    = len(df[df["TP"] == "D"])
+        tt_credit   = len(df[df["TP"] == "C"])
+
+        data_json = json.loads(df.to_json(orient="table"))
+
+        print(f"""
+            --------- CONFIG CONTAS
+            --> tt_rows: {tt_rows}
+            --> tt_debit: {tt_debit}
+            --> tt_credit: {tt_credit}
+        """)
+
+        return {
+            "data_table": data_json,
+            "tt_rows": tt_rows,
+            "tt_debit": tt_debit,
+            "tt_credit": tt_credit,
+            "list_page_erros": [],
+        }
+    
+    # ----
+    
+    def read_xlsx_contas_a_receber_TELL(file, company_session):
+        # Pag. Dupl [NFº] [Nome]
+        print(f"\n\n ----- Arquivo informado contas a receber - TELL | arquivo: {file}")
+
+        contents = file.read()
+        xlsx_bytes = io.BytesIO(contents)
+        file = pd.ExcelFile(xlsx_bytes)
+        sheet_name = file.sheet_names[0]
+        print(f"\n ---> sheet_name: {sheet_name}")
+        df = file.parse(sheet_name=sheet_name, dtype='str')
+        
+        # df = ConvertToDataFrame.filter_data_dataframe(daraframe=df, name_column="Situação", list_remove_values=[
+        #     "------", ""
+        # ])
+
+        df = df.dropna(subset=["CPF/CNPJ"])
+        df =  df[ df["Situação"].str.contains("Pago") ]
+
+
+        df = ConvertToDataFrame.rename_columns_dataframe(dataframe=df, dict_replace_names={
+            "CPF/CNPJ": "CNPJ_ORIGIN",
+            "Nome": "nome_pagador",
+            "Valor": "VALOR_PAGAMENTO",
+            "Recebido": "VALOR_RECEBIDO",
+            "Liquidação": "DATA_PAGAMENTO",
+            # "Data de vencimento original": "DATA_VENCIMENTO",
+            "Juro": "juros",
+            "Desconto": "desconto",
+            # "Acréscimo": "multa",
+        })
+        print("\n\n -------------------- DF -------------------- ")
+        print(df)
+
+
+        df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_15", cod_empresa=company_session)
+        df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
+            "DATA": "DATA_PAGAMENTO",
+            "CNPJ": "CNPJ_ORIGIN",
+            "NOME": "nome_pagador",
+            "VALOR": "VALOR_PAGAMENTO",
+        })
+        # df = df.dropna(subset=['CNPJ_ORIGIN'])
+        print("\n\n ------- DF IMPORTAÇÃO JB ------- ")
+        print(df)
+
+        # desconto
+        # juros
+        
+        df = ConvertToDataFrame.duplicate_dataframe_rows_lote(dataframe=df, list_update_cols=[
+            {"TP": "C", "TYPE_PROCESS": "comum"},
+            {"TP": "D", "TYPE_PROCESS": "desconto"},
+            {"TP": "D", "TYPE_PROCESS": "juros"},
+            # {"TP": "D", "TYPE_PROCESS": "multa"},
+        ])
+        
+        df.sort_values(by=["nome_pagador", "GRUPO_LCTO", "TP"], inplace=True)
+        df.index = list(range(0, len(df.index)))
+
+        count_aux = 0
+        for i in df.index:
+
+            # if df["VALOR"][i].count(",") == 1:
+            #     df["VALOR"][i] = df["VALOR"][i].replace(",", ".", 1)
+
+
+            if df["VALOR"][i].count(".") == 2:
+                df["VALOR"][i] = df["VALOR"][i].replace(".", "", 1).replace(",", ".")
+                print(f' -----> VALOR AJUSTADO: {df["VALOR"][i]} | {type(df["VALOR"][i])}')
+
+            if df["VALOR_PAGAMENTO"][i].count(".") == 2:
+                df["VALOR_PAGAMENTO"][i] = df["VALOR_PAGAMENTO"][i].replace(".", "", 1).replace(",", ".")
+                print(f' -----> VALOR_PAGAMENTO AJUSTADO: {df["VALOR_PAGAMENTO"][i]}')
+            
+            print(f"""
+                --------------------------------
+                -->>>> VALOR: {df["VALOR"][i]}
+                -->>>> VALOR_PAGAMENTO: {df["VALOR_PAGAMENTO"][i]}
+            """)
+
+            
+            if count_aux == 0:
+                df["TP"][i] = "D"
+                df["CONTA"][i] = "-"
+                df["VALOR"][i] = df["VALOR_PAGAMENTO"][i]
+                count_aux += 1
+
+            elif count_aux == 1:
+                
+                df["TP"][i] = "D"
+                df["CONTA"][i] = "1686"
+                df["VALOR"][i] = df["desconto"][i]
+                df["COMPL_HISTORICO"][i] = df["COMPL_HISTORICO"][i].replace("Recebimento Dupl", "Desconto Concedido Dupl ")
+                count_aux += 1
+
+            elif count_aux == 2:
+
+                df["TP"][i] = "C"
+                df["CONTA"][i] = "1663"
+                df["VALOR"][i] = df["juros"][i]
+                df["COMPL_HISTORICO"][i] = df["COMPL_HISTORICO"][i].replace("Recebimento Dupl", "Recebimento Juros Dupl ")
+                count_aux += 1
+
+            elif count_aux == 3:
+
+                df["TP"][i] = "C"
+                df["CONTA"][i] = ""
+                
+                try:
+                    
+                    v_pag = float(df["VALOR"][i].replace(",", "."))
+                    v_desc = float(df["desconto"][i].replace(",", "."))
+                    v_juros = float(df["juros"][i].replace(",", "."))
+                    valor = None
+
+
+                    # ------------
+
+                    if v_juros > 0:
+                        valor = str(round((v_pag + v_desc) - v_juros, 2))
+                        df["VALOR"][i] = valor
+                    
+                    elif v_desc > 0:
+                        valor = str(round((v_pag - v_juros) + v_desc, 2))
+                        df["VALOR"][i] = valor
+                    
+                    if valor is not None:
+                        print(f"\n ID {i} --------------------------------------------------------")
+                        print(f' >>> {df["COMPL_HISTORICO"][i]}')
+                        print(f'>>>>>>>>>>> v_pag: {v_pag}')
+                        print(f'>>>>>>>>>>> v_desc: {v_desc}')
+                        print(f'>>>>>>>>>>> v_juros: {v_juros}')
+                        print(f'>>>>>>>>>>> valor: {valor}')
+                
+                except Exception as e:
+                    print(f">>>>>>> ERROR CALCULATE/CONVERT | ERROR: {e}")
+
+                
+                count_aux = 0
+            
+        print("\n\n DF IMPORTAÇÃO COM DE-PARA DE CONTAS ")
+        print(df)
+
+        try:
+            df = ConvertToDataFrame.adjust_value_to_decimal_string(dataframe=df, column_name="VALOR", replace_caract=True, replace_from_format_BRL=True)
+            df = ConvertToDataFrame.filter_data_dataframe(daraframe=df, name_column="VALOR", list_remove_values=["0.00"])
+        except Exception as e:
+            print(f" ### ERROR ADJUST TO DECIMAL STRING | ERROR: {e}")
+            return {}
+        df.index = list(range(0, len(df.index)))
+        df = ConvertToDataFrame.create_cod_erp_to_dataframe(dataframe=df)
+
+
+        print("\n\n ------- DataFrame contas a receber TELL ------- ")
+        print(df.info())
+        print(df)
+
+
+        tt_rows = len(df)
+        tt_debit    = len(df[df["TP"] == "D"])
+        tt_credit   = len(df[df["TP"] == "C"])
+
+        data_json = json.loads(df.to_json(orient="table"))
+
+        print(f"""
+            --------- CONFIG CONTAS
+            --> tt_rows: {tt_rows}
+            --> tt_debit: {tt_debit}
+            --> tt_credit: {tt_credit}
+        """)
+
+        return {
+            "data_table": data_json,
+            "tt_rows": tt_rows,
+            "tt_debit": tt_debit,
+            "tt_credit": tt_credit,
+            "list_page_erros": [],
+        }
+    
+    # ----
+    
+    def read_xlsx_contas_a_pagar_TELL(file, company_session):
+        # Pag. Dupl [NFº] [Nome]
+        print(f"\n\n ----- Arquivo informado contas a pagar - TELL | arquivo: {file}")
+
+        contents = file.read()
+        xlsx_bytes = io.BytesIO(contents)
+        file = pd.ExcelFile(xlsx_bytes)
+        sheet_name = file.sheet_names[0]
+        print(f"\n ---> sheet_name: {sheet_name}")
+        df = file.parse(sheet_name=sheet_name, dtype='str')
+        
+        # df = ConvertToDataFrame.filter_data_dataframe(daraframe=df, name_column="Situação", list_remove_values=[
+        #     "------", ""
+        # ])
+
+        df = df.dropna(subset=["CPF/CNPJ"])
+        df =  df[ df["Situação"].str.contains("Pago") ]
+
+
+        df = ConvertToDataFrame.rename_columns_dataframe(dataframe=df, dict_replace_names={
+            "CPF/CNPJ": "CNPJ_ORIGIN",
+            "Nome": "nome_pagador",
+            "Valor": "VALOR_PAGAMENTO",
+            "Recebido": "VALOR_RECEBIDO",
+            "Liquidação": "DATA_PAGAMENTO",
+            # "Data de vencimento original": "DATA_VENCIMENTO",
+            "Juro": "juros",
+            "Desconto": "desconto",
+            # "Acréscimo": "multa",
+        })
+        print("\n\n -------------------- DF -------------------- ")
+        print(df)
+
+
+        df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_16", cod_empresa=company_session)
+        df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
+            "DATA": "DATA_PAGAMENTO",
+            "CNPJ": "CNPJ_ORIGIN",
+            "NOME": "nome_pagador",
+            "VALOR": "VALOR_PAGAMENTO",
+        })
+        # df = df.dropna(subset=['CNPJ_ORIGIN'])
+        print("\n\n ------- DF IMPORTAÇÃO JB ------- ")
+        print(df)
+
+        # desconto
+        # juros
+        
+        df = ConvertToDataFrame.duplicate_dataframe_rows_lote(dataframe=df, list_update_cols=[
+            {"TP": "C", "TYPE_PROCESS": "comum"},
+            {"TP": "D", "TYPE_PROCESS": "desconto"},
+            {"TP": "D", "TYPE_PROCESS": "juros"},
+            # {"TP": "D", "TYPE_PROCESS": "multa"},
+        ])
+        
+        df.sort_values(by=["nome_pagador", "GRUPO_LCTO", "TP"], inplace=True)
+        df.index = list(range(0, len(df.index)))
+
+        count_aux = 0
+        for i in df.index:
+
+            # if df["VALOR"][i].count(",") == 1:
+            #     df["VALOR"][i] = df["VALOR"][i].replace(",", ".", 1)
+
+
+            if df["VALOR"][i].count(".") == 2:
+                df["VALOR"][i] = df["VALOR"][i].replace(".", "", 1).replace(",", ".")
+                print(f' -----> VALOR AJUSTADO: {df["VALOR"][i]} | {type(df["VALOR"][i])}')
+
+            if df["VALOR_PAGAMENTO"][i].count(".") == 2:
+                df["VALOR_PAGAMENTO"][i] = df["VALOR_PAGAMENTO"][i].replace(".", "", 1).replace(",", ".")
+                print(f' -----> VALOR_PAGAMENTO AJUSTADO: {df["VALOR_PAGAMENTO"][i]}')
+            
+            print(f"""
+                --------------------------------
+                -->>>> VALOR: {df["VALOR"][i]}
+                -->>>> VALOR_PAGAMENTO: {df["VALOR_PAGAMENTO"][i]}
+            """)
+
+            
+            if count_aux == 0:
+                df["TP"][i] = "D"
+                df["CONTA"][i] = ""
+                
+                try:
+                    
+                    v_pag = float(df["VALOR"][i].replace(",", "."))
+                    v_desc = float(df["desconto"][i].replace(",", "."))
+                    v_juros = float(df["juros"][i].replace(",", "."))
+                    valor = None
+
+
+                    # ------------
+
+                    if v_juros > 0:
+                        valor = str(round((v_pag + v_desc) - v_juros, 2))
+                        df["VALOR"][i] = valor
+                    
+                    elif v_desc > 0:
+                        valor = str(round((v_pag - v_juros) + v_desc, 2))
+                        df["VALOR"][i] = valor
+                    
+                    if valor is not None:
+                        print(f"\n ID {i} --------------------------------------------------------")
+                        print(f' >>> {df["COMPL_HISTORICO"][i]}')
+                        print(f'>>>>>>>>>>> v_pag: {v_pag}')
+                        print(f'>>>>>>>>>>> v_desc: {v_desc}')
+                        print(f'>>>>>>>>>>> v_juros: {v_juros}')
+                        print(f'>>>>>>>>>>> valor: {valor}')
+                
+                except Exception as e:
+                    print(f">>>>>>> ERROR CALCULATE/CONVERT | ERROR: {e}")
+                count_aux += 1
+
+            elif count_aux == 1:
+                
+                df["TP"][i] = "C"
+                df["CONTA"][i] = "1664"
+                df["VALOR"][i] = df["desconto"][i]
+                df["COMPL_HISTORICO"][i] = df["COMPL_HISTORICO"][i].replace("Pagamento Dupl", "Desconto Obtido Dupl ")
+                count_aux += 1
+
+            elif count_aux == 2:
+
+                df["TP"][i] = "D"
+                df["CONTA"][i] = "1688"
+                df["VALOR"][i] = df["juros"][i]
+                df["COMPL_HISTORICO"][i] = df["COMPL_HISTORICO"][i].replace("Pagamento Dupl", "Pagamento Juros Dupl ")
+                count_aux += 1
+
+            elif count_aux == 3:
+                df["TP"][i] = "C"
+                df["CONTA"][i] = "-"
+                df["VALOR"][i] = df["VALOR_PAGAMENTO"][i]
+                
+                count_aux = 0
+        
+        try:
+            df = ConvertToDataFrame.adjust_value_to_decimal_string(dataframe=df, column_name="VALOR", replace_caract=True, replace_from_format_BRL=True)
+            df = ConvertToDataFrame.filter_data_dataframe(daraframe=df, name_column="VALOR", list_remove_values=["0.00"])
+        except Exception as e:
+            print(f" ### ERROR ADJUST TO DECIMAL STRING | ERROR: {e}")
+            return {}
+        df.index = list(range(0, len(df.index)))
+        df = ConvertToDataFrame.create_cod_erp_to_dataframe(dataframe=df)
+
+
+        print("\n\n ------- DataFrame contas a pagar TELL ------- ")
+        print(df.info())
+        print(df)
+
 
         tt_rows = len(df)
         tt_debit    = len(df[df["TP"] == "D"])
