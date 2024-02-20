@@ -11,7 +11,10 @@ urlpatterns = [
     # -----------------------------------------------------------------
 
     path("relacao-folha-pagamento-por-empregado/", views.post_file_fastAPI_folha_por_empregado, name="post_file_fastAPI_folha_por_empregado"),
+
     path("relacao-GNRE/", views.post_file_fastAPI_relacao_GNRE, name="post_file_fastAPI_relacao_GNRE"),
+    path("relacao-gnre-base-nova/", views.post_file_fastAPI_relacao_GNRE_BASE_NOVA, name="post_file_fastAPI_relacao_GNRE_BASE_NOVA"),
+
     path("relacao-entrada-titulos-desc-sicoob/", views.post_file_entrada_titulos_desc_sicoob, name="post_file_entrada_titulos_desc_sicoob"),
     path("relacao-cobrancas-pagas/", views.post_file_fastAPI_relacao_cobrancas_pagas, name="post_file_fastAPI_relacao_cobrancas_pagas"),
     

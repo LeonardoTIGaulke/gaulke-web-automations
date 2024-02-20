@@ -994,7 +994,7 @@ class ConvertToDataFrame:
         print(df)
         print(df.info())
 
-        df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_8", value_generic="Bradesco", cod_empresa=company_session)
+        df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_8", value_generic="Banco do Brasil", cod_empresa=company_session)
         df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
             "DATA": "data_de_debito",
             "CNPJ": "cnpj_beneficiario",
