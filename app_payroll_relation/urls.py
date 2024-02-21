@@ -17,6 +17,7 @@ urlpatterns = [
 
     path("relacao-entrada-titulos-desc-sicoob/", views.post_file_entrada_titulos_desc_sicoob, name="post_file_entrada_titulos_desc_sicoob"),
     path("relacao-cobrancas-pagas/", views.post_file_fastAPI_relacao_cobrancas_pagas, name="post_file_fastAPI_relacao_cobrancas_pagas"),
+    path("relacao-relatorio-beneficiario-civia/", views.post_file_fastAPI_relacao_relatorio_beneficiario_civia, name="post_file_fastAPI_relacao_relatorio_beneficiario_civia"),
     
     path("config-contas-grne/",  views.config_contas_gnre, name="config_contas_gnre"),
     path("relacao-decorise/", views.post_file_fastAPI_relacao_decorise, name="post_file_fastAPI_relacao_decorise"),

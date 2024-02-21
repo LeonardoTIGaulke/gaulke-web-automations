@@ -80,6 +80,9 @@ class ConvertToDataFrame:
                     # ----
                     # exemplo 16: [NFº] [NOME_PAGADOR] [BANCO]
                     "model_16": "Pagamento Dupl [v1] - [v2] - [v3]",
+                    # ----
+                    # exemplo 17: [NOME] [VENC] - [BANCO]
+                    "model_17": f"Recebimento Dupl [v1] - {value_generic}",
                 }
                 text = data_model_text.get(model)
                 for k,v in dict_data_replace.items():
@@ -303,6 +306,16 @@ class ConvertToDataFrame:
                     value_tp_cnpj = "2"
 
                     dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["Número", "nome_pagador", "Descrição"], index=i)
+                    text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, value_generic=value_generic)
+                    print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
+                    print(f">>>>>>>>>>>>>>>> TEXT: {text}")
+
+                elif model == "model_17":
+                    # modelo: Importação relatório do beneficiário Civia
+                    value_primeiro_hist_cta = "2"
+                    value_tp_cnpj = "1"
+
+                    dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["nome_beneficiario", "data_de_vencimento"], index=i)
                     text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, value_generic=value_generic)
                     print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
                     print(f">>>>>>>>>>>>>>>> TEXT: {text}")
@@ -1386,6 +1399,252 @@ class ConvertToDataFrame:
                 }
         except Exception as e:
             print(f" ### ERROR GENERATE DATAFRAME | ERROR: {e}")
+    
+    # ----
+    
+    def read_pdf_relacao_relatorio_beneficiario_CIVIA(file, company_session):
+
+        print(f"\n\n ----- Arquivo informado relatório beneficiário CIVIA: {file}")
+
+        contents = file.read()
+        pdf_bytes = io.BytesIO(contents)
+        pdf_reader = PdfReader(pdf_bytes)
+
+        list_data_pages = list()
+        list_page_erros = list()
+        index_page = 0
+        print(f" TT PAGES: {len(pdf_reader.pages)}")
+
+
+        data_to_table = {
+            # # ---------- IDENTIFICADORES
+            "nome_beneficiario": list(),
+            "cnpj_beneficiario": list(),
+
+            # "nome_pagador": list(),
+            # "cnpj_pagador": list(),
+
+            # # # ---------- DATAS
+            "data_de_debito": list(),
+            "data_de_vencimento": list(),
+
+            # # ---------- VALORES
+            "valor": list(),
+            "desconto": list(),
+            # "abatimento": list(),
+            # "bonificacao": list(),
+            # "multa": list(),
+            "juros": list(),
+            "valor_total": list(),
+
+        }
+
+        list_errors = list()
+        list_ignore_CPF = list()
+        dict_tags_to_text = dict()
+
+        for index_page in range(len(pdf_reader.pages)):
+            try:
+
+                page = pdf_reader.pages[index_page]
+                data_page = page.extract_text()
+
+                print(f"\n\n\n ---- DATA EXTRACT | INDEX PAGE: {index_page}")
+                # print(data_page)
+                
+                for i in range(len(data_page)):
+                    
+                    # -------------------------- NOME BENEFICIARIO --------------------------
+
+                    if "CPF/CNPJ:" == data_page[i:i+9]:
+                        print(f"\n\n ---------->> CPF/CNPJ BENEFICIARIO | i: {i}")
+                        data_aux = data_page[i:]
+                        print(data_aux)
+                        
+                        delimiter_row = 0
+                        for j in range(len(data_aux)):
+                            if "DIFERENÇA" == data_aux[j:j+9]:
+                                delimiter_row += j
+                                break
+                        
+                        print("\n\n início --------------------------------------- ", i, " / ", delimiter_row + i)
+                        data_temp = data_page[ i: delimiter_row + i].strip()
+                        print(data_temp)
+                        data_split = data_temp.split("\n")
+                        nome = data_split[0].replace("CPF/CNPJ:", "")
+                        cnpj = data_split[1]
+                        data_values = data_split[3:]
+
+                        for values in data_values:
+                            data = values.split()
+                            print(f" >>> nome: {nome}")
+                            print(f" >>> cnpj: {cnpj}")
+                            Nosso_Numero    = data[0]
+                            Documento       = data[1]
+                            Situacao        = data[2]
+                            Emis_Bco_Age    = data[3]
+                            Emissao         = data[4]
+                            Documento       = data[5]
+                            Vencimento      = data[6]
+                            Pagto_Baixa     = data[7]
+                            Valor_Nominal   = data[8].replace(".", "").replace(",", ".")
+                            Valor_Liquidado = data[9].replace(".", "").replace(",", ".")
+                            Diferença       = data[10].replace(".", "").replace(",", ".")
+                            desconto = "0.00"
+                            juros = "0.00"
+
+                            print(f""""
+                                ----------------------------
+                                Nosso_Numero: {Nosso_Numero}
+                                Documento: {Documento}
+                                Situacao: {Situacao}
+                                Emis_Bco_Age: {Emis_Bco_Age}
+                                Emissao: {Emissao}
+                                Documento: {Documento}
+                                Vencimento: {Vencimento}
+                                Pagto_Baixa: {Pagto_Baixa}
+                            """)
+
+                            if float(Diferença) > 0:
+                                juros = Diferença
+                            elif float(Diferença) < 0:
+                                desconto = Diferença
+
+                            data_to_table["nome_beneficiario"].append(nome)
+                            data_to_table["cnpj_beneficiario"].append(cnpj)
+                            data_to_table["data_de_debito"].append(Emissao)
+                            data_to_table["data_de_vencimento"].append(Documento)
+                            data_to_table["valor"].append(Valor_Nominal)
+                            data_to_table["desconto"].append(desconto)
+                            data_to_table["juros"].append(juros)
+                            data_to_table["valor_total"].append(Valor_Liquidado)
+
+                        print(" --------------------------------------- final \n\n")
+                        
+
+            except Exception as e:
+                print(f" ### ERROR EXTRACT DATA PDF | ERROR: {e}")
+                list_page_erros.append({index_page: e})       
+    
+        df = pd.DataFrame.from_dict(data_to_table)
+        print(df)
+        print(df.info())
+
+    
+
+        df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_17", value_generic="Civia", cod_empresa=company_session)
+        df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
+            "DATA": "data_de_debito",
+            "CNPJ": "cnpj_beneficiario",
+            "NOME": "nome_beneficiario",
+            "VALOR": "valor",
+        })
+
+        df = ConvertToDataFrame.duplicate_dataframe_rows_lote(dataframe=df, list_update_cols=[
+            {"TP": "C", "TYPE_PROCESS": "comum"},
+            {"TP": "C", "TYPE_PROCESS": "desconto"},
+            {"TP": "D", "TYPE_PROCESS": "juros"},
+        ])
+
+        df.sort_values(by=["nome_beneficiario", "GRUPO_LCTO", "TP"], inplace=True)
+        df.index = list(range(0, len(df.index)))
+
+        count_aux = 0
+        for i in df.index:
+
+            if count_aux == 0:
+                df["VALOR"][i] = df["valor_total"][i]
+                df["TP"][i] = "D"
+                count_aux += 1
+            elif count_aux == 1:
+                df["VALOR"][i] = df["desconto"][i]
+                df["COMPL_HISTORICO"][i] = df["COMPL_HISTORICO"][i].replace("Recebimento Dupl", "Desconto Concedido na Dupl ")
+                df["TP"][i] = "D"
+                df["CONTA"][i] = "1686"
+                count_aux += 1
+            elif count_aux == 2:
+                df["VALOR"][i] = df["juros"][i]
+                df["COMPL_HISTORICO"][i] = df["COMPL_HISTORICO"][i].replace("Recebimento Dupl", "Juros/Mora Recebidos na Dupl ")
+                df["TP"][i] = "C"
+                df["CONTA"][i] = "1663"
+                count_aux += 1
+            elif count_aux == 3:
+                df["VALOR"][i] = df["valor"][i]
+                df["TP"][i] = "C"
+                df["CONTA"][i] = ""
+                count_aux = 0
+
+        # df = ConvertToDataFrame.adjust_value_to_decimal_string(dataframe=df, column_name="VALOR", replace_caract=True)
+        df = ConvertToDataFrame.filter_data_dataframe(daraframe=df, name_column="VALOR", list_remove_values=["0.00"])
+        df = ConvertToDataFrame.create_cod_erp_to_dataframe(dataframe=df)
+
+
+        print("\n\n\n ------------ DF LAYOUT JB ------------ ")
+        df = ConvertToDataFrame.check_date_business_day(dataframe=df, column_date="DATA", addition=0)
+        print(df)
+        print(df.info())
+
+        tt_rows = len(df)
+        tt_debit    = len(df[df["TP"] == "D"])
+        tt_credit   = len(df[df["TP"] == "C"])
+        
+
+        data_json = json.loads(df.to_json(orient="table"))
+        print(dict_tags_to_text)
+
+        print(f"""
+            --------- CONFIG CONTAS
+            --> tt_rows: {tt_rows}
+            --> tt_debit: {tt_debit}
+            --> tt_credit: {tt_credit}
+        """)
+
+        print(f"\n\n ---------- list_ignore_CPF ---------- ")
+        print(f">> list_ignore_CPF: {list_ignore_CPF}")
+        show_ignore_CPF = False
+        if len(list_ignore_CPF) > 0:
+            show_ignore_CPF = True
+        
+        return {
+            "data_table": data_json,
+            "tt_rows": tt_rows,
+            "tt_debit": tt_debit,
+            "tt_credit": tt_credit,
+            "list_ignore_CPF": list_ignore_CPF,
+            "show_ignore_CPF": show_ignore_CPF,
+            "list_page_erros": [],
+        }
+
+    def check_date_business_day(dataframe, column_date, addition=0):
+        
+
+        print(" ------------------------ dataframe ------------------------ ")
+        dataframe["ADJUSTED_DATE"] = pd.to_datetime(dataframe[column_date], format="%d/%m/%Y")
+        dataframe['day_of_week'] = pd.to_datetime(dataframe['ADJUSTED_DATE']).dt.dayofweek
+        print(dataframe)
+
+        for i in dataframe.index:
+            addition = 0
+            try:
+                if dataframe["day_of_week"][i] == 4:
+                    addition = 3
+                elif dataframe["day_of_week"][i] == 5:
+                    addition = 2
+                elif dataframe["day_of_week"][i] == 6:
+                    addition = 1
+                else:
+                    addition = 1
+                dt_adj = dataframe["ADJUSTED_DATE"][i] + pd.Timedelta(days=addition)
+                dt_adj = datetime.datetime.strftime(dt_adj, "%d/%m/%Y")
+                dataframe["DATA"][i] = dt_adj
+                print(f'{dataframe["ADJUSTED_DATE"][i]} >>> dia da semana: {dataframe["day_of_week"][i]} | dt_adj: {dt_adj} | addition: {addition} ')
+
+            except Exception as e:
+                print(f" ### ERROR GET DAY OF WEEK | ERROR: {e}")    
+
+
+        return dataframe
+            
     
     # ----
     
