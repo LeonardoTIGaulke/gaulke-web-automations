@@ -82,7 +82,7 @@ class ConvertToDataFrame:
                     "model_16": "Pagamento Dupl [v1] - [v2] - [v3]",
                     # ----
                     # exemplo 17: [NOME] [VENC] - [BANCO]
-                    "model_17": f"Recebimento Dupl [v1] - {value_generic}",
+                    "model_17": f"Recebimento Dupl [v1] - Doc: [v3] {value_generic}",
                 }
                 text = data_model_text.get(model)
                 for k,v in dict_data_replace.items():
@@ -94,7 +94,7 @@ class ConvertToDataFrame:
             return None
         
     def create_dict_data_replace(dataframe, list_col_name, index):
-        """ return: texto alternativo para uso no complemento de histórico.  """
+        """ return: texto alternativo para uso no complemento de histórico. """
 
         dict_data_replace=dict()
         print(">>>>>>>\n", dataframe, index)
@@ -109,7 +109,7 @@ class ConvertToDataFrame:
         return dict_data_replace
         
     def create_layout_JB(dataframe, model="-", grupo_lancamento="", value_generic=None, cod_empresa=""):
-        """ return: DataFrame Lançamentos Contábeis - Importação no Sistema JB.  """
+        """ return: DataFrame Lançamentos Contábeis - Importação no Sistema JB. """
         LIST_TP_REGISTRO = list()
         LIST_EMPRESA = list()
         LIST_COD_EMPRESA = list()
@@ -315,7 +315,7 @@ class ConvertToDataFrame:
                     value_primeiro_hist_cta = "2"
                     value_tp_cnpj = "1"
 
-                    dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["nome_beneficiario", "data_de_vencimento"], index=i)
+                    dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["nome_beneficiario", "data_de_vencimento", "N_Documento"], index=i)
                     text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, value_generic=value_generic)
                     print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
                     print(f">>>>>>>>>>>>>>>> TEXT: {text}")
@@ -1436,6 +1436,7 @@ class ConvertToDataFrame:
             # "multa": list(),
             "juros": list(),
             "valor_total": list(),
+            "N_Documento": list(),
 
         }
 
@@ -1480,7 +1481,7 @@ class ConvertToDataFrame:
                             print(f" >>> nome: {nome}")
                             print(f" >>> cnpj: {cnpj}")
                             Nosso_Numero    = data[0]
-                            Documento       = data[1]
+                            N_Documento     = data[1]
                             Situacao        = data[2]
                             Emis_Bco_Age    = data[3]
                             Emissao         = data[4]
@@ -1493,10 +1494,13 @@ class ConvertToDataFrame:
                             desconto = "0.00"
                             juros = "0.00"
 
+
+                            print(data)
+
                             print(f""""
                                 ----------------------------
                                 Nosso_Numero: {Nosso_Numero}
-                                Documento: {Documento}
+                                N_Documento: {N_Documento}
                                 Situacao: {Situacao}
                                 Emis_Bco_Age: {Emis_Bco_Age}
                                 Emissao: {Emissao}
@@ -1518,6 +1522,7 @@ class ConvertToDataFrame:
                             data_to_table["desconto"].append(desconto)
                             data_to_table["juros"].append(juros)
                             data_to_table["valor_total"].append(Valor_Liquidado)
+                            data_to_table["N_Documento"].append(N_Documento)
 
                         print(" --------------------------------------- final \n\n")
                         
@@ -1530,6 +1535,8 @@ class ConvertToDataFrame:
         print(df)
         print(df.info())
 
+
+        # return {}
     
 
         df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_17", value_generic="Civia", cod_empresa=company_session)
