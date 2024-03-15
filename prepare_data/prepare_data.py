@@ -1503,44 +1503,44 @@ class ConvertToDataFrame:
                                 Valor_Liquidado = data[9+2].replace(".", "").replace(",", ".")
                                 Diferença       = data[10+2].replace(".", "").replace(",", ".")
 
-                                # return {}
+                            if Situacao.upper() == "LIQUIDADO":
 
-                            desconto = "0.00"
-                            juros = "0.00"
-
-
-                            print(data)
-
-                            print(f""""
-                                ----------------------------
-                                Nosso_Numero: {Nosso_Numero}
-                                N_Documento: {N_Documento}
-                                Situacao: {Situacao}
-                                Emis_Bco_Age: {Emis_Bco_Age}
-                                Emissao: {Emissao}
-                                Documento: {Documento}
-                                Vencimento: {Vencimento}
-                                Pagto_Baixa: {Pagto_Baixa}
-                            """)
+                                desconto = "0.00"
+                                juros = "0.00"
 
 
+                                # print(data)
 
-                            if float(Diferença) > 0:
-                                juros = Diferença
-                            elif float(Diferença) < 0:
-                                desconto = Diferença
+                                # print(f""""
+                                #     ----------------------------
+                                #     Nosso_Numero: {Nosso_Numero}
+                                #     N_Documento: {N_Documento}
+                                #     Situacao: {Situacao}
+                                #     Emis_Bco_Age: {Emis_Bco_Age}
+                                #     Emissao: {Emissao}
+                                #     Documento: {Documento}
+                                #     Vencimento: {Vencimento}
+                                #     Pagto_Baixa: {Pagto_Baixa}
+                                # """)
 
-                            data_to_table["nome_beneficiario"].append(nome)
-                            data_to_table["cnpj_beneficiario"].append(cnpj)
-                            data_to_table["data_de_debito"].append(Emissao)
-                            data_to_table["data_de_vencimento"].append(Documento)
-                            data_to_table["valor"].append(Valor_Nominal)
-                            data_to_table["desconto"].append(desconto)
-                            data_to_table["juros"].append(juros)
-                            data_to_table["valor_total"].append(Valor_Liquidado)
-                            data_to_table["N_Documento"].append(N_Documento)
 
-                        print(" --------------------------------------- final \n\n")
+
+                                if float(Diferença) > 0:
+                                    juros = Diferença
+                                elif float(Diferença) < 0:
+                                    desconto = Diferença
+
+                                data_to_table["nome_beneficiario"].append(nome)
+                                data_to_table["cnpj_beneficiario"].append(cnpj)
+                                data_to_table["data_de_debito"].append(Emissao)
+                                data_to_table["data_de_vencimento"].append(Documento)
+                                data_to_table["valor"].append(Valor_Nominal)
+                                data_to_table["desconto"].append(desconto)
+                                data_to_table["juros"].append(juros)
+                                data_to_table["valor_total"].append(Valor_Liquidado)
+                                data_to_table["N_Documento"].append(N_Documento)
+
+                            print(" --------------------------------------- final \n\n")
 
                         
                         
