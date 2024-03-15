@@ -1484,13 +1484,27 @@ class ConvertToDataFrame:
                             N_Documento     = data[1]
                             Situacao        = data[2]
                             Emis_Bco_Age    = data[3]
-                            Emissao         = data[4]
-                            Documento       = data[5]
-                            Vencimento      = data[6]
-                            Pagto_Baixa     = data[7]
-                            Valor_Nominal   = data[8].replace(".", "").replace(",", ".")
-                            Valor_Liquidado = data[9].replace(".", "").replace(",", ".")
-                            Diferença       = data[10].replace(".", "").replace(",", ".")
+
+                            if "LIQUIDADO" in Situacao.upper():
+                                Emissao = data[4]
+                                Documento       = data[5]
+                                Vencimento      = data[6]
+                                Pagto_Baixa     = data[7]
+                                Valor_Nominal   = data[8].replace(".", "").replace(",", ".")
+                                Valor_Liquidado = data[9].replace(".", "").replace(",", ".")
+                                Diferença       = data[10].replace(".", "").replace(",", ".")
+
+                            else:
+                                Emissao = data[4+2]
+                                Documento       = data[5+2]
+                                Vencimento      = data[6+2]
+                                Pagto_Baixa     = data[7+2]
+                                Valor_Nominal   = data[8+2].replace(".", "").replace(",", ".")
+                                Valor_Liquidado = data[9+2].replace(".", "").replace(",", ".")
+                                Diferença       = data[10+2].replace(".", "").replace(",", ".")
+
+                                # return {}
+
                             desconto = "0.00"
                             juros = "0.00"
 
@@ -1509,6 +1523,8 @@ class ConvertToDataFrame:
                                 Pagto_Baixa: {Pagto_Baixa}
                             """)
 
+
+
                             if float(Diferença) > 0:
                                 juros = Diferença
                             elif float(Diferença) < 0:
@@ -1525,6 +1541,8 @@ class ConvertToDataFrame:
                             data_to_table["N_Documento"].append(N_Documento)
 
                         print(" --------------------------------------- final \n\n")
+
+                        
                         
 
             except Exception as e:
@@ -1538,23 +1556,32 @@ class ConvertToDataFrame:
 
         # return {}
     
+        try:
+            df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_17", value_generic="Civia", cod_empresa=company_session)
+            df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
+                "DATA": "data_de_debito",
+                "CNPJ": "cnpj_beneficiario",
+                "NOME": "nome_beneficiario",
+                "VALOR": "valor",
+            })
+        except Exception as e:
+            print(f" ### ERROR: {e} ###")
+            return {}
 
-        df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_17", value_generic="Civia", cod_empresa=company_session)
-        df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
-            "DATA": "data_de_debito",
-            "CNPJ": "cnpj_beneficiario",
-            "NOME": "nome_beneficiario",
-            "VALOR": "valor",
-        })
 
-        df = ConvertToDataFrame.duplicate_dataframe_rows_lote(dataframe=df, list_update_cols=[
-            {"TP": "C", "TYPE_PROCESS": "comum"},
-            {"TP": "C", "TYPE_PROCESS": "desconto"},
-            {"TP": "D", "TYPE_PROCESS": "juros"},
-        ])
+        try:
+            df = ConvertToDataFrame.duplicate_dataframe_rows_lote(dataframe=df, list_update_cols=[
+                {"TP": "C", "TYPE_PROCESS": "comum"},
+                {"TP": "C", "TYPE_PROCESS": "desconto"},
+                {"TP": "D", "TYPE_PROCESS": "juros"},
+            ])
+        except Exception as e:
+            print(f" ### ERROR: {e} ###")
+            return {}
 
         df.sort_values(by=["nome_beneficiario", "GRUPO_LCTO", "TP"], inplace=True)
         df.index = list(range(0, len(df.index)))
+
 
         count_aux = 0
         for i in df.index:
@@ -1585,11 +1612,17 @@ class ConvertToDataFrame:
         df = ConvertToDataFrame.filter_data_dataframe(daraframe=df, name_column="VALOR", list_remove_values=["0.00"])
         df = ConvertToDataFrame.create_cod_erp_to_dataframe(dataframe=df)
 
+        # df.to_excel("teste.xlsx")
+
 
         print("\n\n\n ------------ DF LAYOUT JB ------------ ")
-        df = ConvertToDataFrame.check_date_business_day(dataframe=df, column_date="DATA", addition=0)
-        print(df)
-        print(df.info())
+        try:
+            df = ConvertToDataFrame.check_date_business_day(dataframe=df, column_date="DATA", addition=0)
+            print(df)
+            print(df.info())
+        except Exception as e:
+            print(f" ### ERROR: {e} ###")
+            return {}
 
         tt_rows = len(df)
         tt_debit    = len(df[df["TP"] == "D"])
