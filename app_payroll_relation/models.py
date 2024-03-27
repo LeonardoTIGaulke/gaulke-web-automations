@@ -8,8 +8,6 @@ class Model_ConfigAccounts_Client(models.Model):
     created_at = models.DateTimeField(default=datetime.now(tz=tz.gettz("America/Sao Paulo")))
     update_at = models.DateTimeField(default=datetime.now(tz=tz.gettz("America/Sao Paulo")))
     
-
-
 class Model_DynamicTags_Username(models.Model):
     username = models.CharField(max_length=55)
     numero_conta_debito = models.CharField(max_length=7)

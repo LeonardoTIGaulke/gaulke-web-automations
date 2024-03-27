@@ -38,6 +38,7 @@ urlpatterns = [
     path("relacao-comprovante-banco-civia/", views.post_file_fastAPI_comprovante_civia, name="post_file_fastAPI_comprovante_banco_civia"),
     path("relacao-comprovante-recebimentos-TELL/", views.post_file_fastAPI_comprovante_recebimentos_TELL, name="post_file_fastAPI_comprovante_recebimentos_TELL"),
     path("relacao-comprovante-pagamentos-TELL/", views.post_file_fastAPI_comprovante_pagamentos_TELL, name="post_file_fastAPI_comprovante_pagamentos_TELL"),
+    path("relacao-comprovante-pagamento-abbracio/", views.post_file_fastAPI_comprovante_pagamento_abbraccio, name="post_file_fastAPI_comprovante_pagamento_abbraccio"),
 
 
     # ------------------------------------------------------------------

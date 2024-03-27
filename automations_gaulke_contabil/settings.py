@@ -74,28 +74,20 @@ WSGI_APPLICATION = 'automations_gaulke_contabil.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        "NAME": DB_DATABASE,
-        "USER": DB_USERNAME,
+        "NAME":     DB_DATABASE,
+        "USER":     DB_USERNAME,
         "PASSWORD": DB_PASSWORD,
-        "HOST": DB_HOST,
-        "PORT": DB_PORT,
+        "HOST":     DB_HOST,
+        "PORT":     DB_PORT,
     },
     'db_gaulke_contabil': {
         'ENGINE': 'django.db.backends.mysql',
-        "NAME": DB_DATABASE_GAULKE_CONTABIL,
-        "USER": DB_USERNAME,
+        "NAME":     DB_DATABASE_GAULKE_CONTABIL,
+        "USER":     DB_USERNAME,
         "PASSWORD": DB_PASSWORD,
-        "HOST": DB_HOST,
-        "PORT": DB_PORT,
+        "HOST":     DB_HOST,
+        "PORT":     DB_PORT,
     },
-    # 'db_gaulke_contabil': {
-    #     'ENGINE': 'django.db.backends.mysql',
-    #     "NAME": DB_DATABASE_GAULKE_CONTABIL,
-    #     "USER": DB_USERNAME,
-    #     "PASSWORD": DB_PASSWORD,
-    #     "HOST": DB_HOST,
-    #     "PORT": DB_PORT,
-    # },
 }
 
 
