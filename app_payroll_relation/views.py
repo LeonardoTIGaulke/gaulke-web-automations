@@ -248,6 +248,47 @@ def post_file_entrada_titulos_desc_sicoob(request):
 
 # ------------------------
 @login_required(login_url="/automations/login/")
+def post_file_liquidacao_titulos_descontados_sicoob(request):
+    if request.method == "GET":
+        context = {
+            "visible_form_file": True,
+        }
+        return render(request, "app_relations/relation_liquidacao_titulos_descontados_sicoob.html", context=context)
+        
+    elif request.method == "POST":
+        try:
+            username = request.POST.get("username")
+            company_session = request.POST.get("company_session")
+            file    = request.FILES["file"]
+            file_2  = request.FILES["file_2"]
+            print(file)
+            print(file_2)
+
+            dataJson = ConvertToDataFrame.read_pdf_relacao_liquidacao_titulos_desc_sicoob(file=file, file_2=file_2, company_session=company_session)
+            # print(dataJson)
+            context = {
+                "code_process": True,
+                "company_session": company_session,
+                "data_table": dataJson["data_table"]["data"],
+                "list_page_erros": dataJson["list_page_erros"],
+
+                "tt_rows": dataJson["tt_rows"],
+                "tt_debit": dataJson["tt_debit"],
+                "tt_credit": dataJson["tt_credit"],
+                "host_port": HOST_REDIRECT,
+
+            }
+            print(f" ### PROCESSO FINALIZADO POR: {username}")
+            return render(request, "app_relations/relation_liquidacao_titulos_descontados_sicoob.html", context=context)
+        except Exception as e:
+            context = {
+                "error_code": True,
+                "visible_form_file": True
+            }
+            return render(request, "app_relations/relation_liquidacao_titulos_descontados_sicoob.html", context=context)
+
+# ------------------------
+@login_required(login_url="/automations/login/")
 def post_file_fastAPI_relacao_cobrancas_pagas(request):
     if request.method == "GET":
         context = {

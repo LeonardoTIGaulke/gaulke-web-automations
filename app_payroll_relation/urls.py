@@ -16,6 +16,7 @@ urlpatterns = [
     path("relacao-gnre-base-nova/", views.post_file_fastAPI_relacao_GNRE_BASE_NOVA, name="post_file_fastAPI_relacao_GNRE_BASE_NOVA"),
 
     path("relacao-entrada-titulos-desc-sicoob/", views.post_file_entrada_titulos_desc_sicoob, name="post_file_entrada_titulos_desc_sicoob"),
+    path("relacao-liquidacao-titulos-descontados-sicoob/", views.post_file_liquidacao_titulos_descontados_sicoob, name="post_file_liquidacao_titulos_descontados_sicoob"),
     path("relacao-cobrancas-pagas/", views.post_file_fastAPI_relacao_cobrancas_pagas, name="post_file_fastAPI_relacao_cobrancas_pagas"),
     path("relacao-relatorio-beneficiario-civia/", views.post_file_fastAPI_relacao_relatorio_beneficiario_civia, name="post_file_fastAPI_relacao_relatorio_beneficiario_civia"),
     

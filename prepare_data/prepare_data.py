@@ -86,6 +86,9 @@ class ConvertToDataFrame:
                     # ----
                     # exemplo 18: [NOME] [DATA_PAGAMENTO]
                     "model_18": f"Pagamento Dupl [v1] - Doc: [v2] {value_generic}",
+                    # ----
+                    # exemplo 21: [NOME] [NF]
+                    "model_21": f"Recebimento Dupl [v1] NF [v2]",
                 }
                 text = data_model_text.get(model)
                 for k,v in dict_data_replace.items():
@@ -329,6 +332,15 @@ class ConvertToDataFrame:
                     value_tp_cnpj = "1"
 
                     dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["nome_beneficiario", "data_de_debito"], index=i)
+                    text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, value_generic=value_generic)
+                    print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
+                    print(f">>>>>>>>>>>>>>>> TEXT: {text}")
+                
+                elif model == "model_21":
+                    # modelo: Importação Liquidação Títulos Descontados Sicoob
+                    value_primeiro_hist_cta = "2"
+                    
+                    dict_data_replace = ConvertToDataFrame.create_dict_data_replace(dataframe=dataframe, list_col_name=["nome_beneficiario", "seu_numero_original"], index=i)
                     text = ConvertToDataFrame.create_text_compl_grupo_lancamento(model=model, dict_data_replace=dict_data_replace, value_generic=value_generic)
                     print("\n\n >>>>>>> DICT DATA TO REPLACE:  ", dict_data_replace)
                     print(f">>>>>>>>>>>>>>>> TEXT: {text}")
@@ -1412,6 +1424,204 @@ class ConvertToDataFrame:
                 }
         except Exception as e:
             print(f" ### ERROR GENERATE DATAFRAME | ERROR: {e}")
+
+    # ----
+          
+    def read_pdf_relacao_liquidacao_titulos_desc_sicoob(file, file_2, company_session):
+        try:
+            print(f"\n\n ----- Arquivo informado Liquid. Títulos Desc. SICOOB: {file} | file_2 (S@T): {file_2}")
+
+            contents = file.read()
+            pdf_bytes = io.BytesIO(contents)
+            dataframes = tabula.read_pdf( pdf_bytes, pages="all" )
+            df = pd.concat(dataframes)
+
+            type_09 = False
+            if "Unnamed: 9" in df.columns:
+                type_09 = True
+                df_temp = df.dropna(subset=["Unnamed: 9"])
+                print(" ----------------- df_temp | Unnamed: 9 ----------------- ")
+                print(df_temp)
+                for i in df.index:
+                    try:
+                        df["Unnamed: 0"][i] = df_temp["Unnamed: 0"][i]
+                        df["Unnamed: 1"][i] = df_temp["Unnamed: 2"][i]
+                        df["Unnamed: 2"][i] = df_temp["Unnamed: 3"][i]
+                        df["Unnamed: 3"][i] = df_temp["Unnamed: 4"][i]
+                        df["Dt. Previsão"][i] = None
+                        df["Unnamed: 4"][i] = df_temp["Unnamed: 5"][i]
+                        df["Dt. Limite"][i] = None
+                        df["Unnamed: 5"][i] = df_temp["Unnamed: 6"][i]
+                        df["Unnamed: 6"][i] = df_temp["Unnamed: 7"][i]
+                        df["Unnamed: 7"][i] = df_temp["Unnamed: 8"][i]
+                        df["Vlr. Outros"][i] = None
+                        df["Unnamed: 8"][i] = df_temp["Unnamed: 9"][i]
+                    except:
+                        pass
+                df.drop(columns=['Unnamed: 9'], inplace=True)
+
+
+
+            df = df.dropna(subset=["Unnamed: 2"])
+            df = df[ df["Unnamed: 1"] != "Nosso Número" ]
+            df["Vlr. Outros"].fillna("0,00", inplace=True)
+            df.index = list(range(0, len(df.index)))
+
+            df.columns = [
+                "nome_beneficiario", "nosso_numero", "seu_numero", "dt_previsao_credito", "vencimento", "dt_limite_pag", "valor", "mora", "desconto", "outros_valores", "dt_liquidacao", "valor_cobrado"
+            ]
+            df["seu_numero_original"] =  df["seu_numero"]
+
+            if type_09:
+                df["col1"] = df["outros_valores"]
+                df["col2"] = df["dt_liquidacao"]
+                df["dt_liquidacao"] = df["col1"]
+                df["outros_valores"] = df["col2"]
+                df["valor"] = df["dt_limite_pag"]
+                df["dt_limite_pag"] = None
+
+
+            # df.to_excel("base_type_09.xlsx")
+            # return {}
+            
+            # --------------------------------------------------------------
+            contents = file_2.read()
+            xlsx_bytes = io.BytesIO(contents)
+            file_2 = pd.ExcelFile(xlsx_bytes)
+            sheet_name = file_2.sheet_names[0]
+            df_SAT = file_2.parse(sheet_name=sheet_name, dtype='str')[["CnpjOuCpfDoDestinatario", "NomeDestinatario", "NumeroDocumento"]]
+            
+            print("\n\n ----------------- df ----------------- ")
+            print(df)
+            print("\n\n ----------------- df_SAT ----------------- ")
+            print(df_SAT)
+            # df.to_excel("df.xlsx")
+            # df_SAT.to_excel("df_SAT.xlsx")
+            # return {}
+
+            for i in df.index:
+                if "MN" in df["seu_numero"][i]:
+                    df["seu_numero"][i] = str(df["seu_numero"][i].replace("MN", ""))
+                else:
+                    df["seu_numero"][i] = str(df["seu_numero"][i][1: len(df["seu_numero"][i])-1])
+            
+            print(" -------------------------------------- df | FINAL -------------------------------------- ")
+            
+            df = ConvertToDataFrame.create_layout_JB(dataframe=df, model="model_21", value_generic="Sicoob", cod_empresa=company_session)
+            df = ConvertToDataFrame.transpose_values(dataframe=df, dict_cols_transpose={
+                "DATA": "dt_liquidacao",
+                "VALOR": "valor",
+                "NOME": "nome_beneficiario",
+                })
+            
+            df = ConvertToDataFrame.duplicate_dataframe_rows_lote(dataframe=df, list_update_cols=[
+                {"TP": "D", "TYPE_PROCESS": "comum"},
+                {"TP": "C", "TYPE_PROCESS": "mora"},
+                {"TP": "C", "TYPE_PROCESS": "juros"},
+                {"TP": "D", "TYPE_PROCESS": "desconto"},
+            ])
+
+            df.sort_values(by=["nome_beneficiario", "GRUPO_LCTO", "TP"], inplace=True)
+            df.index = list(range(0, len(df.index)))
+
+            # df.to_excel("base_liquidacao_titulos_desc_sicoob - consolidado.xlsx")
+            # return {}
+
+            count_aux = 0
+            for i in df.index:
+                
+                if count_aux == 0:
+                    df["TP"][i] = "D"
+                    df["TYPE_PROCESS"][i] = "comum"
+                    df["VALOR"][i] = df["valor_cobrado"][i]
+                    count_aux += 1
+                elif count_aux == 1:
+                    df["TP"][i] = "D"
+                    df["TYPE_PROCESS"][i] = "desconto"
+                    df["VALOR"][i] = df["desconto"][i]
+                    df["CONTA"][i] = "1686"
+                    count_aux += 1
+                elif count_aux == 2:
+                    df["TP"][i] = "C"
+                    df["TYPE_PROCESS"][i] = "mora"
+                    df["VALOR"][i] = df["mora"][i]
+                    df["CONTA"][i] = "1663"
+                    count_aux += 1
+                elif count_aux == 3:
+                    df["TP"][i] = "C"
+                    df["TYPE_PROCESS"][i] = "juros"
+                    df["VALOR"][i] = df["outros_valores"][i] # juros
+                    df["CONTA"][i] = "1663"
+                    count_aux += 1
+                elif count_aux == 4:
+                    df["TP"][i] = "C"
+                    df["TYPE_PROCESS"][i] = "comum"
+                    df["VALOR"][i] = df["valor"][i]
+                    df["CONTA"][i] = ""
+                    count_aux = 0
+                
+
+                if df["VALOR"][i] == None:
+                    df["VALOR"][i] = "0.00"
+                else:
+                    df["VALOR"][i] = df["VALOR"][i].replace(".", "").replace(",", ".")
+                # --------------------------------------------------------------------------------------------------------------
+                numeroNF = df["seu_numero"][i]
+                try:
+                    CnpjOuCpfDoDestinatario = df_SAT[df_SAT["NumeroDocumento"] == numeroNF]["CnpjOuCpfDoDestinatario"].values[0]
+                    NomeDestinatario        = df_SAT[df_SAT["NumeroDocumento"] == numeroNF]["NomeDestinatario"].values[0]
+                    # NumeroDocumento         = df_SAT[df_SAT["NumeroDocumento"] == numeroNF]["NumeroDocumento"].values[0]
+                    
+                    df["NOME"][i] = NomeDestinatario
+                    df["CNPJ"][i] = CnpjOuCpfDoDestinatario
+
+                except Exception as e:
+                    # print(f"\n\n ### ERROR GET NF | ERROR: {e}")
+                    pass
+
+            # print(df)
+            # print(df.info())
+            # return{}
+                        
+            df = ConvertToDataFrame.filter_data_dataframe(daraframe=df, name_column="VALOR", list_remove_values=["0.00"])
+            df = ConvertToDataFrame.create_cod_erp_to_dataframe(dataframe=df)
+
+            # df.to_excel("base_liquidacao_titulos_desc_sicoob - consolidado.xlsx")
+            # df.sort_values(by=["NOME", "GRUPO_LCTO", "TP"], inplace=True)
+            # df.index = list(range(0, len(df.index)))
+
+            print("\n\n ------------------------ df_JB ------------------------ ")
+            print(df)
+            print(df.info())
+
+
+            # -------------------------
+            print("\n\n ------------------------ df_SAT ------------------------ ")
+            print(df_SAT)
+            print(df_SAT.info())
+
+            tt_rows = len(df)
+            tt_debit    = len(df[df["TP"] == "D"])
+            tt_credit   = len(df[df["TP"] == "C"])
+            data_json = json.loads(df.to_json(orient="table"))
+            # print(data_json)
+            print(f"""
+                --------- CONFIG CONTAS POR UF
+                --> tt_rows: {tt_rows}
+                --> tt_debit: {tt_debit}
+                --> tt_credit: {tt_credit}
+            """)
+
+            return {
+                "data_table": data_json,
+                "tt_rows": tt_rows,
+                "tt_debit": tt_debit,
+                "tt_credit": tt_credit,
+                "list_page_erros": [],
+                }
+        except Exception as e:
+            print(f" ### ERROR GENERATE DATAFRAME | ERROR: {e}")
+        
     
     # ----
     
